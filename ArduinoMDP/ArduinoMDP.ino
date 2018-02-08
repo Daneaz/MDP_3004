@@ -6,6 +6,7 @@ DualVNH5019MotorShield md(2, 4, 6, A0, 8, 7, 12, A1);
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
 
+unsigned long curTime = 0;
 //IRsend irsend;
 char inData;
 
@@ -44,49 +45,105 @@ void loop() {
             {
               case 'F':
                 moveForward();
-                forwardBrake();
-              break;
+                
+                break;
               case 'R':
-                moveRight();
-                rightBrake();
-              break;
+                turnRight();
+                break;
               case 'L':
-                moveLeft();
-                leftBrake();
-              break;
+                turnLeft();
+                break;
               default:
-              break;        
+                break;        
             }
             inData = NULL;
 }
 
 void moveForward(){
-  md.setSpeeds(334,400);
+  
+  double dTotalTicks = 0;
+  
+  dTotalTicks = 288 / 10.0 * 10;
+
+
+  while(mLTicks < dTotalTicks)
+  {      
+    md.setSpeeds(334,400);
+  }
+
   delay(1000);
+  forwardBrake();
 }
 
 void forwardBrake(){
-  md.setBrakes(325,310);
+  
+  for(int i = 0; i < 100; i++)
+  {
+    md.setBrakes(325,310);
+  }
+  
+  delay(100);
+  
+  mLTicks = 0;
+  mRTicks = 0;
 }
 
-void moveLeft(){
-  md.setSpeeds(350,-400);
+void turnLeft(){
+  double dTotalTicks = 0;
+  
+  dTotalTicks = 288 / 10.0 * 10;
+
+
+  while(mLTicks < dTotalTicks)
+  {      
+     md.setSpeeds(350,-400);
+  }
+ 
   delay(440);
+  leftBrake();
 }
 
 void leftBrake(){
-  md.setBrakes(-370,400);
+  
+  for(int i = 0; i < 100; i++)
+  {
+    md.setBrakes(325,310);
+  }
+  
+  delay(100);
+  
+  mLTicks = 0;
+  mRTicks = 0;
 }
 
 
 
-void moveRight(){
-  md.setSpeeds(-350,400);
+void turnRight(){
+  double dTotalTicks = 0;
+  
+  dTotalTicks = 288 / 10.0 * 10;
+
+
+  while(mLTicks < dTotalTicks)
+  {      
+     md.setSpeeds(-350,400);
+  }
+  
   delay(440);
+  rightBrake();
 }
 
 void rightBrake(){
-  md.setBrakes(370,-400);
+  
+  for(int i = 0; i < 100; i++)
+  {
+    md.setBrakes(370,-400);
+  }
+  
+  delay(100);
+  
+  mLTicks = 0;
+  mRTicks = 0;
 }
 
 
