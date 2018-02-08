@@ -1,7 +1,12 @@
 #include <PinChangeInt.h>
 #include <DualVNH5019MotorShield.h>
+#include <SharpIR.h>
 
 DualVNH5019MotorShield md(2, 4, 6, A0, 8, 7, 12, A1);
+SharpIR sensorFR(GP2Y0A21YK0F, A0);
+SharpIR sensorFL(GP2Y0A21YK0F, A1);
+SharpIR sensorL(GP2Y0A21YK0F, A3);
+SharpIR sensorR(GP2Y0A21YK0F, A2);
 
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
@@ -23,17 +28,6 @@ void setup() {
   Serial.println("Waiting for data: ");
 }
 
-
-void compute_mL_ticks() 
-{
-  mLTicks++;
-}
-
-void compute_mR_ticks() 
-{
-  mRTicks++;
-}
-
 void loop() {
   // put your main code here, to run repeatedly:
   while (Serial.available() > 0) {
@@ -45,18 +39,30 @@ void loop() {
             {
               case 'F':
                 moveForward();
-                
+                getSensorsData();
                 break;
               case 'R':
                 turnRight();
+                getSensorsData();
                 break;
               case 'L':
                 turnLeft();
+                getSensorsData();
                 break;
               default:
                 break;        
             }
             inData = NULL;
+}
+
+void compute_mL_ticks() 
+{
+  mLTicks++;
+}
+
+void compute_mR_ticks() 
+{
+  mRTicks++;
 }
 
 void moveForward(){
@@ -146,6 +152,35 @@ void rightBrake(){
   mRTicks = 0;
 }
 
-
+void getSensorsData(){
+  int disFL, disFR, disL, disR;
+  double avgFL = 0, avgFR = 0, avgL = 0, avgR = 0;
+  
+  for(int i =0; i<7; i++)
+  {
+      disFL = sensorFL.getDistance(); //Calculate the distance in centimeters and store the value in a variable
+      disFR = sensorFR.getDistance();
+      disL = sensorL.getDistance();
+      disR = sensorR.getDistance();
+      
+      avgFL += disFL;
+      avgFR += disFR;
+      avgL += disL;
+      avgR += disR; 
+  }
+  avgFL = avgFL / 7;
+  avgFR = avgFR / 7;
+  avgL = avgL / 7;
+  avgR = avgR / 7;
+  
+  Serial.print("FL:"); //Print the value to the serial monitor
+  Serial.println(avgFL);
+  Serial.print("FR:");
+  Serial.println( avgFR);
+  Serial.print("L:");
+  Serial.println(avgL);
+  Serial.print("R:");
+  Serial.println(avgR);
+}
 
 
