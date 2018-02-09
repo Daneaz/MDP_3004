@@ -105,12 +105,12 @@ void forwardBrake(){
 void turnRight(){
   double dTotalTicks = 0;
   
-  dTotalTicks = 275 / 10.0 * 10;
+  dTotalTicks = 383/ 10.0 * 10;
 
 
   while(mLTicks < dTotalTicks)
   {      
-     md.setSpeeds(350,-400);
+     md.setSpeeds(400,-400);
   }
  
   leftBrake();
@@ -133,12 +133,12 @@ void rightBrake(){
 void turnLeft(){
   double dTotalTicks = 0;
   
-  dTotalTicks = 275 / 10.0 * 10;
+  dTotalTicks = 360 / 10.0 * 10;
 
 
   while(mLTicks < dTotalTicks)
   {      
-     md.setSpeeds(-350,400);
+     md.setSpeeds(-400,400);
   }
 
   rightBrake();
@@ -188,4 +188,3 @@ void getSensorsData(){
   Serial.print("R:");
   Serial.println(avgR);
 }
-
