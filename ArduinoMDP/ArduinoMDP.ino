@@ -2,7 +2,7 @@
 #include <DualVNH5019MotorShield.h>
 #include <SharpIR.h>
 
-DualVNH5019MotorShield md(2, 4, 6, A0, 8, 7, 12, A1);
+DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 SharpIR sensorFR(GP2Y0A21YK0F, A0);
 SharpIR sensorFL(GP2Y0A21YK0F, A1);
 SharpIR sensorL(GP2Y0A21YK0F, A3);
@@ -18,12 +18,12 @@ char inData;
 void setup() {
   // put your setup code here, to run once:
   pinMode(4, INPUT);  //Interrupt Pin 11
-  pinMode(12, INPUT); //Interrupt Pin 13
+  pinMode(13, INPUT); //Interrupt Pin 13
   
   md.init();
   
-  PCintPort::attachInterrupt(4, &compute_mL_ticks, RISING);  //Attached to Pin 3
-  PCintPort::attachInterrupt(12, &compute_mR_ticks, RISING); //Attached to Pin 11
+  PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 3
+  PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 11
   Serial.begin(9600);
   Serial.println("Waiting for data: ");
 }
@@ -34,7 +34,7 @@ void loop() {
                    inData += (char)Serial.read();
                    delay(2);
             }
-            Serial.println(inData);
+//            Serial.println(inData);
             switch(inData)
             {
               case 'F':
@@ -51,8 +51,9 @@ void loop() {
                 break;
               default:
                 break;        
+                
             }
-            inData = NULL;
+            inData = '\0';
 }
 
 void compute_mL_ticks() 
@@ -69,15 +70,16 @@ void moveForward(){
   
   double dTotalTicks = 0;
   
-  dTotalTicks = 288 / 10.0 * 10;
-
-
+  dTotalTicks = 275 / 10.0 * 10;
+  
   while(mLTicks < dTotalTicks)
   {      
-    md.setSpeeds(334,400);
+    md.setSpeeds(400,368);
+    Serial.print("mTicks:");
+    Serial.print(mLTicks);
+    Serial.print("/");
+    Serial.println(dTotalTicks);
   }
-
-  delay(1000);
   forwardBrake();
 }
 
@@ -85,7 +87,7 @@ void forwardBrake(){
   
   for(int i = 0; i < 100; i++)
   {
-    md.setBrakes(325,310);
+    md.setBrakes(350,400);
   }
   
   delay(100);
@@ -94,10 +96,10 @@ void forwardBrake(){
   mRTicks = 0;
 }
 
-void turnLeft(){
+void turnRight(){
   double dTotalTicks = 0;
   
-  dTotalTicks = 288 / 10.0 * 10;
+  dTotalTicks = 275 / 10.0 * 10;
 
 
   while(mLTicks < dTotalTicks)
@@ -105,11 +107,10 @@ void turnLeft(){
      md.setSpeeds(350,-400);
   }
  
-  delay(440);
   leftBrake();
 }
 
-void leftBrake(){
+void rightBrake(){
   
   for(int i = 0; i < 100; i++)
   {
@@ -117,29 +118,27 @@ void leftBrake(){
   }
   
   delay(100);
-  
   mLTicks = 0;
   mRTicks = 0;
 }
 
 
 
-void turnRight(){
+void turnLeft(){
   double dTotalTicks = 0;
   
-  dTotalTicks = 288 / 10.0 * 10;
+  dTotalTicks = 275 / 10.0 * 10;
 
 
   while(mLTicks < dTotalTicks)
   {      
      md.setSpeeds(-350,400);
   }
-  
-  delay(440);
+
   rightBrake();
 }
 
-void rightBrake(){
+void leftBrake(){
   
   for(int i = 0; i < 100; i++)
   {
@@ -170,6 +169,7 @@ void getSensorsData(){
   }
   avgFL = avgFL / 7;
   avgFR = avgFR / 7;
+  
   avgL = avgL / 7;
   avgR = avgR / 7;
   
@@ -182,5 +182,4 @@ void getSensorsData(){
   Serial.print("R:");
   Serial.println(avgR);
 }
-
 
