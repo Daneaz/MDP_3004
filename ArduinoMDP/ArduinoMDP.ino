@@ -28,6 +28,7 @@ void setup() {
   Serial.println("Waiting for data: ");
 }
 
+
 void loop() {
   // put your main code here, to run repeatedly:
   while (Serial.available() > 0) {
@@ -79,7 +80,12 @@ void moveForward(){
     Serial.print(mLTicks);
     Serial.print("/");
     Serial.println(dTotalTicks);
-  }
+  } 
+  /* md.setSpeeds(400,375);
+   delay(400);
+   md.setSpeeds(400,364);
+   delay(2600);
+   */
   forwardBrake();
 }
 
@@ -99,12 +105,12 @@ void forwardBrake(){
 void turnRight(){
   double dTotalTicks = 0;
   
-  dTotalTicks = 275 / 10.0 * 10;
+  dTotalTicks = 383/ 10.0 * 10;
 
 
   while(mLTicks < dTotalTicks)
   {      
-     md.setSpeeds(350,-400);
+     md.setSpeeds(400,-400);
   }
  
   leftBrake();
@@ -127,12 +133,12 @@ void rightBrake(){
 void turnLeft(){
   double dTotalTicks = 0;
   
-  dTotalTicks = 275 / 10.0 * 10;
+  dTotalTicks = 360 / 10.0 * 10;
 
 
   while(mLTicks < dTotalTicks)
   {      
-     md.setSpeeds(-350,400);
+     md.setSpeeds(-400,400);
   }
 
   rightBrake();
