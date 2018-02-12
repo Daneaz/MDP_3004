@@ -1,8 +1,13 @@
 #include <PinChangeInt.h>
 #include <DualVNH5019MotorShield.h>
 #include <SharpIR.h>
+#include <PID_v1.h>
+
+#define PIDInputPinM1 A0
+#define PIDInputPinM2 A1
 
 DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
+
 SharpIR sensorFR(GP2Y0A21YK0F, A0);
 SharpIR sensorFL(GP2Y0A21YK0F, A1);
 SharpIR sensorL(GP2Y0A21YK0F, A3);
@@ -11,19 +16,35 @@ SharpIR sensorR(GP2Y0A21YK0F, A2);
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
 
-unsigned long curTime = 0;
-//IRsend irsend;
 char inData;
+
+//Define Variables we'll be connecting to
+double SetpointM1, InputM1, OutputM1;
+double SetpointM2, InputM2, OutputM2;
+
+//Specify the links and initial tuning parameters
+double Kp=2, Ki=5, Kd=1;
+PID M1PID(&InputM1, &OutputM1, &SetpointM1, Kp, Ki, Kd, DIRECT);
+PID M2PID(&InputM2, &OutputM2, &SetpointM2, Kp, Ki, Kd, DIRECT);
+
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(4, INPUT);  //Interrupt Pin 11
+  pinMode(4, INPUT);  //Interrupt Pin 4
   pinMode(13, INPUT); //Interrupt Pin 13
   
+  InputM1 = analogRead(PIDInputPinM1);
+  InputM2 = analogRead(PIDInputPinM2);
+  
+  SetpointM1 = 130;
+  SetpointM1 = 130;
+
+  M1PID.SetMode(AUTOMATIC);
+  M2PID.SetMode(AUTOMATIC);
   md.init();
   
-  PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 3
-  PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 11
+  PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 11
+  PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 3
   Serial.begin(9600);
   Serial.println("Waiting for data: ");
 }
@@ -72,20 +93,30 @@ void moveForward(){
   double dTotalTicks = 0;
   
   dTotalTicks = 275 / 10.0 * 10;
+
   
   while(mLTicks < dTotalTicks)
-  {      
-    md.setSpeeds(400,368);
+  { 
+    InputM1 = analogRead(PIDInputPinM1);
+    InputM2 = analogRead(PIDInputPinM2);
+    
+    M1PID.Compute();
+    M2PID.Compute();     
+    
+    md.setSpeeds(OutputM1,OutputM2);
+
+    //For Debug
+    Serial.print("OutputM1:");
+    Serial.println(OutputM1);
+    Serial.print("OutputM2");
+    Serial.println(OutputM2);
+
     Serial.print("mTicks:");
     Serial.print(mLTicks);
     Serial.print("/");
     Serial.println(dTotalTicks);
   } 
-  /* md.setSpeeds(400,375);
-   delay(400);
-   md.setSpeeds(400,364);
-   delay(2600);
-   */
+
   forwardBrake();
 }
 
