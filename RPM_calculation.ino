@@ -18,8 +18,8 @@ void setup() {
   
   md.init();
   
-  PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 3
-  PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 11
+  PCintPort::attachInterrupt(11, &compute_mR_ticks, RISING);  //Attached to Pin 3
+  PCintPort::attachInterrupt(3, &compute_mL_ticks, RISING); //Attached to Pin 11
   Serial.begin(9600);
   Serial.println("---Calculating RPM--- ");
 }
@@ -28,15 +28,19 @@ void setup() {
 void loop() {
   Serial.print("Setting speed to ");
   Serial.println(motorSpd);
-  setSpeeds(motorSpd,motorSpd);
-  for(int i=0;i<2;i++)
+  md.setSpeeds(motorSpd,motorSpd);
+  for(int i=0;i<7;i++)
   {
+    mLTicks = 0;
+    mRTicks = 0;
     delay(1000);
     compute_Ml_Rpm();
-    compute_M2_Rpm();
+    compute_Mr_Rpm();
   }
   motorSpd -= 50;
-  
+  if(motorSpd == 0)
+  motorSpd = 400;
+  delay(3000);
 }
 
 void compute_mL_ticks() 
@@ -49,23 +53,21 @@ void compute_mR_ticks()
   mRTicks++;
 }
 
-void compute_Ml_Rpm() 
+void compute_Mr_Rpm() 
 {
   PCintPort::detachInterrupt(11);
-  mLRpm = (mLTicks/256.25)*60;
-  Serial.print("RPM of mL: ")
-  Serial.println(mLRpm);
-  mLTicks = 0;
+  mLRpm = (mRTicks/562.25)*60;
+  Serial.print("RPM of mL: ");
+  Serial.println(mLRpm); 
   PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);
 }
 
-void compute_Mr_Rpm() 
+void compute_Ml_Rpm() 
 {
   PCintPort::detachInterrupt(3);
-  mRRpm = (mRTicks/256.25)*60;
-  Serial.print("RPM of mR: ")
+  mRRpm = (mLTicks/562.25)*60;
+  Serial.print("RPM of mR: ");
   Serial.println(mRRpm);
-  mRTicks = 0;
   PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING);
 }
 
