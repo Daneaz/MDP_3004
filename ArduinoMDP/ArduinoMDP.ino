@@ -18,38 +18,21 @@ volatile int mRTicks = 0;
 
 char inData;
 
-//Define Variables we'll be connecting to
-double SetpointM1, InputM1, OutputM1;
-double SetpointM2, InputM2, OutputM2;
-
-//Specify the links and initial tuning parameters
-double Kp=2, Ki=5, Kd=1;
-PID M1PID(&InputM1, &OutputM1, &SetpointM1, Kp, Ki, Kd, DIRECT);
-PID M2PID(&InputM2, &OutputM2, &SetpointM2, Kp, Ki, Kd, DIRECT);
-
-
 void setup() {
   // put your setup code here, to run once:
   pinMode(4, INPUT);  //Interrupt Pin 4
   pinMode(13, INPUT); //Interrupt Pin 13
   
-  InputM1 = analogRead(PIDInputPinM1);
-  InputM2 = analogRead(PIDInputPinM2);
-  
-  SetpointM1 = 130;
-  SetpointM1 = 130;
-
-  M1PID.SetMode(AUTOMATIC);
-  M2PID.SetMode(AUTOMATIC);
   md.init();
   
   PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 11
   PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 3
+  
   Serial.begin(9600);
   Serial.println("Waiting for data: ");
 }
 
-
+boolean flag =false;
 void loop() {
   // put your main code here, to run repeatedly:
   while (Serial.available() > 0) {
@@ -57,8 +40,15 @@ void loop() {
                    delay(2);
             }
 //            Serial.println(inData);
+            //Debug
+//            if(flag == false)
+//            {
+//               flag =true;
+//               inData = 'F';
+//            }
             switch(inData)
             {
+              
               case 'F':
                 moveForward();
                 getSensorsData();
@@ -73,7 +63,6 @@ void loop() {
                 break;
               default:
                 break;        
-                
             }
             inData = '\0';
 }
@@ -88,35 +77,78 @@ void compute_mR_ticks()
   mRTicks++;
 }
 
+int pidControlForward(int LeftPosition, int RightPosition){
+    int error;
+    int prev_error;
+    double integral,derivative,output;
+    double Kp = 5.5;                  //prefix Kp Ki, Kd
+    double Kd = 0.4;
+    double Ki = 0.1;
+
+    error = LeftPosition - RightPosition;
+    integral += error;
+    derivative = (error - prev_error);
+    output = Kp * error + Ki * integral + Kd * derivative;
+    prev_error = error;
+
+    return output;
+}
+
 void moveForward(){
   
   double dTotalTicks = 0;
-  
-  dTotalTicks = 275 / 10.0 * 10;
+  double output;
+  int count =0;
+  double avg, total=0;
+  int pwm1=400, pwm2=355; 
 
   
+  dTotalTicks = 275 / 10.0 * 10;  // *10 = 10cm
+
   while(mLTicks < dTotalTicks)
   { 
-    InputM1 = analogRead(PIDInputPinM1);
-    InputM2 = analogRead(PIDInputPinM2);
+    if(mLTicks <=100){
+           pwm1 = 100;
+           pwm2 = 55;
+        }
+    else if(mLTicks <=300){
+           pwm1 = mLTicks;
+           pwm2 = mRTicks;
+        }
+    else {
+           pwm1 = 400;
+           pwm2 = 355;
+        }   
     
-    M1PID.Compute();
-    M2PID.Compute();     
-    
-    md.setSpeeds(OutputM1,OutputM2);
+    output = pidControlForward(mLTicks,mRTicks);
+
+    md.setSpeeds(pwm1-output, pwm2+output);
+        
+//    md.setSpeeds(400,365);
 
     //For Debug
-    Serial.print("OutputM1:");
-    Serial.println(OutputM1);
-    Serial.print("OutputM2");
-    Serial.println(OutputM2);
+    Serial.print("OutPut:");
+    Serial.println(output);
+    Serial.println(mLTicks-mRTicks);
 
-    Serial.print("mTicks:");
+    total += abs(mLTicks-mRTicks);
+    
+    Serial.print("Left ticks:");
     Serial.print(mLTicks);
     Serial.print("/");
-    Serial.println(dTotalTicks);
-  } 
+    Serial.print(dTotalTicks);
 
+    Serial.print(" Right ticks:");
+    Serial.print(mRTicks);
+    Serial.print("/");
+    Serial.println(dTotalTicks);
+
+    count++;
+    
+  }
+  avg =total/count;
+  Serial.print("Avg:");
+  Serial.println(avg);
   forwardBrake();
 }
 
