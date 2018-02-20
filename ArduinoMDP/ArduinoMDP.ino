@@ -11,59 +11,29 @@ DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 SharpIR sensorFR(GP2Y0A21YK0F, A0);
 SharpIR sensorFL(GP2Y0A21YK0F, A1);
 SharpIR sensorL(GP2Y0A21YK0F, A3);
-SharpIR sensorR(GP2Y0A21YK0F, A2);
-
+SharpIR sensorRF(GP2Y0A21YK0F, A2);
+SharpIR sensorRB(GP2Y0A21YK0F, A4);
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
 
 char inData;
 
-<<<<<<< HEAD
-//Define Variables we'll be connecting to
-double SetpointM1, InputM1, OutputM1;
-double SetpointM2, InputM2, OutputM2;
-
-//Specify the links and initial tuning parameters
-double Kp=2, Ki=5, Kd=1;
-PID M1PID(&InputM1, &OutputM1, &SetpointM1, Kp, Ki, Kd, DIRECT);
-PID M2PID(&InputM2, &OutputM2, &SetpointM2, Kp, Ki, Kd, DIRECT);
-
-
-=======
->>>>>>> origin/Arduino
 void setup() {
   // put your setup code here, to run once:
   pinMode(4, INPUT);  //Interrupt Pin 4
   pinMode(13, INPUT); //Interrupt Pin 13
   
-<<<<<<< HEAD
-  InputM1 = analogRead(PIDInputPinM1);
-  InputM2 = analogRead(PIDInputPinM2);
-  
-  SetpointM1 = 130;
-  SetpointM1 = 130;
-
-  M1PID.SetMode(AUTOMATIC);
-  M2PID.SetMode(AUTOMATIC);
-=======
->>>>>>> origin/Arduino
   md.init();
   
   PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 11
   PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 3
-<<<<<<< HEAD
-=======
-  
->>>>>>> origin/Arduino
+
   Serial.begin(9600);
   Serial.println("Waiting for data: ");
 }
 
-<<<<<<< HEAD
-
-=======
 boolean flag =false;
->>>>>>> origin/Arduino
+
 void loop() {
   // put your main code here, to run repeatedly:
   while (Serial.available() > 0) {
@@ -71,20 +41,21 @@ void loop() {
                    delay(2);
             }
 //            Serial.println(inData);
-<<<<<<< HEAD
-            switch(inData)
-            {
-=======
-            //Debug
+
+//            Debug
 //            if(flag == false)
 //            {
 //               flag =true;
-//               inData = 'F';
+//               moveForward();
+//               delay(1000);
+//               turnRight();
+//               delay(1000);
+//               turnLeft();
 //            }
             switch(inData)
             {
               
->>>>>>> origin/Arduino
+
               case 'F':
                 moveForward();
                 getSensorsData();
@@ -97,12 +68,12 @@ void loop() {
                 turnLeft();
                 getSensorsData();
                 break;
+              case 'S':
+                getSensorsData();
+                break;
               default:
                 break;        
-<<<<<<< HEAD
-                
-=======
->>>>>>> origin/Arduino
+
             }
             inData = '\0';
 }
@@ -117,44 +88,16 @@ void compute_mR_ticks()
   mRTicks++;
 }
 
-<<<<<<< HEAD
-void moveForward(){
-  
-  double dTotalTicks = 0;
-  
-  dTotalTicks = 275 / 10.0 * 10;
 
-  
-  while(mLTicks < dTotalTicks)
-  { 
-    InputM1 = analogRead(PIDInputPinM1);
-    InputM2 = analogRead(PIDInputPinM2);
-    
-    M1PID.Compute();
-    M2PID.Compute();     
-    
-    md.setSpeeds(OutputM1,OutputM2);
 
-    //For Debug
-    Serial.print("OutputM1:");
-    Serial.println(OutputM1);
-    Serial.print("OutputM2");
-    Serial.println(OutputM2);
-
-    Serial.print("mTicks:");
-    Serial.print(mLTicks);
-    Serial.print("/");
-    Serial.println(dTotalTicks);
-  } 
-
-=======
 int pidControlForward(int LeftPosition, int RightPosition){
+
     int error;
     int prev_error;
     double integral,derivative,output;
-    double Kp = 5.5;                  //prefix Kp Ki, Kd
-    double Kd = 0.4;
-    double Ki = 0.1;
+    double Kp = 1;                  //prefix Kp Ki, Kd
+    double Kd = 1;
+    double Ki = 1;
 
     error = LeftPosition - RightPosition;
     integral += error;
@@ -165,62 +108,100 @@ int pidControlForward(int LeftPosition, int RightPosition){
     return output;
 }
 
+unsigned long lastTime;
+double Input, Output, Setpoint;
+double errSum, lastErr;
+double kp=1, ki=1, kd=1;
+
+double pidControl()
+{
+
+
+  unsigned long now = millis();
+  double timeChange = (double)(now - lastTime);
+  
+  /*Compute all the working error variables*/
+  double error = Setpoint - Input;
+  errSum += (error * timeChange);
+  double dErr = (error - lastErr) / timeChange;
+  
+  /*Compute PID Output*/
+  Output = kp * error + ki * errSum + kd * dErr;
+  
+  /*Remember some variables for next time*/
+  lastErr = error;
+  lastTime = now;
+
+  return Output;
+}
+
 void moveForward(){
   
-  double dTotalTicks = 0;
-  double output;
+  float dTotalTicks = 0;
+  float output;
   int count =0;
-  double avg, total=0;
-  int pwm1=400, pwm2=355; 
+  float avg, total=0;
+  int pwm1=250, pwm2=225; 
 
   
-  dTotalTicks = 275 / 10.0 * 10;  // *10 = 10cm
-
+//  dTotalTicks = 265 / 10.0 * 10;  // *10 = 10cm
+  dTotalTicks = 265;
   while(mLTicks < dTotalTicks)
   { 
-    if(mLTicks <=100){
-           pwm1 = 100;
-           pwm2 = 55;
-        }
-    else if(mLTicks <=300){
-           pwm1 = mLTicks;
-           pwm2 = mRTicks;
-        }
-    else {
-           pwm1 = 400;
-           pwm2 = 355;
-        }   
-    
+//    if(mLTicks <=100)
+//    {
+//       pwm1 = 150;
+//       pwm2 = 115;
+//    }
+//    else if(mLTicks <=200)
+//    {
+//       pwm1 = 250;
+//       pwm2 = 225;
+//    }
+//    else 
+//    {
+//       pwm1 = 250;
+//       pwm2 = 225;
+
+//    }   
+//    
     output = pidControlForward(mLTicks,mRTicks);
 
     md.setSpeeds(pwm1-output, pwm2+output);
         
-//    md.setSpeeds(400,365);
+//    md.setSpeeds(400,338);
+//    pwm1 = 400;
+//    pwm2 = 338;
 
     //For Debug
     Serial.print("OutPut:");
     Serial.println(output);
-    Serial.println(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
 
-    total += abs(mLTicks-mRTicks);
+//    total += abs(mLTicks-mRTicks);
     
-    Serial.print("Left ticks:");
-    Serial.print(mLTicks);
-    Serial.print("/");
-    Serial.print(dTotalTicks);
+//    Serial.print("Left ticks:");
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(dTotalTicks);
 
-    Serial.print(" Right ticks:");
-    Serial.print(mRTicks);
-    Serial.print("/");
-    Serial.println(dTotalTicks);
+//    Serial.print(" Right ticks:");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
 
-    count++;
-    
+//    count++;
+
+//Debug
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
+
   }
-  avg =total/count;
-  Serial.print("Avg:");
-  Serial.println(avg);
->>>>>>> origin/Arduino
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+
   forwardBrake();
 }
 
@@ -228,7 +209,7 @@ void forwardBrake(){
   
   for(int i = 0; i < 100; i++)
   {
-    md.setBrakes(350,400);
+    md.setBrakes(400,400);
   }
   
   delay(100);
@@ -273,7 +254,7 @@ void turnLeft(){
 
   while(mLTicks < dTotalTicks)
   {      
-     md.setSpeeds(-400,400);
+     md.setSpeeds(-400,380);
   }
 
   rightBrake();
@@ -283,7 +264,7 @@ void leftBrake(){
   
   for(int i = 0; i < 100; i++)
   {
-    md.setBrakes(370,-400);
+    md.setBrakes(370,350);
   }
   
   delay(100);
@@ -292,35 +273,40 @@ void leftBrake(){
   mRTicks = 0;
 }
 
-void getSensorsData(){
-  int disFL, disFR, disL, disR;
-  double avgFL = 0, avgFR = 0, avgL = 0, avgR = 0;
-  
+float readSensor(SharpIR sensor, float offset)
+{
+  float distance;
+  float avg = 0;
   for(int i =0; i<7; i++)
   {
-      disFL = sensorFL.getDistance(); //Calculate the distance in centimeters and store the value in a variable
-      disFR = sensorFR.getDistance();
-      disL = sensorL.getDistance();
-      disR = sensorR.getDistance();
-      
-      avgFL += disFL;
-      avgFR += disFR;
-      avgL += disL;
-      avgR += disR; 
+      distance = sensor.getDistance() - offset;
+      avg += distance;
   }
-  avgFL = avgFL / 7;
-  avgFR = avgFR / 7;
-  
-  avgL = avgL / 7;
-  avgR = avgR / 7;
+  avg = avg/7;
+  return avg;
+}
+
+
+void getSensorsData(){
+  float disFL, disFR, disL, disRF, disRB;
+
+  disFL = readSensor(sensorFL,2.0); //Calculate the distance in centimeters and store the value in a variable
+  disFR = readSensor(sensorFR,2.6);
+  disL = readSensor(sensorL,0);
+  disRF = readSensor(sensorRF,0);
+  disRB = readSensor(sensorRB,0);
   
   Serial.print("FL:"); //Print the value to the serial monitor
-  Serial.println(avgFL);
+  Serial.println(disFL);
   Serial.print("FR:");
-  Serial.println( avgFR);
+  Serial.println( disFR);
   Serial.print("L:");
-  Serial.println(avgL);
-  Serial.print("R:");
-  Serial.println(avgR);
+  Serial.println(disL);
+  Serial.print("RF:");
+  Serial.println(disRF);
+  Serial.print("RB:");
+  Serial.println(disRB);
+  Serial.println();
+  
 }
 
