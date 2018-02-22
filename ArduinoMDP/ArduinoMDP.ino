@@ -28,7 +28,7 @@ void setup() {
   PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 11
   PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 3
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Waiting for data: ");
 }
 
@@ -43,15 +43,12 @@ void loop() {
 //            Serial.println(inData);
 
 //            Debug
-//            if(flag == false)
-//            {
-//               flag =true;
-//               moveForward();
-//               delay(1000);
-//               turnRight();
-//               delay(1000);
-//               turnLeft();
-//            }
+            if(flag == false)
+            {
+               flag =true;
+               moveForward();
+
+            }
             switch(inData)
             {
               
@@ -96,8 +93,8 @@ int pidControlForward(int LeftPosition, int RightPosition){
     int prev_error;
     double integral,derivative,output;
     double Kp = 1;                  //prefix Kp Ki, Kd
-    double Kd = 1;
-    double Ki = 1;
+    double Kd = 0.4;
+    double Ki = 0.1;
 
     error = LeftPosition - RightPosition;
     integral += error;
@@ -108,63 +105,35 @@ int pidControlForward(int LeftPosition, int RightPosition){
     return output;
 }
 
-unsigned long lastTime;
-double Input, Output, Setpoint;
-double errSum, lastErr;
-double kp=1, ki=1, kd=1;
-
-double pidControl()
-{
-
-
-  unsigned long now = millis();
-  double timeChange = (double)(now - lastTime);
-  
-  /*Compute all the working error variables*/
-  double error = Setpoint - Input;
-  errSum += (error * timeChange);
-  double dErr = (error - lastErr) / timeChange;
-  
-  /*Compute PID Output*/
-  Output = kp * error + ki * errSum + kd * dErr;
-  
-  /*Remember some variables for next time*/
-  lastErr = error;
-  lastTime = now;
-
-  return Output;
-}
-
 void moveForward(){
   
   float dTotalTicks = 0;
   float output;
   int count =0;
   float avg, total=0;
-  int pwm1=250, pwm2=225; 
+  int pwm1=245, pwm2=225; 
 
   
-//  dTotalTicks = 265 / 10.0 * 10;  // *10 = 10cm
-  dTotalTicks = 265;
+  dTotalTicks = 285 / 10.0 * 10;  // *10 = 10cm
+//  dTotalTicks = 265;
   while(mLTicks < dTotalTicks)
   { 
-//    if(mLTicks <=100)
-//    {
-//       pwm1 = 150;
-//       pwm2 = 115;
-//    }
-//    else if(mLTicks <=200)
-//    {
-//       pwm1 = 250;
-//       pwm2 = 225;
-//    }
-//    else 
-//    {
-//       pwm1 = 250;
-//       pwm2 = 225;
-
-//    }   
-//    
+    if(mLTicks <=100)
+    {
+       pwm1 = 150;
+       pwm2 = 115;
+    }
+    else if(mLTicks <=200)
+    {
+       pwm1 = 250;
+       pwm2 = 225;
+    }
+    else 
+    {
+       pwm1 = 245;
+       pwm2 = 225;
+    }   
+    
     output = pidControlForward(mLTicks,mRTicks);
 
     md.setSpeeds(pwm1-output, pwm2+output);
@@ -174,10 +143,9 @@ void moveForward(){
 //    pwm2 = 338;
 
     //For Debug
-    Serial.print("OutPut:");
-    Serial.println(output);
-//    Serial.println(mLTicks-mRTicks);
-
+//    Serial.print("OutPut:");
+//    Serial.println(output);
+    Serial.println(mLTicks-mRTicks);
 //    total += abs(mLTicks-mRTicks);
     
 //    Serial.print("Left ticks:");
@@ -193,9 +161,9 @@ void moveForward(){
 //    count++;
 
 //Debug
-//    Serial.print(mLTicks);
-//    Serial.print("/");
-//    Serial.println(mRTicks);
+    Serial.print(mLTicks);
+    Serial.print("/");
+    Serial.println(mRTicks);
 
   }
 //  avg =total/count;
