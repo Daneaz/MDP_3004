@@ -43,12 +43,12 @@ void loop() {
 //            Serial.println(inData);
 
 //            Debug
-            if(flag == false)
-            {
-               flag =true;
-               moveForward();
-
-            }
+//            if(flag == false)
+//            {
+//               flag =true;
+//               moveForward();
+//                delay(1000);
+//            }
             switch(inData)
             {
               
@@ -92,7 +92,7 @@ int pidControlForward(int LeftPosition, int RightPosition){
     int error;
     int prev_error;
     double integral,derivative,output;
-    double Kp = 1;                  //prefix Kp Ki, Kd
+    double Kp = 1;                  //prefix Kp Ki, Kd dont changed if want to changed pls re declared
     double Kd = 0.4;
     double Ki = 0.1;
 
@@ -136,7 +136,7 @@ void moveForward(){
     
     output = pidControlForward(mLTicks,mRTicks);
 
-    md.setSpeeds(pwm1-output, pwm2+output);
+    md.setSpeeds(pwm1-output*3, pwm2+output*3);
         
 //    md.setSpeeds(400,338);
 //    pwm1 = 400;
@@ -145,7 +145,7 @@ void moveForward(){
     //For Debug
 //    Serial.print("OutPut:");
 //    Serial.println(output);
-    Serial.println(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
 //    total += abs(mLTicks-mRTicks);
     
 //    Serial.print("Left ticks:");
