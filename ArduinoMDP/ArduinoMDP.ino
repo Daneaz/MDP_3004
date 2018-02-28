@@ -10,13 +10,16 @@ DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 
 SharpIR sensorFR(GP2Y0A21YK0F, A0);
 SharpIR sensorFL(GP2Y0A21YK0F, A1);
-SharpIR sensorL(GP2Y0A21YK0F, A3);
-SharpIR sensorRF(GP2Y0A21YK0F, A2);
-SharpIR sensorRB(GP2Y0A21YK0F, A4);
+SharpIR sensorFC(GP2Y0A21YK0F, A3);
+SharpIR sensorR(GP2Y0A02YK0F, A2);    //Long range
+SharpIR sensorLF(GP2Y0A21YK0F, A5);
+SharpIR sensorLB(GP2Y0A21YK0F, A4);
+
+
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
 
-char inData;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -36,6 +39,7 @@ boolean flag =false;
 
 void loop() {
   // put your main code here, to run repeatedly:
+  char inData;
   while (Serial.available() > 0) {
                    inData += (char)Serial.read();
                    delay(2);
@@ -45,34 +49,57 @@ void loop() {
 //            Debug
 //            if(flag == false)
 //            {
-//               flag =true;
-//               moveForward();
-//                delay(1000);
+//              flag =true;
+//               moveSpeedup();
 //            }
             switch(inData)
             {
-              
-
               case 'F':
-                moveForward();
+                moveSpeedup();
+                getSensorsData();
+                break;
+              case 'G':
+                moveSpeedup100();
                 getSensorsData();
                 break;
               case 'R':
                 turnRight();
                 getSensorsData();
                 break;
+
               case 'L':
                 turnLeft();
                 getSensorsData();
                 break;
-              case 'S':
+              case 'B':
+                turnBack();
                 getSensorsData();
                 break;
+              case 'N':
+                turnRight360();
+                getSensorsData();
+                break;
+              case 'S':
+                moveBack();
+                getSensorsData();
+                break;
+              case '+':
+                moveAdjustF();
+                break;
+              case '-':
+                moveAdjustB();
+                break;
+              case 'D':
+                getSensorsData();
+                break;
+              case '0':
+                realignment();
+                break;
+                
               default:
-                break;        
-
+                break; 
             }
-            inData = '\0';
+//            inData = '\0';
 }
 
 void compute_mL_ticks() 
@@ -85,9 +112,7 @@ void compute_mR_ticks()
   mRTicks++;
 }
 
-
-
-int pidControlForward(int LeftPosition, int RightPosition){
+int pidControl(int LeftPosition, int RightPosition){
 
     int error;
     int prev_error;
@@ -105,6 +130,68 @@ int pidControlForward(int LeftPosition, int RightPosition){
     return output;
 }
 
+void moveSpeedup100()
+{
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=315; 
+//  int pwm1=355, pwm2=330; 
+  dTotalTicks = 285 / 10.0 * 100;  // *10 = 10cm
+  
+  while(mLTicks < dTotalTicks)
+  { 
+    
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*5, pwm2+output*5);
+    
+    count++;
+    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
+  }
+  avg =total/count;
+  Serial.print("Avg:");
+  Serial.println(avg);
+  
+  brake();
+  
+}
+
+void moveSpeedup()
+{
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=315; 
+//  int pwm1=355, pwm2=330; 
+  dTotalTicks = 285 / 10.0 * 10;  // *10 = 10cm
+  
+  while(mLTicks < dTotalTicks)
+  { 
+    
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*5, pwm2+output*5);
+    
+    count++;
+    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
+  }
+  avg =total/count;
+  Serial.print("Avg:");
+  Serial.println(avg);
+  
+  brake();
+  
+}
+
 void moveForward(){
   
   float dTotalTicks = 0;
@@ -114,7 +201,7 @@ void moveForward(){
   int pwm1=245, pwm2=225; 
 
   
-  dTotalTicks = 285 / 10.0 * 10;  // *10 = 10cm
+  dTotalTicks = 285 / 10.0 * 100;  // *10 = 10cm
 //  dTotalTicks = 265;
   while(mLTicks < dTotalTicks)
   { 
@@ -134,7 +221,7 @@ void moveForward(){
        pwm2 = 225;
     }   
     
-    output = pidControlForward(mLTicks,mRTicks);
+    output = pidControl(mLTicks,mRTicks);
 
     md.setSpeeds(pwm1-output*3, pwm2+output*3);
         
@@ -161,19 +248,19 @@ void moveForward(){
 //    count++;
 
 //Debug
-    Serial.print(mLTicks);
-    Serial.print("/");
-    Serial.println(mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
 
   }
 //  avg =total/count;
 //  Serial.print("Avg:");
 //  Serial.println(avg);
 
-  forwardBrake();
+  brake();
 }
 
-void forwardBrake(){
+void brake(){
   
   for(int i = 0; i < 100; i++)
   {
@@ -187,59 +274,288 @@ void forwardBrake(){
 }
 
 void turnRight(){
-  double dTotalTicks = 0;
   
-  dTotalTicks = 383/ 10.0 * 10;
-
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=-326; 
+  
+  dTotalTicks = 383/ 90.0 * 90;  // 90 degree
 
   while(mLTicks < dTotalTicks)
-  {      
-     md.setSpeeds(400,-400);
+  {   
+        
+    output = pidControl(mLTicks,mRTicks);
+
+    md.setSpeeds(pwm1+output*3, pwm2-output*3);
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
   }
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
  
-  leftBrake();
+  brake();
 }
 
-void rightBrake(){
+void turnRight45(){
   
-  for(int i = 0; i < 100; i++)
-  {
-    md.setBrakes(325,310);
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=-326; 
+  
+  dTotalTicks = 191;  // 45 degree
+
+  while(mLTicks < dTotalTicks)
+  {   
+        
+    output = pidControl(mLTicks,mRTicks);
+
+    md.setSpeeds(pwm1+output*3, pwm2-output*3);
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
   }
-  
-  delay(100);
-  mLTicks = 0;
-  mRTicks = 0;
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+ 
+    brake();
 }
-
 
 
 void turnLeft(){
-  double dTotalTicks = 0;
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=-355, pwm2=326; 
   
-  dTotalTicks = 360 / 10.0 * 10;
-
+  dTotalTicks = 383/ 90.0 * 90;  // 90 degree
 
   while(mLTicks < dTotalTicks)
-  {      
-     md.setSpeeds(-400,380);
+  {   
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*3, pwm2+output*3);
+    
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
   }
-
-  rightBrake();
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+ 
+  brake();
 }
 
-void leftBrake(){
+void turnLeft45(){
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=-355, pwm2=326; 
   
-  for(int i = 0; i < 100; i++)
-  {
-    md.setBrakes(370,350);
+  dTotalTicks = 191;  // 90 degree
+
+  while(mLTicks < dTotalTicks)
+  {   
+        
+    output = pidControl(mLTicks,mRTicks);
+
+    md.setSpeeds(pwm1-output*3, pwm2+output*3);
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
   }
-  
-  delay(100);
-  
-  mLTicks = 0;
-  mRTicks = 0;
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+ 
+  brake();
 }
+
+void turnBack(){
+  
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=-326; 
+  
+  dTotalTicks = 816/ 180.0 * 180;  // 90 degree
+
+  while(mLTicks < dTotalTicks)
+  {   
+        
+    output = pidControl(mLTicks,mRTicks);
+
+    md.setSpeeds(pwm1+output*3, pwm2-output*3);
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
+  }
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+ 
+  brake();
+}
+
+void turnRight360(){
+  
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=-326; 
+  
+  dTotalTicks = 1662/ 180.0 * 180;  // 90 degree
+
+  while(mLTicks < dTotalTicks)
+  {   
+        
+    output = pidControl(mLTicks,mRTicks);
+
+    md.setSpeeds(pwm1+output*3, pwm2-output*3);
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.print(mRTicks);
+//    Serial.print("/");
+//    Serial.println(dTotalTicks);
+  }
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+ 
+  brake();
+}
+
+void moveBack()
+{
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=-355, pwm2=-315; 
+
+  dTotalTicks = 285 / 10.0 * 10;  // *10 = 10cm
+  
+  while(mLTicks < dTotalTicks)
+  { 
+    
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*5, pwm2-output*5);
+    
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
+  }
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+  
+  brake();
+  
+}
+
+void moveAdjustF()
+{
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=355, pwm2=315; 
+
+  dTotalTicks = 28;  // *10 = 10cm
+  
+  while(mLTicks < dTotalTicks)
+  { 
+    
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*5, pwm2+output*5);
+    
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
+  }
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+  
+  brake();
+  
+}
+
+void moveAdjustB()
+{
+  float dTotalTicks = 0;
+  float output;
+  int count =0;
+  float avg, total=0;
+  int pwm1=-355, pwm2=-315; 
+
+  dTotalTicks = 28;  
+  
+  while(mLTicks < dTotalTicks)
+  { 
+    
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*5, pwm2+output*5);
+    
+//    count++;
+//    total += abs(mLTicks-mRTicks);
+//    Serial.println(mLTicks-mRTicks);
+//    Serial.print(mLTicks);
+//    Serial.print("/");
+//    Serial.println(mRTicks);
+  }
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+  
+  brake();
+  
+}
+
 
 float readSensor(SharpIR sensor, float offset)
 {
@@ -255,26 +571,119 @@ float readSensor(SharpIR sensor, float offset)
 }
 
 
+
 void getSensorsData(){
-  float disFL, disFR, disL, disRF, disRB;
+  float disFL,disFC,disFR, disLF,disLB, disR;
 
   disFL = readSensor(sensorFL,2.0); //Calculate the distance in centimeters and store the value in a variable
   disFR = readSensor(sensorFR,2.6);
-  disL = readSensor(sensorL,0);
-  disRF = readSensor(sensorRF,0);
-  disRB = readSensor(sensorRB,0);
+  disFC = readSensor(sensorFC,0);
+  disR = readSensor(sensorR,0);
+  disLF = readSensor(sensorLF,0);
+  disLB = readSensor(sensorLB,0);
   
   Serial.print("FL:"); //Print the value to the serial monitor
   Serial.println(disFL);
+  Serial.print("FC:");
+  Serial.println( disFC);
   Serial.print("FR:");
   Serial.println( disFR);
-  Serial.print("L:");
-  Serial.println(disL);
-  Serial.print("RF:");
-  Serial.println(disRF);
-  Serial.print("RB:");
-  Serial.println(disRB);
+  Serial.print("R:");
+  Serial.println(disR);
+  Serial.print("LF:");
+  Serial.println(disLF);
+  Serial.print("LB:");
+  Serial.println(disLB);
   Serial.println();
+
+  if(disFC <15 || disFL<15 || disFR <15)
+  {
+    
+    if(disLF <15 || disLB <15)
+    {
+      //call realliment here
+      realignment();
+      digonalRight();
+    }
+    else 
+    {
+      realignment();
+      digonalLeft();
+    }
+  }
   
+}
+
+void realignment()
+{
+  float disFL,disFC,disFR, disLF,disLB, disR;
+  while(1)
+  {
+    disFL = readSensor(sensorFL,2.0); //Calculate the distance in centimeters and store the value in a variable
+    disFR = readSensor(sensorFR,2.6);
+    disFC = readSensor(sensorFC,0);
+    disR = readSensor(sensorR,0);
+    disLF = readSensor(sensorLF,0);
+    disLB = readSensor(sensorLB,0);
+
+    Serial.print("FL:"); //Print the value to the serial monitor
+    Serial.println(disFL);
+    Serial.print("FC:");
+    Serial.println( disFC);
+    Serial.print("FR:");
+    Serial.println( disFR);
+    Serial.print("R:");
+    Serial.println(disR);
+    Serial.print("LF:");
+    Serial.println(disLF);
+    Serial.print("LB:");
+    Serial.println(disLB);
+    Serial.println();
+  
+    if(disFL <13 || disFC <13 || disFR <13)
+    {
+      moveAdjustB();
+      Serial.println("back");
+    }
+    else
+    break;
+  }
+  
+}
+  
+
+
+void digonalRight()
+{
+    turnRight45();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    turnLeft45();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    moveSpeedup();
+}
+
+void digonalLeft()
+{
+    turnLeft45();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    turnRight45();
+    delay(250);
+    moveSpeedup();
+    delay(250);
+    moveSpeedup();
 }
 
