@@ -70,7 +70,7 @@ void loop() {
                 getSensorsData();
                 break;
               case 'R':
-                turnRight();
+                turnRight(90);
                 getSensorsData();
                 break;
 
@@ -108,7 +108,12 @@ void loop() {
               case ']':
                 turnRight45();
                 break;
-                
+              case 'Z':
+                moveDigonal();
+                break;
+              case 'X':
+                realignment();
+                break;
               default:
                 break; 
             }
@@ -151,15 +156,11 @@ void moveSpeedup100()
   float avg, total=0;
   int pwm1=355, pwm2=317; 
 //  int pwm1=355, pwm2=330; 
-  dTotalTicks = 285 / 10.0 * 150;  // *10 = 10cm
-  md.setSpeeds(0,317);
-  md.setSpeeds(355,0);
-  
-  
+  dTotalTicks = 285 / 10.0 * 100;  // *10 = 10cm
+
   while(mLTicks < dTotalTicks)
   { 
-    
-    
+
     output = pidControl(mLTicks,mRTicks);
     md.setSpeeds(pwm1-output*15, pwm2+output*15);
     
@@ -187,7 +188,7 @@ void moveSpeedup()
   int pwm1=355, pwm2=317; 
 //  int pwm1=355, pwm2=330; 
   dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
-  
+
   while(mLTicks < dTotalTicks)
   { 
     
@@ -274,32 +275,57 @@ void moveForward(){
 //  Serial.print("Avg:");
 //  Serial.println(avg);
 
-  brake();
+  forwardBrake();
 }
 
-void brake(){
+void forwardBrake(){
   
-  for(int i = 0; i < 100; i++)
+  for(int i = 0; i < 3; i++)
   {
-    md.setBrakes(400,400);
+    md.setBrakes(370,400);
   }
   
-  delay(100);
+  delay(10);
   
   mLTicks = 0;
   mRTicks = 0;
 }
 
-void turnRight(){
-  
-  float dTotalTicks = 0;
-  float output;
-  int count =0;
-  float avg, total=0;
-  int pwm1=345, pwm2=-335; 
-  
-  dTotalTicks = 382/ 90.0 * 90;  // 90 degree
 
+void brake(){
+  
+  for(int i = 0; i < 3; i++)
+  {
+    md.setBrakes(400,400);
+  }
+  
+  delay(10);
+  
+  mLTicks = 0;
+  mRTicks = 0;
+}
+
+void turnRight(int degree){
+  
+  double dTotalTicks = 0;
+  double output;
+  int count =0;
+  double avg, total=0;
+  int pwm1=345, pwm2=-335; 
+
+  if(degree <= 45)
+  {
+      dTotalTicks = 4.2 * degree;  // 45 degree
+  }
+  else if (degree == 90)
+  {
+      dTotalTicks = 382/ 90.0 * 90;  // 90 degree
+  }
+  else if (degree == 180)
+  {
+      dTotalTicks = 800/ 180.0 * 180;  // 180 degree
+  }
+  md.init();
   while(mLTicks < dTotalTicks)
   {   
         
@@ -549,6 +575,7 @@ void moveAdjustB()
   int count =0;
   float avg, total=0;
   int pwm1=-355, pwm2=-315; 
+//    int pwm1 = -150, pwm2 = -150;
 
   dTotalTicks = 28;  
   
@@ -612,7 +639,7 @@ void getSensorsData(){
   Serial.print("LB:");
   Serial.println(disLB);
   Serial.println();
-
+//
 //  if(disFC <15 || disFL<15 || disFR <15)
 //  {
 //    
@@ -634,6 +661,75 @@ void getSensorsData(){
 void realignment()
 {
   float disFL,disFC,disFR, disLF,disLB, disR;
+  
+  turnLeft();
+  delay(200);
+  disFL = readSensor(sensorFL,0); //Calculate the distance in centimeters and store the value in a variable
+  disFR = readSensor(sensorFR,0);
+  disFC = readSensor(sensorFC,0);
+  disR = readSensor(sensorR,0);
+  disLF = readSensor(sensorLF,0);
+  disLB = readSensor(sensorLB,0);
+    
+  if(disFL <10 || disFC <10 || disFR <10)
+  {
+    while(1)
+    {
+      disFL = readSensor(sensorFL,0); //Calculate the distance in centimeters and store the value in a variable
+      disFR = readSensor(sensorFR,0);
+      disFC = readSensor(sensorFC,0);
+      disR = readSensor(sensorR,0);
+      disLF = readSensor(sensorLF,0);
+      disLB = readSensor(sensorLB,0);
+      
+      if(disFL <10 || disFC <10 || disFR <10)
+      {
+        moveAdjustB();
+        delay(10);
+      }
+      else
+      {
+        brake();
+        break;
+      }
+      
+    }
+  }
+  delay(200);
+  turnRight(90);
+}
+
+void moveDigonal()
+{
+  double dTotalTicks = 0;
+  double output;
+  float disFL,disFC,disFR, disLF,disLB, disR;
+
+  int pwm1=355, pwm2=317; 
+
+  dTotalTicks = 285 / 10.0 * 100;  // *10 = 10cm
+
+  while(mLTicks < dTotalTicks)
+  { 
+    disFL = readSensor(sensorFL,0); //Calculate the distance in centimeters and store the value in a variable
+    disFR = readSensor(sensorFR,0);
+    disFC = readSensor(sensorFC,0);
+    disR = readSensor(sensorR,0);
+    disLF = readSensor(sensorLF,0);
+    disLB = readSensor(sensorLB,0);
+
+    
+    if(disFC <15 || disFL<15 || disFR <15)
+    {
+      break;
+    }
+    
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*15, pwm2+output*15);
+  }
+  
+  brake();
+  delay(200);
   while(1)
   {
     disFL = readSensor(sensorFL,0); //Calculate the distance in centimeters and store the value in a variable
@@ -646,6 +742,7 @@ void realignment()
     if(disFL <13 || disFC <13 || disFR <13)
     {
       moveAdjustB();
+      delay(10);
     }
     else
     {
@@ -654,7 +751,17 @@ void realignment()
     }
     
   }
-  
+  delay(200);
+  if(disLF <15 || disLB <15)
+  {
+      
+    digonalRight();
+  }
+  else 
+  {
+    digonalLeft();
+  }  
+
 }
   
 
