@@ -36,21 +36,24 @@ void setup() {
 }
 
 boolean flag =false;
-
+char inData;
 void loop() {
   // put your main code here, to run repeatedly:
-  char inData;
+
   while (Serial.available() > 0) {
                    inData += (char)Serial.read();
                    delay(2);
             }
 //            Serial.println(inData);
-
+//              getSensorsData();
+//              delay(500);
 //            Debug
 //            if(flag == false)
 //            {
 //              flag =true;
-//               moveSpeedup();
+//               moveSpeedup100();
+//              turnRight();
+//              delay(2000);
 //            }
             switch(inData)
             {
@@ -60,6 +63,10 @@ void loop() {
                 break;
               case 'G':
                 moveSpeedup100();
+                getSensorsData();
+                break;
+              case 'H':
+                moveForward();
                 getSensorsData();
                 break;
               case 'R':
@@ -95,11 +102,17 @@ void loop() {
               case '0':
                 realignment();
                 break;
+              case '[':
+                turnLeft45();
+                break;
+              case ']':
+                turnRight45();
+                break;
                 
               default:
                 break; 
             }
-//            inData = '\0';
+            inData = '\0';
 }
 
 void compute_mL_ticks() 
@@ -136,27 +149,31 @@ void moveSpeedup100()
   float output;
   int count =0;
   float avg, total=0;
-  int pwm1=355, pwm2=315; 
+  int pwm1=355, pwm2=317; 
 //  int pwm1=355, pwm2=330; 
-  dTotalTicks = 285 / 10.0 * 100;  // *10 = 10cm
+  dTotalTicks = 285 / 10.0 * 150;  // *10 = 10cm
+  md.setSpeeds(0,317);
+  md.setSpeeds(355,0);
+  
   
   while(mLTicks < dTotalTicks)
   { 
     
-    output = pidControl(mLTicks,mRTicks);
-    md.setSpeeds(pwm1-output*5, pwm2+output*5);
     
-    count++;
-    total += abs(mLTicks-mRTicks);
+    output = pidControl(mLTicks,mRTicks);
+    md.setSpeeds(pwm1-output*15, pwm2+output*15);
+    
+//    count++;
+//    total += abs(mLTicks-mRTicks);
 //    Serial.println(mLTicks-mRTicks);
 //    Serial.print(mLTicks);
 //    Serial.print("/");
 //    Serial.println(mRTicks);
   }
-  avg =total/count;
-  Serial.print("Avg:");
-  Serial.println(avg);
-  
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
+//  
   brake();
   
 }
@@ -167,26 +184,26 @@ void moveSpeedup()
   float output;
   int count =0;
   float avg, total=0;
-  int pwm1=355, pwm2=315; 
+  int pwm1=355, pwm2=317; 
 //  int pwm1=355, pwm2=330; 
-  dTotalTicks = 285 / 10.0 * 10;  // *10 = 10cm
+  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   
   while(mLTicks < dTotalTicks)
   { 
     
     output = pidControl(mLTicks,mRTicks);
-    md.setSpeeds(pwm1-output*5, pwm2+output*5);
+    md.setSpeeds(pwm1-output*15, pwm2+output*15);
     
-    count++;
-    total += abs(mLTicks-mRTicks);
+//    count++;
+//    total += abs(mLTicks-mRTicks);
 //    Serial.println(mLTicks-mRTicks);
 //    Serial.print(mLTicks);
 //    Serial.print("/");
 //    Serial.println(mRTicks);
   }
-  avg =total/count;
-  Serial.print("Avg:");
-  Serial.println(avg);
+//  avg =total/count;
+//  Serial.print("Avg:");
+//  Serial.println(avg);
   
   brake();
   
@@ -279,9 +296,9 @@ void turnRight(){
   float output;
   int count =0;
   float avg, total=0;
-  int pwm1=355, pwm2=-326; 
+  int pwm1=345, pwm2=-335; 
   
-  dTotalTicks = 383/ 90.0 * 90;  // 90 degree
+  dTotalTicks = 382/ 90.0 * 90;  // 90 degree
 
   while(mLTicks < dTotalTicks)
   {   
@@ -345,7 +362,7 @@ void turnLeft(){
   float avg, total=0;
   int pwm1=-355, pwm2=326; 
   
-  dTotalTicks = 383/ 90.0 * 90;  // 90 degree
+  dTotalTicks = 370/ 90.0 * 90;  // 90 degree
 
   while(mLTicks < dTotalTicks)
   {   
@@ -407,7 +424,7 @@ void turnBack(){
   float avg, total=0;
   int pwm1=355, pwm2=-326; 
   
-  dTotalTicks = 816/ 180.0 * 180;  // 90 degree
+  dTotalTicks = 800/ 180.0 * 180;  // 90 degree
 
   while(mLTicks < dTotalTicks)
   {   
@@ -439,7 +456,7 @@ void turnRight360(){
   float avg, total=0;
   int pwm1=355, pwm2=-326; 
   
-  dTotalTicks = 1662/ 180.0 * 180;  // 90 degree
+  dTotalTicks = 1650/ 180.0 * 180;  // 90 degree
 
   while(mLTicks < dTotalTicks)
   {   
@@ -563,7 +580,7 @@ float readSensor(SharpIR sensor, float offset)
   float avg = 0;
   for(int i =0; i<7; i++)
   {
-      distance = sensor.getDistance() - offset;
+      distance = sensor.getDistance() + offset;
       avg += distance;
   }
   avg = avg/7;
@@ -575,8 +592,8 @@ float readSensor(SharpIR sensor, float offset)
 void getSensorsData(){
   float disFL,disFC,disFR, disLF,disLB, disR;
 
-  disFL = readSensor(sensorFL,2.0); //Calculate the distance in centimeters and store the value in a variable
-  disFR = readSensor(sensorFR,2.6);
+  disFL = readSensor(sensorFL,0); //Calculate the distance in centimeters and store the value in a variable
+  disFR = readSensor(sensorFR,0);
   disFC = readSensor(sensorFC,0);
   disR = readSensor(sensorR,0);
   disLF = readSensor(sensorLF,0);
@@ -596,21 +613,21 @@ void getSensorsData(){
   Serial.println(disLB);
   Serial.println();
 
-  if(disFC <15 || disFL<15 || disFR <15)
-  {
-    
-    if(disLF <15 || disLB <15)
-    {
-      //call realliment here
-      realignment();
-      digonalRight();
-    }
-    else 
-    {
-      realignment();
-      digonalLeft();
-    }
-  }
+//  if(disFC <15 || disFL<15 || disFR <15)
+//  {
+//    
+//    if(disLF <15 || disLB <15)
+//    {
+//      //call realliment here
+//      realignment();
+//      digonalRight();
+//    }
+//    else 
+//    {
+//      realignment();
+//      digonalLeft();
+//    }
+//  }
   
 }
 
@@ -619,34 +636,23 @@ void realignment()
   float disFL,disFC,disFR, disLF,disLB, disR;
   while(1)
   {
-    disFL = readSensor(sensorFL,2.0); //Calculate the distance in centimeters and store the value in a variable
-    disFR = readSensor(sensorFR,2.6);
+    disFL = readSensor(sensorFL,0); //Calculate the distance in centimeters and store the value in a variable
+    disFR = readSensor(sensorFR,0);
     disFC = readSensor(sensorFC,0);
     disR = readSensor(sensorR,0);
     disLF = readSensor(sensorLF,0);
     disLB = readSensor(sensorLB,0);
-
-    Serial.print("FL:"); //Print the value to the serial monitor
-    Serial.println(disFL);
-    Serial.print("FC:");
-    Serial.println( disFC);
-    Serial.print("FR:");
-    Serial.println( disFR);
-    Serial.print("R:");
-    Serial.println(disR);
-    Serial.print("LF:");
-    Serial.println(disLF);
-    Serial.print("LB:");
-    Serial.println(disLB);
-    Serial.println();
   
     if(disFL <13 || disFC <13 || disFR <13)
     {
       moveAdjustB();
-      Serial.println("back");
     }
     else
-    break;
+    {
+      brake();
+      break;
+    }
+    
   }
   
 }
@@ -656,6 +662,8 @@ void realignment()
 void digonalRight()
 {
     turnRight45();
+    delay(250);
+    moveSpeedup();
     delay(250);
     moveSpeedup();
     delay(250);
@@ -673,6 +681,8 @@ void digonalRight()
 void digonalLeft()
 {
     turnLeft45();
+    delay(250);
+    moveSpeedup();
     delay(250);
     moveSpeedup();
     delay(250);
