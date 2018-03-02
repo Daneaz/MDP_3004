@@ -4,12 +4,6 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-/**
- * Communication manager to communicate with the different parts of the system via the RasPi.
- *
- * @author Vidur Sharma
- */
-
 public class CommMgr {
 
     public static final String EX_START = "EX_START";       // Android --> PC
