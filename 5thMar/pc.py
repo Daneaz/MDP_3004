@@ -45,6 +45,23 @@ class PCObj(object):
                         print "Error: %s " % str(e)
                         print "Value not read from PC"
 
+        def write_to_pc2(self):
+                # Write to PC
+                try:
+
+                        self.client.sendto(message, self.addr)
+                except TypeError:
+                        print "Error: Null value cannot be sent"
+
+        def read_from_pc2(self):
+                # Read from PC
+                try:
+                        pc_data = self.client.recv(2048)
+                        return pc_data
+                except Exception as e:
+                        print "Error: %s " % str(e)
+                        print "Value not read from PC"
+
         def close_pc(self):
                 # Closing socket
                 self.conn.close()
@@ -58,13 +75,19 @@ if __name__ == "__main__":
         # Test PC connection
         pc = PCObj()
         pc.init_pc()
-        send_msg = input()
-        print  "Writing to PC: %s " % send_msg
-        pc.write_to_pc(send_msg)
+        try:
+                # Create read and write threads for BT
+                read_pc = threading.Thread(target = pc.read_from_pc2, args = (), name = "pc_read_thread")
+                write_pc = threading.Thread(target = pc.write_to_pc2, args = (), name = "pc_write_thread")
 
-        print "read"
-        read_msg = pc.read_from_pc()
-        print "Received from PC: %s " % read_msg
+                # Set threads as Daemons
+                read_pc.daemon = True
+                write_pc.daemon = True
 
-        print "closing sockets"
-        pc.close_pc()
+                # Start Threads
+                read_pc.start()
+                write_pc.start()
+
+        except KeyboardInterrupt:
+                print "closing sockets"
+                pc.close_pc()

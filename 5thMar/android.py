@@ -8,7 +8,7 @@ class AndroidObj(object):
 
         def __init__(self):
                 # Initialize AndroidObj
-                os.system("sudo hcitool scan")
+                os.system("sudo hciconfig hci0 piscan")
                 self.server_soc = None
                 self.client_soc = None
                 self.bt_is_connected = False
@@ -67,6 +67,27 @@ class AndroidObj(object):
                 print "Closing server socket"
                 self.bt_is_connected = False
 
+        def read_from_bt2(self):
+                # Read from Android
+                while True:
+                        msg = self.client_soc.recv(2048)
+                        print "Received [%s] " % msg
+                        
+
+
+        def write_to_bt2(self):
+                # Write to Android
+                while True:
+                        send_msg = raw_input()
+                        print "Write(): %s " % send_msg
+                        self.client_soc.send(send_msg)
+
+        def keep_main_alive(self):
+                """
+                Allows for a Ctrl+C kill while keeping the main() alive
+                """
+                while True:
+                        time.sleep(1)
 
 if __name__ == "__main__":
         # Test Android connection
@@ -74,21 +95,20 @@ if __name__ == "__main__":
         bt.init_bt()
         print "bluetooth connection successful"
         try:
-                while True:
-                        send_msg = raw_input()
-                        print "Write(): %s " % send_msg
-                        
-                        # Create read and write threads for BT
-                        read_bt = threading.Thread(target = bt.read_from_bt, args = (,), name = "bt_read_thread")
-                        write_bt = threading.Thread(target = bt.write_to_bt, args = (send_msg,), name = "bt_write_thread")
 
-                        # Set threads as Daemons
-                        read_bt.daemon = True
-                        write_bt.daemon = True
+                # Create read and write threads for BT
+                read_bt = threading.Thread(target = bt.read_from_bt2, args = (), name = "bt_read_thread")
+                write_bt = threading.Thread(target = bt.write_to_bt2, args = (), name = "bt_write_thread")
 
-                        # Start Threads
-                        read_bt.start()
-                        write_bt.start()
+                # Set threads as Daemons
+                read_bt.daemon = True
+                write_bt.daemon = True
+
+                # Start Threads
+                read_bt.start()
+                write_bt.start()
+
+                bt.keep_main_alive()
 
         except KeyboardInterrupt:
                 print "closing sockets"
@@ -101,5 +121,3 @@ if __name__ == "__main__":
         print "read"
         read_msg = bt.read_from_bt()
         print "data received: %s " % read_msg'''
-
-        
