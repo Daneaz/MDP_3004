@@ -1,9 +1,14 @@
 from bluetooth import *
+import threading
+import time
+import sys
+import os
 
 class AndroidObj(object):
 
         def __init__(self):
                 # Initialize AndroidObj
+                os.system("sudo hcitool scan")
                 self.server_soc = None
                 self.client_soc = None
                 self.bt_is_connected = False
@@ -26,13 +31,14 @@ class AndroidObj(object):
                                            service_id = uuid,
                                            service_classes = [ uuid, SERIAL_PORT_CLASS ],
                                            profiles = [ SERIAL_PORT_PROFILE ],)
-                        print "Waiting for BT connection on RFCOMM channel " + self.port
-                        self.client_soc, client_add = self.server_socket.accept()
+                        print "Waiting for BT connection on RFCOMM channel " , self.port
+                        self.client_soc, client_add = self.server_soc.accept()
                         print "Accepted connection from ", client_add
                         self.bt_is_connected = True
 
                 except Exception as e:
                         print"Error: %s" %str(e)
+                        self.close_bt()
                         #self.init_bt()
 
         def write_to_bt(self, message):
@@ -61,19 +67,39 @@ class AndroidObj(object):
                 print "Closing server socket"
                 self.bt_is_connected = False
 
+
 if __name__ == "__main__":
         # Test Android connection
         bt = AndroidObj()
         bt.init_bt()
         print "bluetooth connection successful"
+        try:
+                while True:
+                        send_msg = raw_input()
+                        print "Write(): %s " % send_msg
+                        
+                        # Create read and write threads for BT
+                        read_bt = threading.Thread(target = bt.read_from_bt, args = (), name = "bt_read_thread")
+                        write_bt = threading.Thread(target = bt.write_to_bt, args = (send_msg), name = "bt_write_thread")
 
-        send_msg = raw_input()
+                        # Set threads as Daemons
+                        read_bt.daemon = True
+                        write_bt.daemon = True
+
+                        # Start Threads
+                        read_bt.start()
+                        write_bt.start()
+
+        except KeyboardInterrupt:
+                print "closing sockets"
+                bt.close_bt()
+
+        '''send_msg = raw_input()
         print "Write(): %s " % send_msg
         bt.write_to_bt(send_msg)
 
         print "read"
         read_msg = bt.read_from_bt()
-        print "data received: %s " % read_msg
+        print "data received: %s " % read_msg'''
 
-        print "closing sockets"
-        bt.close_bt()
+        
