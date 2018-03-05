@@ -8,7 +8,7 @@ class AndroidObj(object):
 
         def __init__(self):
                 # Initialize AndroidObj
-                os.system("sudo hcitool scan")
+                os.system("sudo hciconfig hci0 piscan")
                 self.server_soc = None
                 self.client_soc = None
                 self.bt_is_connected = False
