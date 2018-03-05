@@ -52,8 +52,8 @@ if __name__ == "__main__":
                         print "Write(): %s " % send_msg
                         
                         # Create read and write threads for SR
-                        read_sr = threading.Thread(target = bt.read_from_sr, args = (), name = "sr_read_thread")
-                        write_sr = threading.Thread(target = bt.write_to_sr, args = (send_msg), name = "sr_write_thread")
+                        read_sr = threading.Thread(target = sr.read_from_sr, args = (), name = "sr_read_thread")
+                        write_sr = threading.Thread(target = sr.write_to_sr, args = (send_msg), name = "sr_write_thread")
 
                         # Set threads as Daemons
                         read_sr.daemon = True
