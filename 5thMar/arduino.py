@@ -1,8 +1,8 @@
 import serial
 import time
-import system
 import sys
 import os
+import threading
 
 class ArduinoObj(object):
         def __init__(self):
@@ -40,6 +40,16 @@ class ArduinoObj(object):
                 # Closing socket
                 self.ser.close()
                 print"Closing serial socket"
+        
+        def read_from_sr2(self):
+                # Read from Arduino
+                try:
+                  while True:                
+                    received_data = self.ser.readline()
+                    print "Received from arduino: %s " % received_data
+                  
+                except AttributeError:
+                        print"Error in serial comm. No value received. Check connection!"
 
 if __name__ == "__main__":
         # Test Arduino connection
@@ -48,12 +58,12 @@ if __name__ == "__main__":
         print "serial connection successful"
         try:
                 while True:
-                        send_msg = raw_input()
+                        send_msg = raw_input  ()
                         print "Write(): %s " % send_msg
                         
                         # Create read and write threads for SR
-                        read_sr = threading.Thread(target = sr.read_from_sr, args = (), name = "sr_read_thread")
-                        write_sr = threading.Thread(target = sr.write_to_sr, args = (send_msg), name = "sr_write_thread")
+                        read_sr = threading.Thread(target = sr.read_from_sr2, args = (,), name = "sr_read_thread")
+                        write_sr = threading.Thread(target = sr.write_to_sr, args = (send_msg,), name = "sr_write_thread")
 
                         # Set threads as Daemons
                         read_sr.daemon = True

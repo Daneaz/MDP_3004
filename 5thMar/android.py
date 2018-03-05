@@ -8,7 +8,7 @@ class AndroidObj(object):
 
         def __init__(self):
                 # Initialize AndroidObj
-                os.system("sudo hciconfig hci0 piscan")
+                os.system("sudo hcitool scan")
                 self.server_soc = None
                 self.client_soc = None
                 self.bt_is_connected = False
@@ -79,8 +79,8 @@ if __name__ == "__main__":
                         print "Write(): %s " % send_msg
                         
                         # Create read and write threads for BT
-                        read_bt = threading.Thread(target = bt.read_from_bt, args = (), name = "bt_read_thread")
-                        write_bt = threading.Thread(target = bt.write_to_bt, args = (send_msg), name = "bt_write_thread")
+                        read_bt = threading.Thread(target = bt.read_from_bt, args = (,), name = "bt_read_thread")
+                        write_bt = threading.Thread(target = bt.write_to_bt, args = (send_msg,), name = "bt_write_thread")
 
                         # Set threads as Daemons
                         read_bt.daemon = True
