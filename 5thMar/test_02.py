@@ -47,9 +47,6 @@ class Test(threading.Thread):
     		self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     		self.client_socket.connect((self.ip, self.port))
 
-            # Initialize the queues
-            self.readQueue = queue.Queue(maxsize=0)
-            self.writeQueue = queue.Queue(maxsize=0)
 
         def write(self):
 
@@ -57,7 +54,6 @@ class Test(threading.Thread):
                         while True:
                             if not writeQueue.empty():
                                 msg = raw_input("Enter your message:")
-
                                 self.client_sock.sendto(msg, self.address)
                                 print "Message sent to PC: " + msg
                 except socket.error,e:
@@ -80,7 +76,6 @@ class Test(threading.Thread):
                 try:
                         while True:
                             msg = self.client_sock.recv(1024)
-                            readQueue.put_nowait(msg)
                             print "Message received: %s" %(msg)
                 except socket.error,e:
                         if isinstance(e.args, tuple):
@@ -100,46 +95,21 @@ class Test(threading.Thread):
         def create_threads(self):
 
                 # Create read and write threads for PC
-                read_pc = threading.Thread(target = self.readFromPC, args = (self.btQueue, self.srQueue), name = "pc_read_thread")
-                write_pc = threading.Thread(target = self.writeToPC, args = (self.pcQueue), name = "pc_write_thread")
+                read_tr = threading.Thread(target = self.read, args = (), name = "read_tr")
+                write_tr = threading.Thread(target = self.write, args = (), name = "write_tr")
 
-                # Create read and write threads for Android
-                read_bt = threading.Thread(target = self.readFromBT, args = (self.pcQueue, self.srQueue), name = "bt_read_thread")
-                write_bt = threading.Thread(target = self.writeToBT, args = (self.btQueue), name = "bt_write_thread")
-
-                # Create read and write threads for Arduino
-                read_sr = threading.Thread(target = self.readFromSR, args = (self.pcQueue, self.btQueue), name = "sr_read_thread")
-                write_sr = threading.Thread(target = self.writeToSR, args = (self.srQueue), name = "sr_write_thread")
 
                 # Set threads as Daemons
-                read_pc.daemon = True
-                write_pc.daemon = True
-
-                read_bt.daemon = True
-                write_bt.daemon = True
-
-                read_sr.daemon = True
-                write_sr.daemon = True
+                read_tr.daemon = True
+                write_tr.daemon = True
 
                 # Start Threads
-                read_pc.start()
-                write_pc.start()
-
-                read_bt.start()
-                write_bt.start()
-
-                read_sr.start()
-                write_sr.start()
-
-        def close_all(self):
-                pc_thread.close_pc()
-                bt_thread.close_bt()
-                sr_thread.close_sr()
-
+                read_tr.start()
+                write_tr.start()
 try:
         while True:
                 test = Test()
-                test.multithread()
+                test.create_threads()
 
 except KeyboardInterrupt:
         print "Terminating the program now..."
