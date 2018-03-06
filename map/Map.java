@@ -27,8 +27,10 @@ public class Map extends JPanel implements Observer {
 	}
 	
 	@Override
-	public void paintComponent (Graphics g) {
-				
+	public void paintComponent (Graphics graphics) {
+		super.paintComponent(graphics);
+		Graphics2D g = (Graphics2D) graphics;
+		
 		Cell[][] cells = mapGrid.getCell();
         for (int x = 0; x < MAP_COLUMNS; x++) {
             for (int y = 0; y < MAP_ROWS; y++) {
@@ -46,7 +48,7 @@ public class Map extends JPanel implements Observer {
                 }
                 g.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                 
-                g.setColor(Color.BLACK);
+                g.setColor(Color.WHITE);
                 g.drawRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
             }
         }
@@ -58,7 +60,6 @@ public class Map extends JPanel implements Observer {
                 CELL_SIZE * SIZE_OF_ROBOT - 2 * PAINT_PIXEL_OFFSET);
 
         g.setColor(ROBOT_DIR);
-        
         switch (mapRobot.getDirection()) {
         case (NORTH): g.fillOval((mapRobot.getPositionX() + 1) * CELL_SIZE + (CELL_SIZE - SIZE_OF_DIRECTION_PIXEL) / 2,
                     mapRobot.getPositionY() * CELL_SIZE + PAINT_PIXEL_OFFSET,
@@ -84,77 +85,3 @@ public class Map extends JPanel implements Observer {
 		this.repaint();		
 	}
 }
-
-
-
-
-
-
-
-
-
-/*package map;
-
-
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
-
-public class Map {
-	
-	final Stage primaryStage;
-    private Rectangle[][] boardField = new Rectangle[15][20];
-
-	public Map(Stage primaryStage) {
-		this.primaryStage = primaryStage;
-	}
-		
-	public boolean isStartZone(int row, int col) {
-		return (row >= 18 && row <= 20 && col >= 1 && col <= 3);
-	}
-	
-	public boolean isGoalZone(int row, int col) {
-		return (row >= 1 && row <= 3 && col >= 13 && col <= 15);
-	}
-	
-
-    public void addBoardField(int pos1, int pos2, Rectangle rectangle) {
-        boardField[pos1][pos2] = rectangle;
-    }
-    
-    public Rectangle setUnexplored() {
-    		Rectangle unexplored = new Rectangle(25, 25);
-    		unexplored.setFill(Color.ANTIQUEWHITE);
-    		unexplored.setStroke(Color.WHITE);
-    		return unexplored;
-    }
-    
-    public Rectangle setExplored() {
-    		Rectangle explored = new Rectangle(25, 25);
-    		explored.setFill(Color.GREENYELLOW);
-    		explored.setStroke(Color.WHITE);
-    		return explored;
-    }
-    
-    public Rectangle setObstacle() {
-    		Rectangle obstacle = new Rectangle(25, 25);
-    		obstacle.setFill(Color.BLACK);
-    		obstacle.setStroke(Color.WHITE);
-    		return obstacle;
-    }
-    
-    public Rectangle setStart() {
-    		Rectangle start = new Rectangle(25, 25);
-    		start.setFill(Color.GREEN);
-    		start.setStroke(Color.WHITE);
-    		return start;
-    }
-    
-    public Rectangle setGoal() {
-    		Rectangle goal = new Rectangle(25, 25);
-    		goal.setFill(Color.MEDIUMVIOLETRED);
-    		goal.setStroke(Color.WHITE);
-    		return goal;
-    }
-}
-*/
