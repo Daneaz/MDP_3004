@@ -47,20 +47,20 @@ class PCObj(object):
 
         def write_to_pc2(self):
                 # Write to PC
-                try:
-
-                        self.client.sendto(message, self.addr)
-                except TypeError:
-                        print "Error: Null value cannot be sent"
+                while True:
+                    msg=raw_input()
+                    print "Write to pc: %s"%msg
+                    self.client.sendto(message, self.addr)
 
         def read_from_pc2(self):
                 # Read from PC
-                try:
-                        pc_data = self.client.recv(2048)
-                        return pc_data
-                except Exception as e:
-                        print "Error: %s " % str(e)
-                        print "Value not read from PC"
+                while True:
+                        try:
+                                pc_data = self.client.recv(2048)
+                                print "Received %s from PC"%pc_data
+                        except Exception as e:
+                                print "Error: %s " % str(e)
+                                print "Value not read from PC"
 
         def close_pc(self):
                 # Closing socket
@@ -70,6 +70,13 @@ class PCObj(object):
                 self.client.close()
                 print "Closing client socket"
                 self.pc_is_connected = False
+
+        def keep_main_alive(self):
+                """
+                Allows for a Ctrl+C kill while keeping the main() alive
+                """
+                while True:
+                        time.sleep(1)
 
 if __name__ == "__main__":
         # Test PC connection
@@ -87,6 +94,8 @@ if __name__ == "__main__":
                 # Start Threads
                 read_pc.start()
                 write_pc.start()
+
+                pc.keep_main_alive()
 
         except KeyboardInterrupt:
                 print "closing sockets"
