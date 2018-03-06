@@ -175,7 +175,6 @@ class RPi(threading.Thread):
         def keep_alive(self):
                 while True:
                         time.sleep(1)
-                        print "hi"
 
 
 if __name__ == "__main__":

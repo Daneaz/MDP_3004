@@ -106,10 +106,17 @@ class Test(threading.Thread):
                 # Start Threads
                 read_tr.start()
                 write_tr.start()
+
+        def keep_main_alive(self):
+                """
+                Allows for a Ctrl+C kill while keeping the main() alive
+                """
+                while True:
+                        time.sleep(1)
 try:
-        while True:
-                test = Test()
-                test.create_threads()
+        test = Test()
+        test.create_threads()
+        test.keep_main_alive()
 
 except KeyboardInterrupt:
         print "Terminating the program now..."
