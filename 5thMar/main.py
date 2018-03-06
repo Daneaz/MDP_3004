@@ -2,9 +2,10 @@ from pc import *
 from android import *
 from arduino import *
 
+
 import sys
 import time
-import queue
+import Queue
 import threading
 
 class RPi(threading.Thread):
@@ -23,9 +24,9 @@ class RPi(threading.Thread):
                 self.sr_thread.init_sr()
 
                 # Initialize the queues
-                self.pcQueue = queue.Queue(maxsize=0)
-                self.btQueue = queue.Queue(maxsize=0)
-                self.srQueue = queue.Queue(maxsize=0)
+                self.pcQueue = Queue.Queue(maxsize=0)
+                self.btQueue = Queue.Queue(maxsize=0)
+                self.srQueue = Queue.Queue(maxsize=0)
 
                 # Wait for 1.5 seconds before starting
                 time.sleep(1)
@@ -83,6 +84,11 @@ class RPi(threading.Thread):
                                 srQueue.put_nowait(msg[1:])
                                 print "Message received from Android to Arduino: " + msg[1:]
 
+                        elif(msg[0].lower() == 'x'):
+                                srQueue.put_nowait(msg[1:])
+                                pcQueue.put_nowait(msg[1:])
+                                print "Message received from Android to PC and Arduino: " + msg[1:]
+
                         else:
                                 print "incorrect header received from Android: " + msg[0]
                                 time.sleep(1)
@@ -137,15 +143,15 @@ class RPi(threading.Thread):
 
                 # Create read and write threads for PC
                 read_pc = threading.Thread(target = self.readFromPC, args = (self.btQueue, self.srQueue), name = "pc_read_thread")
-                write_pc = threading.Thread(target = self.writeToPC, args = (self.pcQueue), name = "pc_write_thread")
+                write_pc = threading.Thread(target = self.writeToPC, args = (self.pcQueue,), name = "pc_write_thread")
 
                 # Create read and write threads for Android
                 read_bt = threading.Thread(target = self.readFromBT, args = (self.pcQueue, self.srQueue), name = "bt_read_thread")
-                write_bt = threading.Thread(target = self.writeToBT, args = (self.btQueue), name = "bt_write_thread")
+                write_bt = threading.Thread(target = self.writeToBT, args = (self.btQueue,), name = "bt_write_thread")
 
                 # Create read and write threads for Arduino
                 read_sr = threading.Thread(target = self.readFromSR, args = (self.pcQueue, self.btQueue), name = "sr_read_thread")
-                write_sr = threading.Thread(target = self.writeToSR, args = (self.srQueue), name = "sr_write_thread")
+                write_sr = threading.Thread(target = self.writeToSR, args = (self.srQueue,), name = "sr_write_thread")
 
                 # Set threads as Daemons
                 read_pc.daemon = True
@@ -183,7 +189,7 @@ if __name__ == "__main__":
         main = RPi()
         try:
                 main.create_threads()
-                #main.keep_alive()
+                main.keep_alive()
         except KeyboardInterrupt:
                 print "Exiting main program"
                 main.close_all()

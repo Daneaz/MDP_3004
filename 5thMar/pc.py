@@ -1,5 +1,7 @@
 import socket
 import sys
+import threading
+import time
 
 class PCObj(object):
         def __init__(self):
@@ -47,20 +49,29 @@ class PCObj(object):
 
         def write_to_pc2(self):
                 # Write to PC
-                while True:
-                    msg=raw_input()
-                    print "Write to pc: %s"%msg
-                    self.client.sendto(message, self.addr)
+                try:
+                        while True:
+                                msg=raw_input()
+                                print "Write to pc: %s"%msg
+                                self.client.sendto(msg, self.addr)
+                except TypeError:
+                        print "Error: Null value cannot be sent"
+
+
 
         def read_from_pc2(self):
                 # Read from PC
-                while True:
-                        try:
+                try:
+                        while True:
                                 pc_data = self.client.recv(2048)
+                                if(not pc_data):
+                                            raise Exception
                                 print "Received %s from PC"%pc_data
-                        except Exception as e:
-                                print "Error: %s " % str(e)
-                                print "Value not read from PC"
+
+                except Exception as e:
+                        print "Error: %s " % str(e)
+                        print "Value not read from PC"
+                        self.close_pc()
 
         def close_pc(self):
                 # Closing socket
@@ -70,6 +81,8 @@ class PCObj(object):
                 self.client.close()
                 print "Closing client socket"
                 self.pc_is_connected = False
+
+
 
         def keep_main_alive(self):
                 """
