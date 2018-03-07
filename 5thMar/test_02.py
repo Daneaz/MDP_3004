@@ -26,26 +26,26 @@ class Test(threading.Thread):
                 self.client_sock, self.address = self.socket.accept()
                 print "Connected to PC @ ", self.address, "!"
 
-        		self.ip = "192.168.13.1" # Connecting to IP address of MDPGrp13
-        		self.port = 5182
-        		# message = "Hello World!"
-        		# message = list(string.ascii_lowercase)
+                        self.ip = "192.168.13.1" # Connecting to IP address of MDPGrp13
+                        self.port = 5182
+                        # message = "Hello World!"
+                        # message = list(string.ascii_lowercase)
 
 
-        		# Create a TCP/IP socket
-        		self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        		self.client_socket.connect((self.ip, self.port))'''
+                        # Create a TCP/IP socket
+                        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        self.client_socket.connect((self.ip, self.port))'''
         def __init__(self):
-    		threading.Thread.__init__(self)
-    		self.ip = "192.168.13.1" # Connecting to IP address of MDPGrp13
-    		self.port = 5182
-    		# message = "Hello World!"
-    		# message = list(string.ascii_lowercase)
+                threading.Thread.__init__(self)
+                self.ip = "192.168.13.1" # Connecting to IP address of MDPGrp13
+                self.port = 5182
+                # message = "Hello World!"
+                # message = list(string.ascii_lowercase)
 
 
-    		# Create a TCP/IP socket
-    		self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    		self.client_socket.connect((self.ip, self.port))
+                # Create a TCP/IP socket
+                self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.client_socket.connect((self.ip, self.port))
 
 
         def write(self):
