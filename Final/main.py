@@ -174,9 +174,9 @@ class RPi(threading.Thread):
                 write_sr.start()
 
         def close_all(self):
-                pc_thread.close_pc()
-                bt_thread.close_bt()
-                sr_thread.close_sr()
+                self.pc_thread.close_pc()
+                self.bt_thread.close_bt()
+                self.sr_thread.close_sr()
 
         def keep_alive(self):
                 while True:
