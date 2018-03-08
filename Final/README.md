@@ -2,12 +2,11 @@
 
 Wifi SSID:MDPGrp13
 
-Password:2018Grp13
+Password:scse_2018_Grp13
 
 SSH Command:ssh pi@192.168.13.1
 
-Password: 2018_MDP_Group13
-
+Password: scse_group13
 
 ----
 ## 'Address already in use' issue solution
