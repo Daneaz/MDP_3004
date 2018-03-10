@@ -11,22 +11,23 @@
 //#define sensorLF A4
 //#define sensorLB A5
 
+//Sharp IR sensor define
 SharpIR sensorFR(GP2Y0A21YK0F, A0);
 SharpIR sensorFL(GP2Y0A21YK0F, A1);
 SharpIR sensorFC(GP2Y0A21YK0F, A3);
 SharpIR sensorR(GP2Y0A02YK0F, A2);
-SharpIR sensorLF(GP2Y0A21YK0F, A4);
-SharpIR sensorLB(GP2Y0A21YK0F, A5);
+SharpIR sensorLF(GP2Y0A21YK0F, A5);
+SharpIR sensorLB(GP2Y0A21YK0F, A4);
 //motor pins
 DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 
 //Median variables
-static RunningMedian FrontR = RunningMedian(100);
-static RunningMedian FrontL = RunningMedian(100);
-static RunningMedian FrontC = RunningMedian(100);
-static RunningMedian Right = RunningMedian(100);
-static RunningMedian LeftF = RunningMedian(100);
-static RunningMedian LeftB = RunningMedian(100);
+static RunningMedian FrontR = RunningMedian(300);
+static RunningMedian FrontL = RunningMedian(300);
+static RunningMedian FrontC = RunningMedian(300);
+static RunningMedian Right = RunningMedian(300);
+static RunningMedian LeftF = RunningMedian(300);
+static RunningMedian LeftB = RunningMedian(300);
 
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
@@ -35,23 +36,27 @@ boolean flag = false;
 
 //global string for cmd
 String inString = "";
-static double disFL, disFC, disFR, disLF, disLB, disR;
+
+
+//global var for sensors
+double disFL, disFC, disFR, disLF, disLB, disR;
+
 void setup() {
   // put your setup code here, to run once:
   pinMode(4, INPUT);  //Interrupt Pin 4
   pinMode(13, INPUT); //Interrupt Pin 13
 
-  md.init();
+  md.init();    // init robot
 
   PCintPort::attachInterrupt(11, &compute_mL_ticks, RISING);  //Attached to Pin 11
   PCintPort::attachInterrupt(3, &compute_mR_ticks, RISING); //Attached to Pin 3
 
   Serial.begin(115200);
-  Serial.setTimeout(10);
+  Serial.setTimeout(10);        // for reading string time out intervel
   //  Serial.println("Waiting for data: ");
 }
 
-
+int moveCount = 0;    //counter
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -77,7 +82,27 @@ void loop() {
     int target = decodeString.toInt();
     //    Serial.println(target);
 
+    //    if (cmd == 'M')
+    //    {
+    //      moveCount++;
+    //    }
+    //    else
+    //    {
+    //      moveCount = 0;
+    //    }
+    //
+    //    if (moveCount => 3)
+    //    {
+    //      moveSpeedup(1);
+    //      threeContMove();
+    //      getSensorsData();
+    //      moveCount = 0;
+    //      Serial.println("Auto Calibrating Done! ");
+    //    }
+    //    else
+    //    {
     runCMD(cmd, target);
+    //    }
 
   }
 
@@ -85,29 +110,86 @@ void loop() {
   inString = "";
 }
 
+void threeContMove()
+{
+  getRMedian2();
+  disFL = FrontL.getAverage();
+  disFC = FrontC.getAverage();
+  disFR = FrontR.getAverage();
+  disLF =  LeftF.getAverage();
+  disLB =  LeftB.getAverage();
+  clearRMedian();
+
+  if ((disLF > 5 && disLF < 14) && (disLB > 5 && disLB < 14))
+  {
+
+    if (((disFL > 5 && disFL < 14) && (disFC > 5 && disFC < 14)) || ((disFL > 5 && disFL < 14) && (disFR > 5 && disFR < 14)) || ((disFC > 5 && disFC < 14) && (disFR > 5 && disFR < 14)))
+    {
+      turnLeft(90);
+      autoCalibrate();
+      turnRight(90);
+      autoCalibrate();
+      Serial.println("Left and Front Wall condition!");
+    }
+    else
+    {
+      turnLeft(90);
+      autoCalibrate();
+      turnRight(90);
+      Serial.println("Left Wall condition!");
+    }
+
+  }
+  else if ( ((disFL > 5 && disFL < 14) && (disFC > 5 && disFC < 14)) || ((disFL > 5 && disFL < 14) && (disFR > 5 && disFR < 14)) || ((disFC > 5 && disFC < 14) && (disFR > 5 && disFR < 14)))
+  {
+    autoCalibrate();
+    Serial.println("Front Wall condition");
+  }
+}
+
 void fastPath(String str)
 {
+  char cmd;
+  String cdis;
+  int dis = 0;
+
 
   for (int i = 1; i < str.length(); i++)
   {
-    switch (str[i])
+    if (str[i] == 'M')
     {
-      case 'F':
-        //        moveSpeedup();
-        //        getSensorsData();
-        Serial.println("Fast F");
+      cmd = 'M';
+      i++;
+      cdis = str[i];
+    }
+    else
+    {
+      cmd = str[i];
+    }
+    dis = cdis.toInt();
+    //    Serial.println(cmd);
+    //    Serial.println(dis);
+    switch (cmd)
+    {
+      case 'M':
+        moveSpeedup(dis);
+        //        Serial.println("Fast F");
         break;
       case 'R':
-        //        turnRight(90);
-        //        getSensorsData();
-        Serial.println("Fast R");
+        turnRight(90);
+        //        Serial.println("Fast R");
         break;
       case 'L':
-        //        turnLeft(90);
-        //        getSensorsData();
-        Serial.println("Fast L");
+        turnLeft(90);
+        //        Serial.println("Fast L");
+        break;
+      case 'U':
+        turnLeft(180);
+        //        Serial.println("Fast L");
         break;
     }
+    cdis = "";
+    dis = 0;
   }
 }
 
@@ -117,32 +199,68 @@ void runCMD(char cmd, int target)
   switch (cmd)
   {
     case 'M':
-      wall();
       moveSpeedup(target);
-
+      getSensorsData();
       break;
     case 'R':
-      wall();
       turnRight(target);
-
+      getSensorsData();
       break;
     case 'L':
-      wall();
       turnLeft(target);
-
+      getSensorsData();
       break;
     case 'U':
-      wall();
-      turnLeft(180);
-
-      break;
-    case 'N':
-      turnLeft(360);
-
+      turnLeft(90);
+      turnLeft(90);
+      getSensorsData();
       break;
     case 'S':
       moveBack(target);
-
+      getSensorsData();
+      break;
+    case 'A':
+      turnLeft(90);
+      autoCalibrate();
+      turnRight(90);
+      autoCalibrate();
+      //      getSensorsData();
+      Serial.println("POK");
+      break;
+    case 'Q':
+      turnLeft(90);
+      autoCalibrate();
+      turnRight(90);
+      //      getSensorsData();
+      Serial.println("POK");
+      break;
+    case 'C':
+      autoCalibrate();
+      //      getSensorsData();
+      Serial.println("POK");
+      break;
+    case 'X':
+      fastPath(inString);
+      break;
+    //check list function below
+    case 'Z':
+      moveDigonal();
+      break;
+    //debug function below
+    case 'D':
+      getSensorsData();
+      break;
+    case 'F':
+      getSensorsData1();
+      break;
+    case 'G':
+      getSensorsData2();
+      break;
+    case 'H':
+      getSensorsData3();
+      break;
+    case 'N':
+      adjustDistance();
       break;
     case '+':
       moveAdjustF();
@@ -150,45 +268,17 @@ void runCMD(char cmd, int target)
     case '-':
       moveAdjustB();
       break;
-    case 'D':
-      getSensorsData();
-      break;
-    case '[':
-      turnLeft(45);
-      break;
-    case ']':
-      turnRight(45);
-      break;
-    case 'Z':
-      moveDigonal();
-      break;
-    case 'A':
-      wall();
-      break;
-    case 'X':
-      fastPath(inString);
-      break;
-    case 'Q':
+    case 'E':
       debug(inString);
       break;
-    case 'E':
-      debug1(inString);
-      break;
-    case 'W':
-      debug2(inString);
-      break;
-    case 'F':
-      debug3(inString);
-      break;
-    case 'C':
-      wall();
-      delay(2000);
-      break;
+
     default:
       break;
   }
 
 }
+
+
 
 //*pid
 int pidControl(int LeftPosition, int RightPosition) {
@@ -196,9 +286,9 @@ int pidControl(int LeftPosition, int RightPosition) {
   int error;
   int prev_error;
   double integral, derivative, output;
-  double Kp = 5.5;                  //prefix Kp Ki, Kd dont changed if want to changed pls re declared
-  double Kd = 0.4;
-  double Ki = 0.1;
+  double Kp = 3;                  //prefix Kp Ki, Kd dont changed if want to changed pls re declared
+  double Kd = 0;
+  double Ki = 0;
 
   error = LeftPosition - RightPosition;
   integral += error;
@@ -209,357 +299,79 @@ int pidControl(int LeftPosition, int RightPosition) {
   return output;
 }
 
-
-void debug(String str)
-{
-  //Sample string        QC10L355R317T295
-  String outputString;
-  for (int i = 1; i < str.length(); i++)
-  {
-    outputString += str[i];
-  }
-  //  Serial.print("outputString:");
-  //  Serial.println(outputString);
-  int coefficient, leftpwm, righpwm, totaltick;
-
-  String value = "";
-
-  for (int i = 1; i < 3; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  coefficient = value.toInt();
-  //  Serial.print("coefficient:");
-  //  Serial.println(coefficient);
-
-
-  value = "";
-  for (int i = 4; i < 7; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  leftpwm = value.toInt();
-  //  Serial.print("leftpwm:");
-  //  Serial.println(leftpwm);
-
-
-  value = "";
-  for (int i = 8; i < 11; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  righpwm = value.toInt();
-  //  Serial.print("righpwm:");
-  //  Serial.println(righpwm);
-
-
-  value = "";
-  int index = outputString.indexOf('T');
-  for (int i = index + 1; i < outputString.length(); i++)
-  {
-    value += outputString.charAt(i);
-  }
-  totaltick = value.toInt();
-  //  Serial.print("totaltick:");
-  //  Serial.println(totaltick);
-
-  double output;
-  double dTotalTicks = totaltick;
-
-  int pwm1 = leftpwm, pwm2 = righpwm;
-    int count = 0;
-  double avg, total = 0;
-
-  while (mLTicks < dTotalTicks)
-  {
-
-    count++;
-    total += abs(mLTicks - mRTicks);
-    Serial.println(mLTicks - mRTicks);
-    Serial.print(mLTicks);
-    Serial.print("/");
-    Serial.println(mRTicks);
-  }
-  avg = total / count;
-  Serial.print("Avg:");
-  Serial.println(avg);
-
-  brake();
-
-}
-
-//*debug
-void debug1(String str)
-{
-  //Sample string        QC10L355R317T295
-  String outputString;
-  for (int i = 1; i < str.length(); i++)
-  {
-    outputString += str[i];
-  }
-  //  Serial.print("outputString:");
-  //  Serial.println(outputString);
-  int coefficient, leftpwm, righpwm, totaltick;
-
-  String value = "";
-
-  for (int i = 1; i < 3; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  coefficient = value.toInt();
-  //  Serial.print("coefficient:");
-  //  Serial.println(coefficient);
-
-
-  value = "";
-  for (int i = 4; i < 7; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  leftpwm = value.toInt();
-  //  Serial.print("leftpwm:");
-  //  Serial.println(leftpwm);
-
-
-  value = "";
-  for (int i = 8; i < 11; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  righpwm = value.toInt();
-  //  Serial.print("righpwm:");
-  //  Serial.println(righpwm);
-
-
-  value = "";
-  int index = outputString.indexOf('T');
-  for (int i = index + 1; i < outputString.length(); i++)
-  {
-    value += outputString.charAt(i);
-  }
-  totaltick = value.toInt();
-  //  Serial.print("totaltick:");
-  //  Serial.println(totaltick);
-
-  double output;
-  double dTotalTicks = totaltick;
-
-  int pwm1 = leftpwm, pwm2 = -righpwm;
-
-  while (mLTicks < dTotalTicks)
-  {
-
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * coefficient, pwm2 + output * coefficient);     //check coiffient for debug
-
-  }
-
-  brake();
-
-}
-
-void debug2(String str)
-{
-  //Sample string        WC10L355R317T295
-  String outputString;
-  for (int i = 1; i < str.length(); i++)
-  {
-    outputString += str[i];
-  }
-  //  Serial.print("outputString:");
-  //  Serial.println(outputString);
-  int coefficient, leftpwm, righpwm, totaltick;
-
-  String value = "";
-
-  for (int i = 1; i < 3; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  coefficient = value.toInt();
-  //  Serial.print("coefficient:");
-  //  Serial.println(coefficient);
-
-
-  value = "";
-  for (int i = 4; i < 7; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  leftpwm = value.toInt();
-  //  Serial.print("leftpwm:");
-  //  Serial.println(leftpwm);
-
-
-  value = "";
-  for (int i = 8; i < 11; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  righpwm = value.toInt();
-  //  Serial.print("righpwm:");
-  //  Serial.println(righpwm);
-
-
-  value = "";
-  int index = outputString.indexOf('T');
-  for (int i = index + 1; i < outputString.length(); i++)
-  {
-    value += outputString.charAt(i);
-  }
-  totaltick = value.toInt();
-  //  Serial.print("totaltick:");
-  //  Serial.println(totaltick);
-
-  double output;
-  double dTotalTicks = totaltick;
-
-  int pwm1 = -leftpwm, pwm2 = -righpwm;
-
-  while (mLTicks < dTotalTicks)
-  {
-
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * coefficient, pwm2 + output * coefficient);     //check coiffient for debug
-
-  }
-
-  brake();
-
-}
-
-void debug3(String str)
-{
-  //Sample string        QC10L355R317T295
-  String outputString;
-  for (int i = 1; i < str.length(); i++)
-  {
-    outputString += str[i];
-  }
-  //  Serial.print("outputString:");
-  //  Serial.println(outputString);
-  int coefficient, leftpwm, righpwm, totaltick;
-
-  String value = "";
-
-  for (int i = 1; i < 3; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  coefficient = value.toInt();
-  //  Serial.print("coefficient:");
-  //  Serial.println(coefficient);
-
-
-  value = "";
-  for (int i = 4; i < 7; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  leftpwm = value.toInt();
-  //  Serial.print("leftpwm:");
-  //  Serial.println(leftpwm);
-
-
-  value = "";
-  for (int i = 8; i < 11; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  righpwm = value.toInt();
-  //  Serial.print("righpwm:");
-  //  Serial.println(righpwm);
-
-
-  value = "";
-  int index = outputString.indexOf('T');
-  for (int i = index + 1; i < outputString.length(); i++)
-  {
-    value += outputString.charAt(i);
-  }
-  totaltick = value.toInt();
-  //  Serial.print("totaltick:");
-  //  Serial.println(totaltick);
-
-  double output;
-  double dTotalTicks = totaltick;
-
-  int pwm1 = leftpwm, pwm2 = righpwm;
-
-  while (mLTicks < dTotalTicks)
-  {
-
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * coefficient, pwm2 + output * coefficient);     //check coiffient for debug
-
-  }
-
-  brake();
-
-}
-
 //*msu
 void moveSpeedup(int dis)
 {
 
   double dTotalTicks = 0;
   double output;
-  int count = 0;
-  double avg, total = 0;
+  //  int count = 0;
+  //  double avg, total = 0;
 
   //  int pwm1=355, pwm2=317; //SCSE
   //  int pwm1 = 331, pwm2 = 322; //SWL3
   //  int pwm1 = 245, pwm2 = 255; //low speed
-//  int pwm1 = 318, pwm2 = 353;
-int pwm1 = 355, pwm2 = 320;
+  //  int pwm1 = 318, pwm2 = 353;
+  int pwm1 = 254, pwm2 = 330;
+  //  int pwm1 = 335, pwm2 = 318;
   //  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 310;   //B2
+    dTotalTicks = 275;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
-    dTotalTicks = 310 * dis;  // 1 to 3 box
+    dTotalTicks = 300 * dis;  // 1 to 3 box
   }
   else if (dis > 3 && dis <= 5)
   {
-    dTotalTicks = 310 * dis;  // 3 to 5 box
+    dTotalTicks = 295 * dis;  // 3 to 5 box
   }
   else if (dis > 5 && dis <= 7)
   {
-    dTotalTicks = 310 * dis;  //5 to 7 box
+    dTotalTicks = 300 * dis;  //5 to 7 box
   }
   else if (dis > 7 && dis <= 10)
   {
-    dTotalTicks = 310 * dis;  //7 to 10 box
+    dTotalTicks = 295 * dis;  //7 to 10 box
   }
-  else if (dis > 10 && dis <= 13)
-  {
-    dTotalTicks = 310 * dis;  //10 to 13 box
-  }
+
 
   while (mLTicks < dTotalTicks)
   {
 
     output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);     //check coiffient for debug
+    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);    //check coiffient for debug
 
-    count++;
-    total += abs(mLTicks - mRTicks);
-    Serial.println(mLTicks - mRTicks);
-    Serial.print(mLTicks);
-    Serial.print("/");
-    Serial.println(mRTicks);
+    //    count++;
+    //    total += abs(mLTicks - mRTicks);
+    //    Serial.println(mLTicks - mRTicks);
+    //    Serial.print(mLTicks);
+    //    Serial.print("/");
+    //    Serial.println(mRTicks);
   }
-  avg = total / count;
-  Serial.print("Avg:");
-  Serial.println(avg);
+  //  avg = total / count;
+  //  Serial.print("Avg:");
+  //  Serial.println(avg);
 
-  brake();
+  fbrake();
 
 
+}
+
+void fbrake() {
+
+  for (int i = 0; i < 10; i++)
+  {
+    md.setBrakes(368, 400);
+    //    md.setBrakes(370, 400);
+  }
+
+  delay(100);
+
+  mLTicks = 0;
+  mRTicks = 0;
 }
 
 //*b
@@ -570,8 +382,19 @@ void brake() {
     md.setBrakes(400, 400);
   }
 
-  delay(10);
+  delay(100);
 
+  mLTicks = 0;
+  mRTicks = 0;
+}
+
+void brakeabit() {
+  for (int i = 0; i < 3; i++)
+  {
+    md.setBrakes(400, 400);
+  }
+
+  delay(10);
   mLTicks = 0;
   mRTicks = 0;
 }
@@ -581,16 +404,16 @@ void turnRight(int degree) {
 
   double dTotalTicks = 0;
   double output;
-  int count = 0;
-  double avg, total = 0;
-  int pwm1 = 355, pwm2 = -326;        //Battery 1
-  //  int pwm1 = 355, pwm2 = -326;          //Battery 2
+  //  int count = 0;
+  //  double avg, total = 0;
+  //  int pwm1 = 355, pwm2 = -330;        //Battery 1
+  int pwm1 = 344, pwm2 = -316;
 
   if (degree == 0)
   {
     //    dTotalTicks = 391;
     //    dTotalTicks = 379 / 90 * 90;     //Battery 1
-    dTotalTicks = 390 / 90 * 90;        //Battery 2
+    dTotalTicks = 365;        //Battery 2
   }
   else if (degree <= 45)
   {
@@ -613,18 +436,18 @@ void turnRight(int degree) {
     output = pidControl(mLTicks, mRTicks);
 
     md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
-    count++;
-    total += abs(mLTicks - mRTicks);
-    Serial.println(mLTicks - mRTicks);
-    Serial.print(mLTicks);
-    Serial.print("/");
-    Serial.print(mRTicks);
-    Serial.print("/");
-    Serial.println(dTotalTicks);
+    //    count++;
+    //    total += abs(mLTicks - mRTicks);
+    //    Serial.println(mLTicks - mRTicks);
+    //    Serial.print(mLTicks);
+    //    Serial.print("/");
+    //    Serial.print(mRTicks);
+    //    Serial.print("/");
+    //    Serial.println(dTotalTicks);
   }
-  avg = total / count;
-  Serial.print("Avg:");
-  Serial.println(avg);
+  //  avg = total / count;
+  //  Serial.print("Avg:");
+  //  Serial.println(avg);
 
   brake();
 }
@@ -633,14 +456,15 @@ void turnRight(int degree) {
 void turnLeft(int degree) {
   double dTotalTicks = 0;
   double output;
-    int count = 0;
-    double avg, total = 0;
-  int pwm1 = -355, pwm2 = 326;    //Battery 1
+  //  int count = 0;
+  //  double avg, total = 0;
+  //  int pwm1 = -355, pwm2 = 316;    //Battery 1
+  int pwm1 = -344, pwm2 = 316;
   //    int pwm1 = -355, pwm2 = 326;        //Battery 2
   if (degree == 0)
   {
     //    dTotalTicks = 405 / 90 * 90;    //Battery 1
-    dTotalTicks = 418;      //Battery 2
+    dTotalTicks = 363;      //Battery 2
   }
   else if (degree <= 45)
   {
@@ -670,20 +494,57 @@ void turnLeft(int degree) {
     output = pidControl(mLTicks, mRTicks);
     md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
 
-        count++;
-        total += abs(mLTicks-mRTicks);
-        Serial.println(mLTicks-mRTicks);
-        Serial.print(mLTicks);
-        Serial.print("/");
-        Serial.print(mRTicks);
-        Serial.print("/");
-        Serial.println(dTotalTicks);
+    //    count++;
+    //    total += abs(mLTicks - mRTicks);
+    //    Serial.println(mLTicks - mRTicks);
+    //    Serial.print(mLTicks);
+    //    Serial.print("/");
+    //    Serial.print(mRTicks);
+    //    Serial.print("/");
+    //    Serial.println(dTotalTicks);
   }
-    avg =total/count;
-    Serial.print("Avg:");
-    Serial.println(avg);
+  //  avg = total / count;
+  //  Serial.print("Avg:");
+  //  Serial.println(avg);
 
   brake();
+}
+
+void turnRightabit(int degree) {
+
+  double dTotalTicks = 0;
+  double output;
+
+  int pwm1 = 355, pwm2 = -330;        //Battery 1
+
+  dTotalTicks = 189 / 45 * degree; // 45 degree
+  while (mLTicks < dTotalTicks)
+  {
+    output = pidControl(mLTicks, mRTicks);
+
+    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+  }
+
+  brakeabit();
+}
+
+
+void turnLeftabit(int degree) {
+  double dTotalTicks = 0;
+  double output;
+
+  int pwm1 = -355, pwm2 = 316;    //Battery 1
+
+  dTotalTicks = 198 / 45 * degree; // 45 degree
+
+  while (mLTicks < dTotalTicks)
+  {
+    output = pidControl(mLTicks, mRTicks);
+    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
+
+  }
+
+  brakeabit();
 }
 
 
@@ -691,10 +552,10 @@ void moveBack(int dis)
 {
   double dTotalTicks = 0;
   double output;
-  int count = 0;
-  double avg, total = 0;
-  int pwm1 = -355, pwm2 = -315;
-
+  //  int count = 0;
+  //  double avg, total = 0;
+  //  int pwm1 = -355, pwm2 = -315;
+  int pwm1 = -344, pwm2 = -316;
   if (dis <= 1)
   {
     dTotalTicks = 285;  // 1 box
@@ -745,60 +606,35 @@ void moveAdjustF()
 {
   double dTotalTicks = 0;
   double output;
-  int count = 0;
-  double avg, total = 0;
-  int pwm1 = 333, pwm2 = 353;
-
-  dTotalTicks = 10;  // *10 = 10cm
+  //  int pwm1 = 333, pwm2 = 353;
+  int pwm1 = 344, pwm2 = 316;
+  dTotalTicks = 5;
 
   while (mLTicks < dTotalTicks)
   {
 
     output = pidControl(mLTicks, mRTicks);
     md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
-
-    //    count++;
-    //    total += abs(mLTicks-mRTicks);
-    //    Serial.println(mLTicks-mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.println(mRTicks);
   }
-
-  //  avg =total/count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
-  brake();
+  brakeabit();
 }
 
 void moveAdjustB()
 {
   double dTotalTicks = 0;
   double output;
-  int count = 0;
-  double avg, total = 0;
   int pwm1 = -355, pwm2 = -315;
-  //    int pwm1 = -150, pwm2 = -150;
+  //  int pwm1 = -100, pwm2 = -80;
 
-  dTotalTicks = 10;
+  dTotalTicks = 2;
 
   while (mLTicks < dTotalTicks)
   {
-
     output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
+    md.setSpeeds(pwm1 , pwm2 );
 
-    //    count++;
-    //    total += abs(mLTicks-mRTicks);
-    //    Serial.println(mLTicks-mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.println(mRTicks);
   }
-  //  avg =total/count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
-  brake();
+  brakeabit();
 }
 
 
@@ -830,30 +666,56 @@ void moveAdjustB()
 //
 double readSensor(SharpIR sensor, double offset)
 {
-  double data;
-  //  int distance;
-  //  double avg=0;
-  //Reading analog voltage of sensor
-  data = sensor.getDistance() + offset;
+  double dis;
 
-  return data;
+  dis = sensor.getDistance() + offset;
+
+  return dis;
 }
 
 //*grm
 void getRMedian()
 {
-  for (int sCount = 0; sCount < 100 ; sCount++)
+  for (int sCount = 0; sCount < 300 ; sCount++)
   {
-    disFL = readSensor(sensorFL, -2); //Calculate the distance in centimeters and store the value in a variable
-    disFR = readSensor(sensorFR, -3);
-    disFC = readSensor(sensorFC, -3);
-    disR = readSensor(sensorR, 8);
-    if (disR > 44)
+    disFL = readSensor(sensorFL, -6); //Calculate the distance in centimeters and store the value in a variable
+
+    disFC = readSensor(sensorFC, -5);
+    disFR = readSensor(sensorFR, -7);
+
+
+    disR = readSensor(sensorR, 1);
+    if (disR <= 20)
+    {
+      disR -= 8;
+    }
+    else if (disR > 20 && disR < 25)
+    {
+      disR -= 2;
+    }
+    else if (disR > 40 && disR < 47)
+    {
+      disR += 3;
+    }
+    else if (disR > 50 && disR < 57)
+    {
+      disR += 3;
+    }
+    else if (disR > 60 && disR < 67)
+    {
       disR += 5;
-    else if (disR > 55)
-      disR += 4;
-    disLF = readSensor(sensorLF, 0);
-    disLB = readSensor(sensorLB, 0);
+    }
+    //    else if (disR >= 40 && disR <= 50)
+    //    {
+    //      disR += 8;
+    //    }
+    //
+    //    if (disR > 44)
+    //      disR += 5;
+    //    else if (disR > 55)
+    //      disR += 4;
+    disLF = readSensor(sensorLF, -7);
+    disLB = readSensor(sensorLB, -7);
 
 
     //add the variables into arrays as samples
@@ -863,41 +725,54 @@ void getRMedian()
     Right.add(disR);
     LeftF.add(disLF);
     LeftB.add(disLB);
-
-
-    //    Serial.print("FL:"); //Print the value to the serial monitor
-    //    Serial.println(disFL);
-
   }
 }
 
-void getRMedian1()
+void getRMedianFront()
 {
-  for (int sCount = 0; sCount < 10 ; sCount++)
+  for (int sCount = 0; sCount < 20 ; sCount++)
   {
-    disFL = readSensor(sensorFL, -2); //Calculate the distance in centimeters and store the value in a variable
-    disFR = readSensor(sensorFR, -1);
-    disFC = readSensor(sensorFC, -3);
-    disR = readSensor(sensorR, 8);
-    if (disR > 44)
-      disR += 5;
-    else if (disR > 55)
-      disR += 4;
-    disLF = readSensor(sensorLF, 0);
-    disLB = readSensor(sensorLB, 0);
+    disFL = readSensor(sensorFL, -5.8); //Calculate the distance in centimeters and store the value in a variable
 
+    disFC = readSensor(sensorFC, -4.8);
+    disFR = readSensor(sensorFR, -5.8);
 
     //add the variables into arrays as samples
     FrontR.add(disFR);
     FrontL.add(disFL);
     FrontC.add(disFC);
-    Right.add(disR);
+  }
+}
+
+void getRMedianLeft()
+{
+  for (int sCount = 0; sCount < 20 ; sCount++)
+  {
+
+    disLF = readSensor(sensorLF, -10);
+    disLB = readSensor(sensorLB, -10);
+
+    //add the variables into arrays as samples
     LeftF.add(disLF);
     LeftB.add(disLB);
+  }
+}
 
 
-    //    Serial.print("FL:"); //Print the value to the serial monitor
-    //    Serial.println(disFL);
+void getRMedian2()
+{
+  for (int sCount = 0; sCount < 20 ; sCount++)
+  {
+    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
+
+    disFC = readSensor(sensorFC, 0);
+    disFR = readSensor(sensorFR, 0);
+
+    //add the variables into arrays as samples
+
+    FrontL.add(disFL);
+    FrontC.add(disFC);
+    FrontR.add(disFR);
 
   }
 }
@@ -914,46 +789,125 @@ void clearRMedian() {
 
 }
 
-
 //*gsd
 void getSensorsData() {
 
   getRMedian();
+
+  disFL = FrontL.getMedian();
+  disFC = FrontC.getMedian();
+  disFR = FrontR.getMedian();
+  disLF = LeftF.getMedian();
+  disLB = LeftB.getMedian();
+  disR = Right.getMedian();
+
+
+  //  if ((disFC > 5 && disFC < 15) || (disFL > 5 && disFL < 15) || (disFR > 5 && disFR < 15))
+  //  {
+  //    if((disFL > 5 && disFL < 15) && (disFC > 5 && disFC < 15))
+  //    {
+  //      autoCalibrate();
+  //    }
+  //    else if ((disFC > 5 && disFC < 15) && (disFR > 5 && disFR < 15))
+  //    {
+  //      autoCalibrate();
+  //    }
+  //    else if((disFL > 5 && disFL < 15) && (disFR > 5 && disFR < 15))
+  //    {
+  //      autoCalibrate();
+  //    }
+  //  }
+  //  else if ((disLF >5 && disLF <15) && (disLB >5 && disLB <15))
+  //  {
+  //    turnLeft(90);
+  //    autoCalibrate();
+  //    turnRight(90);
+  //  }
+
+  //    if ((disLF >5 && disLF <15) && (disLB >5 && disLB <15))
+  //    {
+  //      turnLeft(90);
+  //      autoCalibrate();
+  //      turnRight(90);
+  //    }
+
+
+
   Serial.print('P');
-  Serial.print(FrontL.getMedian());
+  Serial.print(disFL);
   Serial.print(",");
-  Serial.print(FrontC.getMedian());
+  Serial.print(disFC);
   Serial.print(",");
-  Serial.print(FrontR.getMedian());
+  Serial.print(disFR);
   Serial.print(",");
-  Serial.print(LeftF.getMedian());
+  Serial.print(disLF);
   Serial.print(",");
-  Serial.print(LeftB.getMedian());
+  Serial.print(disLB);
   Serial.print(",");
-  Serial.println(Right.getMedian());
+  Serial.println(disR);
+
   clearRMedian();
-
-
-  //  getRMedian();
-  //  Serial.print("FL:"); //Print the value to the serial monitor
-  //  Serial.print(FrontL.getMedian());
-  //  Serial.print(",FC:");
-  //  Serial.print(FrontC.getMedian());
-  //  Serial.print(",FR:");
-  //  Serial.print( FrontR.getMedian());
-  //  Serial.print(",R:");
-  //  Serial.print(Right.getMedian());
-  //  Serial.print(",LF:");
-  //  Serial.print(LeftF.getMedian());
-  //  Serial.print(",LB:");
-  //  Serial.println(LeftB.getMedian());
-  //  clearRMedian();
-
-
 }
 
-void wall()
+void getSensorsData1() {
+
+  getRMedianFront();
+  Serial.print('P');
+  Serial.print(FrontL.getAverage());
+  Serial.print(",");
+  Serial.print(FrontC.getAverage());
+  Serial.print(",");
+  Serial.println(FrontR.getAverage());
+
+  clearRMedian();
+}
+
+void getSensorsData2() {
+
+  getRMedianLeft();
+  Serial.print('P');
+  Serial.print(FrontL.getAverage());
+  Serial.print(",");
+  Serial.print(FrontC.getAverage());
+  Serial.print(",");
+  Serial.print(FrontR.getAverage());
+  Serial.print(",");
+  Serial.print(LeftF.getAverage());
+  Serial.print(",");
+  Serial.println(LeftB.getAverage());
+
+  clearRMedian();
+}
+
+void getSensorsData3() {
+
+  getRMedian2();
+  Serial.print('P');
+  Serial.print(FrontL.getAverage());
+  Serial.print(",");
+  Serial.print(FrontC.getAverage());
+  Serial.print(",");
+  Serial.print(FrontR.getAverage());
+  Serial.print(",");
+  Serial.print(LeftF.getAverage());
+  Serial.print(",");
+  Serial.println(LeftB.getAverage());
+
+  clearRMedian();
+}
+
+
+
+void autoCalibrate()
 {
+  adjustDistance();
+  adjustAngle();
+}
+
+
+void adjustAngle()
+{
+
   double calibrateFront = 9;
   double calibrateFrontLeft = 9;
   double calibrateFrontRight = 9;
@@ -974,71 +928,21 @@ void wall()
   unsigned long preTime = millis();
   unsigned long curTime = 0;
 
-  while (1)
-  {
-    curTime = millis();
-
-    if (curTime - preTime > 3000)
-    {
-      break;
-    }
-
-    getRMedian1();
-
-    disLF = LeftF.getMedian();
-    disLB = LeftB.getMedian();
-
-    clearRMedian();
-
-    dErrorLeftFront =  disLF - calibrateLeftFront;
-    dErrorLeftBack =  disLB - calibrateLeftBack;
-
-
-    dErrorDiff_4 = dErrorLeftFront - dErrorLeftBack;
-
-    if ((disLF > 5 && disLF < 20) && (disLB > 5 && disLB < 20))
-    {
-
-      if (abs(dErrorDiff_4) < 0.5)
-      {
-        break;
-      }
-      if (dErrorLeftFront < dErrorLeftBack)
-      {
-
-        turnLeft(1);
-      }
-      else if (dErrorLeftFront > dErrorLeftBack)
-      {
-
-        turnRight(1);
-      }
-
-    }
-    else
-    {
-      break;
-    }
-
-  }
-
-
-  preTime = millis();
 
   while (1)
   {
     curTime = millis();
 
-    if (curTime - preTime > 3000)
+    if (curTime - preTime > 5000)
     {
       break;
     }
 
-    getRMedian1();
+    getRMedianFront();
 
-    disFL = FrontL.getMedian();
-    disFC = FrontC.getMedian();
-    disFR = FrontR.getMedian();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
 
     clearRMedian();
 
@@ -1053,9 +957,9 @@ void wall()
 
 
 
-    if ((disFC > 5 && disFC < 20) && (disFL > 5 && disFL < 20) && (disFR > 5 && disFR < 20)) // Front One Grid Angle Alignment
+    if ((disFC > 3 && disFC < 11) || (disFL > 3 && disFL < 11) || (disFR > 3 && disFR < 11)) // Front One Grid Angle Alignment
     {
-      if ((disFL > 5 && disFL < 20) && (disFR > 5 && disFR < 20))
+      if ((disFL > 3 && disFL < 11) && (disFR > 3 && disFR < 11))
       {
         if (abs(dErrorDiff_1) < 0.5)
         {
@@ -1064,14 +968,14 @@ void wall()
 
         if (dErrorFrontLeft < dErrorFrontRight)
         {
-          turnLeft(1);
+          turnLeftabit(1);
         }
         else
         {
-          turnRight(1);
+          turnRightabit(1);
         }
       }
-      else if ((disFC > 5 && disFC < 20) && (disFL > 5 && disFL < 20))
+      else if ((disFC > 3 && disFC < 11) && (disFL > 3 && disFL < 11))
       {
         if (abs(dErrorDiff_2) < 0.5)
         {
@@ -1080,14 +984,14 @@ void wall()
 
         if (dErrorFrontLeft > dErrorFront)
         {
-          turnRight(1);
+          turnRightabit(1);
         }
         else
         {
-          turnLeft(1);
+          turnLeftabit(1);
         }
       }
-      else if ((disFC > 5 && disFC < 20) && (disFR > 5 && disFR < 20))
+      else if ((disFC > 3 && disFC < 11) && (disFR > 3 && disFR < 11))
       {
         if (abs(dErrorDiff_3) < 0.5)
         {
@@ -1096,11 +1000,11 @@ void wall()
 
         if (dErrorFrontRight > dErrorFront)
         {
-          turnLeft(1);
+          turnLeftabit(1);
         }
         else
         {
-          turnRight(1);
+          turnRightabit(1);
         }
       }
 
@@ -1112,65 +1016,103 @@ void wall()
     }
     //    Serial.println("Am NOT here");
   }
+
+
+  preTime = millis();
+
+  while (1)
+  {
+    curTime = millis();
+
+    if (curTime - preTime > 5000)
+    {
+      break;
+    }
+
+    getRMedianLeft();
+
+    disLF = LeftF.getAverage();
+    disLB = LeftB.getAverage();
+
+    clearRMedian();
+
+    dErrorLeftFront =  disLF - calibrateLeftFront;
+    dErrorLeftBack =  disLB - calibrateLeftBack;
+
+
+    dErrorDiff_4 = dErrorLeftFront - dErrorLeftBack;
+
+    if ((disLF > 3 && disLF < 11) && (disLB > 3 && disLB < 11))
+    {
+
+      if (abs(dErrorDiff_4) < 0.5)
+      {
+        break;
+      }
+      if (dErrorLeftFront < dErrorLeftBack)
+      {
+        turnRightabit(1);
+
+      }
+      else if (dErrorLeftFront > dErrorLeftBack)
+      {
+        turnLeftabit(1);
+
+      }
+
+    }
+    else
+    {
+      break;
+    }
+  }
+  //  delay(200);
   //  Serial.println("am Wout");
 }
 
 //*ra
-void realignment()
+void adjustDistance()
 {
-  //  turnLeft(90);
-  //  delay(200);
-  getRMedian();
   unsigned long preTime = millis();
   unsigned long curTime = 0;
 
-  if ( FrontC.getMedian() < 10 || FrontR.getMedian() < 10 || FrontL.getMedian() < 10)
+  while (1)
   {
 
-    while (1)
+    curTime = millis();
+
+    if (curTime - preTime > 5000)
     {
-      clearRMedian();
-      curTime = millis();
+      break;
+    }
+    getRMedian2();
 
-      if (curTime - preTime > 5000)
-      {
-        break;
-      }
-      getRMedian();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
 
-      if ((FrontC.getMedian()) < 10 || (FrontR.getMedian()) < 10 || (FrontL.getMedian()) < 10)
-      {
-        moveAdjustB();
-        delay(50);
-      }
-      else if ((FrontR.getMedian()) > 13 || (FrontC.getMedian()) > 13 || (FrontL.getMedian()) > 13)
-      {
-        moveAdjustF();
-        delay(50);
-      }
-      else
-      {
-        brake();
-        break;
-      }
-      delay(50);
+    clearRMedian();
 
-      //debug
-      //      Serial.print("FL:"); //Print the value to the serial monitor
-      //      Serial.print(FrontL.getMedian());
-      //      Serial.print(",FC:");
-      //      Serial.print(FrontC.getMedian());
-      //      Serial.print(",FR:");
-      //      Serial.print( FrontR.getMedian());
-      //      Serial.print(",R:");
-      //      Serial.print(Right.getMedian());
-      //      Serial.print(",LF:");
-      //      Serial.print(LeftF.getMedian());
-      //      Serial.print(",LB:");
-      //      Serial.println(LeftB.getMedian());
+    //    if ((disFC >= 2 && disFC <= 4) || (disFL >= 4 && disFL <= 6) || (disFR >= 4 && disFR <= 6))
+    //    if ((disFC > 2 && disFC <= 6) || (disFL > 4 && disFL <= 6) || (disFR > 4 && disFR <= 6))
+    if (disFL >=9 && disFL < 10)
+    {
+      moveAdjustB();
+      delay(100);
+    }
+    //    else if ((disFC > 8 && disFC <= 13) || (disFL > 8 && disFL <= 13) || (disFR > 8 && disFR <= 13))
+    else if (disFL > 10 && disFL <= 13)
+    {
+      moveAdjustF();
+      delay(100);
+    }
+    else
+    {
+      break;
     }
   }
 }
+
 
 //*md
 void moveDigonal()
@@ -1210,7 +1152,9 @@ void moveDigonal()
   }
 
   brake();
+
   delay(200);
+
   while (1)
   {
     disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
@@ -1385,6 +1329,80 @@ void digonalLeft()
   delay(250);
   moveSpeedup(2);
 }
+
+
+//*debug
+void debug(String str)
+{
+  //Sample string        QC10L355R317T295
+  String outputString;
+  for (int i = 1; i < str.length(); i++)
+  {
+    outputString += str[i];
+  }
+  //  Serial.print("outputString:");
+  //  Serial.println(outputString);
+  int coefficient, leftpwm, righpwm, totaltick;
+
+  String value = "";
+
+  for (int i = 1; i < 3; i++)
+  {
+    value += outputString.charAt(i);
+  }
+  coefficient = value.toInt();
+  //  Serial.print("coefficient:");
+  //  Serial.println(coefficient);
+
+
+  value = "";
+  for (int i = 4; i < 7; i++)
+  {
+    value += outputString.charAt(i);
+  }
+  leftpwm = value.toInt();
+  //  Serial.print("leftpwm:");
+  //  Serial.println(leftpwm);
+
+
+  value = "";
+  for (int i = 8; i < 11; i++)
+  {
+    value += outputString.charAt(i);
+  }
+  righpwm = value.toInt();
+  //  Serial.print("righpwm:");
+  //  Serial.println(righpwm);
+
+
+  value = "";
+  int index = outputString.indexOf('T');
+  for (int i = index + 1; i < outputString.length(); i++)
+  {
+    value += outputString.charAt(i);
+  }
+  totaltick = value.toInt();
+  //  Serial.print("totaltick:");
+  //  Serial.println(totaltick);
+
+  double output;
+  double dTotalTicks = totaltick;
+
+  int pwm1 = -leftpwm, pwm2 = righpwm;
+
+  while (mLTicks < dTotalTicks)
+  {
+
+    output = pidControl(mLTicks, mRTicks);
+    md.setSpeeds(pwm1 - output * coefficient, pwm2 + output * coefficient);     //check coiffient for debug
+
+  }
+
+  brake();
+
+}
+
+
 void compute_mL_ticks()
 {
   mLTicks++;
