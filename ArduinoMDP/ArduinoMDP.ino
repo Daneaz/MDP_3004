@@ -7,7 +7,7 @@
 //#define sensorFR A0
 //#define sensorFL A1
 //#define sensorFC A3
-//#define sensorR A2
+#define sensorR A2
 //#define sensorLF A4
 //#define sensorLB A5
 
@@ -15,7 +15,7 @@
 SharpIR sensorFR(GP2Y0A21YK0F, A0);
 SharpIR sensorFL(GP2Y0A21YK0F, A1);
 SharpIR sensorFC(GP2Y0A21YK0F, A3);
-SharpIR sensorR(GP2Y0A02YK0F, A2);
+//SharpIR sensorR(GP2Y0A02YK0F, A2);
 SharpIR sensorLF(GP2Y0A21YK0F, A5);
 SharpIR sensorLB(GP2Y0A21YK0F, A4);
 //motor pins
@@ -60,7 +60,7 @@ int moveCount = 0;    //counter
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //  getSensorsData();
+//    getSensorsData();
   // Read string from serial
   while (Serial.available() > 0)
   {
@@ -312,29 +312,29 @@ void moveSpeedup(int dis)
   //  int pwm1 = 331, pwm2 = 322; //SWL3
   //  int pwm1 = 245, pwm2 = 255; //low speed
   //  int pwm1 = 318, pwm2 = 353;
-  int pwm1 = 254, pwm2 = 330;
+  int pwm1 = 267, pwm2 = 330;
   //  int pwm1 = 335, pwm2 = 318;
   //  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 275;   //B2
+    dTotalTicks = 274;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
-    dTotalTicks = 300 * dis;  // 1 to 3 box
+    dTotalTicks = 281 * dis;  // 1 to 3 box
   }
   else if (dis > 3 && dis <= 5)
   {
-    dTotalTicks = 295 * dis;  // 3 to 5 box
+    dTotalTicks = 289 * dis;  // 3 to 5 box
   }
   else if (dis > 5 && dis <= 7)
   {
-    dTotalTicks = 300 * dis;  //5 to 7 box
+    dTotalTicks = 291 * dis;  //5 to 7 box
   }
   else if (dis > 7 && dis <= 10)
   {
-    dTotalTicks = 295 * dis;  //7 to 10 box
+    dTotalTicks = 293 * dis;  //7 to 10 box
   }
 
 
@@ -638,32 +638,45 @@ void moveAdjustB()
 }
 
 
-//double readSensor(uint8_t sensor, double offset)
-//{
-//  double data;
-//  int distance;
-//  //Reading analog voltage of sensor
-//  data = analogRead(sensor);
-//
-//  if (sensor == sensorFR)
-//    distance = (-0.000002519959460 * pow(data, 3) + 0.002437176903164 * pow(data, 2) - 0.833608599855960 * data + 114.319657177832000) - offset;
-//  else if (sensor == sensorFL)
-//    distance = (-0.000002664149856 * pow(data, 3) + 0.002448843508527 * pow(data, 2) - 0.792515291235626 * data + 104.390939725150000) - offset;
-//  else if (sensor == sensorFC)
-//    distance = (-0.000002017356684 * pow(data, 3) + 0.001994666767648 * pow(data, 2) - 0.709538365557925 * data + 102.098598425728000) - offset;
-//  else if (sensor == sensorLF)
-//    distance = (-0.000002412782701 * pow(data, 3) + 0.002504148776671 * pow(data, 2) - 0.887601420892029 * data + 123.895713653069000) - offset;
-//  else if (sensor == sensorLB)
-//    distance = (-0.000002327809079 * pow(data, 3) + 0.002391620795912 * pow(data, 2) - 0.846619727510112 * data + 120.305243788885000) - offset;
-//  else // A2 long sensor
-//  {
-//    distance = (-0.000004468997192 * pow(data, 3) + 0.004620742694645 * pow(data, 2) - 1.683064107825460 * data + 244.115436152919000) - offset;
-//    if (distance > 37 && distance < 70)
-//      distance += 1;
-//  }
-//  return distance;
-//}
-//
+double readLongRange(uint8_t sensor, double offset)
+{
+  double data;
+  int distance;
+  //Reading analog voltage of sensor
+  data = analogRead(sensor);
+  //
+  //  if (sensor == sensorFR)
+  //    distance = (-0.000002519959460 * pow(data, 3) + 0.002437176903164 * pow(data, 2) - 0.833608599855960 * data + 114.319657177832000) - offset;
+  //  else if (sensor == sensorFL)
+  //    distance = (-0.000002664149856 * pow(data, 3) + 0.002448843508527 * pow(data, 2) - 0.792515291235626 * data + 104.390939725150000) - offset;
+  //  else if (sensor == sensorFC)
+  //    distance = (-0.000002017356684 * pow(data, 3) + 0.001994666767648 * pow(data, 2) - 0.709538365557925 * data + 102.098598425728000) - offset;
+  //  else if (sensor == sensorLF)
+  //    distance = (-0.000002412782701 * pow(data, 3) + 0.002504148776671 * pow(data, 2) - 0.887601420892029 * data + 123.895713653069000) - offset;
+  //  else if (sensor == sensorLB)
+  //    distance = (-0.000002327809079 * pow(data, 3) + 0.002391620795912 * pow(data, 2) - 0.846619727510112 * data + 120.305243788885000) - offset;
+  //  else // A2 long sensor
+  //  {
+  distance = (-0.000001074940896 * pow(data,3) + 0.001439155329794 * pow(data,2) - 0.721559420662975*data + 155.236671815831000) - offset;
+  if (distance <= 19)
+    distance = 10;
+   else if (distance < 25)
+    distance = 20;
+  else if (distance >= 25 &&  distance < 35)
+    distance = 30;
+  else if (distance >= 35 && distance < 45)
+    distance = 40;
+  else if (distance >= 45 && distance < 55)
+    distance = 50;
+  else if (distance >= 55 && distance < 65)
+    distance = 60;
+
+  distance += 10;
+  distance = distance / 10;
+  //  }
+  return distance;
+}
+
 double readSensor(SharpIR sensor, double offset)
 {
   double dis;
@@ -678,46 +691,35 @@ void getRMedian()
 {
   for (int sCount = 0; sCount < 300 ; sCount++)
   {
-    disFL = readSensor(sensorFL, -6); //Calculate the distance in centimeters and store the value in a variable
+    disFL = readSensor(sensorFL, -4); //Calculate the distance in centimeters and store the value in a variable
 
-    disFC = readSensor(sensorFC, -5);
-    disFR = readSensor(sensorFR, -7);
+    disFC = readSensor(sensorFC, -3);
+    disFR = readSensor(sensorFR, -4);
 
 
-    disR = readSensor(sensorR, 1);
-    if (disR <= 20)
-    {
-      disR -= 8;
-    }
-    else if (disR > 20 && disR < 25)
-    {
-      disR -= 2;
-    }
-    else if (disR > 40 && disR < 47)
-    {
-      disR += 3;
-    }
-    else if (disR > 50 && disR < 57)
-    {
-      disR += 3;
-    }
-    else if (disR > 60 && disR < 67)
-    {
-      disR += 5;
-    }
-    //    else if (disR >= 40 && disR <= 50)
+    disR = readLongRange(sensorR, 0);
+
+    //    if (disR >= 23 && disR <= 24)
     //    {
-    //      disR += 8;
+    //      disR += 2;
     //    }
-    //
-    //    if (disR > 44)
-    //      disR += 5;
-    //    else if (disR > 55)
-    //      disR += 4;
-    disLF = readSensor(sensorLF, -7);
-    disLB = readSensor(sensorLB, -7);
+    //    else if (disR == 30)
+    //    {
+    //      disR += 3;
+    //    }
+    //    else if (disR >= 38 && disR <= 39)
+    //    {
+    //      disR += 3;
+    //    }
+    //    else if (disR >= 47 && disR <= 49)
+    //    {
+    //      disR += 6;
+    //    }
 
+    disLF = readSensor(sensorLF, -5);
+    disLB = readSensor(sensorLB, -5);
 
+    //    disR +=10;
     //add the variables into arrays as samples
     FrontR.add(disFR);
     FrontL.add(disFL);
@@ -1095,13 +1097,13 @@ void adjustDistance()
 
     //    if ((disFC >= 2 && disFC <= 4) || (disFL >= 4 && disFL <= 6) || (disFR >= 4 && disFR <= 6))
     //    if ((disFC > 2 && disFC <= 6) || (disFL > 4 && disFL <= 6) || (disFR > 4 && disFR <= 6))
-    if (disFL >=9 && disFL < 10)
+    if (disFL >= 9 && disFL < 10)
     {
       moveAdjustB();
       delay(100);
     }
     //    else if ((disFC > 8 && disFC <= 13) || (disFL > 8 && disFL <= 13) || (disFR > 8 && disFR <= 13))
-    else if (disFL > 10 && disFL <= 13)
+    else if (disFL > 10 && disFL <= 17)
     {
       moveAdjustF();
       delay(100);
@@ -1130,7 +1132,7 @@ void moveDigonal()
     disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
     disFR = readSensor(sensorFR, 0);
     disFC = readSensor(sensorFC, 0);
-    disR = readSensor(sensorR, 0);
+    disR = readLongRange(sensorR, 0);
     disLF = readSensor(sensorLF, 0);
     disLB = readSensor(sensorLB, 0);
 
@@ -1160,7 +1162,7 @@ void moveDigonal()
     disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
     disFR = readSensor(sensorFR, 0);
     disFC = readSensor(sensorFC, 0);
-    disR = readSensor(sensorR, 0);
+    disR = readLongRange(sensorR, 0);
     disLF = readSensor(sensorLF, 0);
     disLB = readSensor(sensorLB, 0);
 
@@ -1221,7 +1223,7 @@ void avoid()
     disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
     disFR = readSensor(sensorFR, 0);
     disFC = readSensor(sensorFC, 0);
-    disR = readSensor(sensorR, 0);
+    disR = readLongRange(sensorR, 0);
     disLF = readSensor(sensorLF, 0);
     disLB = readSensor(sensorLB, 0);
 
