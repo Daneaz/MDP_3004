@@ -60,7 +60,7 @@ int moveCount = 0;    //counter
 
 void loop() {
   // put your main code here, to run repeatedly:
-//    getSensorsData();
+  //    getSensorsData();
   // Read string from serial
   while (Serial.available() > 0)
   {
@@ -149,10 +149,9 @@ void threeContMove()
 
 void fastPath(String str)
 {
-  char cmd;
-  String cdis;
-  int dis = 0;
-
+  char cmd, cmd2;
+  String cdis, cdis2;
+  int dis = 0, dis2 = 0;
 
   for (int i = 1; i < str.length(); i++)
   {
@@ -161,19 +160,34 @@ void fastPath(String str)
       cmd = 'M';
       i++;
       cdis = str[i];
+      //      if ((i + 2) <= str.length())
+      //      {
+      //        cmd2 = str[i + 1];
+      //        cdis2 = str[i + 2];
+      //      }
     }
     else
     {
       cmd = str[i];
     }
     dis = cdis.toInt();
+    //     Serial.println(cmd2);
+    //    if ( cmd2 == 'M')
+    //    {
+    //      dis2 = cdis2.toInt();
+    //      dis = dis + dis2;
+    //      if ((i + 2) <= str.length())
+    //      {
+    //        i = i + 2;
+    //      }
+    //    }
     //    Serial.println(cmd);
-    //    Serial.println(dis);
+    //        Serial.println(dis);
     switch (cmd)
     {
       case 'M':
-        moveSpeedup(dis);
-        //        Serial.println("Fast F");
+        fastForward(dis);
+        //        Serial.println(dis);
         break;
       case 'R':
         turnRight(90);
@@ -222,15 +236,26 @@ void runCMD(char cmd, int target)
     case 'A':
       turnLeft(90);
       autoCalibrate();
+      delay(20);
       turnRight(90);
       autoCalibrate();
+      delay(20);
       //      getSensorsData();
       Serial.println("POK");
       break;
     case 'Q':
       turnLeft(90);
       autoCalibrate();
+      delay(20);
       turnRight(90);
+      //      getSensorsData();
+      Serial.println("POK");
+      break;
+    case 'E':
+      turnRight(90);
+      autoCalibrate();
+      delay(20);
+      turnLeft(90);
       //      getSensorsData();
       Serial.println("POK");
       break;
@@ -243,11 +268,23 @@ void runCMD(char cmd, int target)
       fastPath(inString);
       break;
     //check list function below
-    case 'Z':
-      moveDigonal();
-      break;
+    //    case 'Z':
+    //      moveDigonal();
+    //      break;
     //debug function below
     case 'D':
+      if (flag == false)
+      {
+        turnLeft(90);
+        turnLeft(90);
+        autoCalibrate();
+        delay(20);
+        turnRight(90);
+        autoCalibrate();
+        delay(20);
+        turnRight(90);
+        flag = true;
+      }
       getSensorsData();
       break;
     case 'F':
@@ -268,9 +305,7 @@ void runCMD(char cmd, int target)
     case '-':
       moveAdjustB();
       break;
-    case 'E':
-      debug(inString);
-      break;
+
 
     default:
       break;
@@ -288,7 +323,7 @@ int pidControl(int LeftPosition, int RightPosition) {
   double integral, derivative, output;
   double Kp = 3;                  //prefix Kp Ki, Kd dont changed if want to changed pls re declared
   double Kd = 0;
-  double Ki = 0;
+  double Ki = 1;
 
   error = LeftPosition - RightPosition;
   integral += error;
@@ -300,6 +335,7 @@ int pidControl(int LeftPosition, int RightPosition) {
 }
 
 //*msu
+int movementCount = 0;
 void moveSpeedup(int dis)
 {
 
@@ -308,17 +344,16 @@ void moveSpeedup(int dis)
   //  int count = 0;
   //  double avg, total = 0;
 
-  //  int pwm1=355, pwm2=317; //SCSE
-  //  int pwm1 = 331, pwm2 = 322; //SWL3
-  //  int pwm1 = 245, pwm2 = 255; //low speed
-  //  int pwm1 = 318, pwm2 = 353;
-  int pwm1 = 267, pwm2 = 330;
-  //  int pwm1 = 335, pwm2 = 318;
+  //  int pwm1 = 282, pwm2 = 330;
+  //    int pwm1 = 360, pwm2 = 370;
+  //  int pwm1 = 374, pwm2 = 375;
+  int pwm1 = 374, pwm2 = 368;
+
   //  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 274;   //B2
+    dTotalTicks = 265;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
@@ -336,13 +371,17 @@ void moveSpeedup(int dis)
   {
     dTotalTicks = 293 * dis;  //7 to 10 box
   }
+  else if (dis > 10 && dis <= 13)
+  {
+    dTotalTicks = 296 * dis;  //7 to 10 box
+  }
 
 
   while (mLTicks < dTotalTicks)
   {
 
     output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);    //check coiffient for debug
+    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 3);    //check coiffient for debug
 
     //    count++;
     //    total += abs(mLTicks - mRTicks);
@@ -357,7 +396,61 @@ void moveSpeedup(int dis)
 
   fbrake();
 
+  movementCount++;
+  if ( movementCount >= 4)
+  {
+    while (mLTicks < 6)
+      md.setSpeeds(200, 0);
+    movementCount = 0;
+  }
+  fbrake();
+}
 
+void fastForward(int dis)
+{
+
+  double dTotalTicks = 0;
+  double output;
+
+  //  int pwm1 = 282, pwm2 = 330;
+  int pwm1 = 375, pwm2 = 374;
+
+  if (dis <= 1)
+  {
+    //    dTotalTicks = 310;  // 1 box
+    dTotalTicks = 265;   //B2
+  }
+  else if (dis > 1 && dis <= 3 )
+  {
+    dTotalTicks = 276 * dis;  // 1 to 3 box
+  }
+  else if (dis > 3 && dis <= 5)
+  {
+    dTotalTicks = 286 * dis;  // 3 to 5 box
+  }
+  else if (dis > 5 && dis <= 7)
+  {
+    dTotalTicks = 286 * dis;  //5 to 7 box
+  }
+  else if (dis > 7 && dis <= 10)
+  {
+    dTotalTicks = 290 * dis;  //7 to 10 box
+  }
+  else if (dis > 10 && dis <= 13)
+  {
+    dTotalTicks = 292 * dis;  //7 to 10 box
+  }
+  else if (dis > 13 && dis <= 17)
+  {
+    dTotalTicks = 293 * dis;  //7 to 10 box
+  }
+
+  while (mLTicks < dTotalTicks)
+  {
+    output = pidControl(mLTicks, mRTicks);
+    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 3);    //check coiffient for debug
+  }
+  fbrake();
 }
 
 void fbrake() {
@@ -413,7 +506,7 @@ void turnRight(int degree) {
   {
     //    dTotalTicks = 391;
     //    dTotalTicks = 379 / 90 * 90;     //Battery 1
-    dTotalTicks = 365;        //Battery 2
+    dTotalTicks = 367;        //Battery 2
   }
   else if (degree <= 45)
   {
@@ -464,7 +557,7 @@ void turnLeft(int degree) {
   if (degree == 0)
   {
     //    dTotalTicks = 405 / 90 * 90;    //Battery 1
-    dTotalTicks = 363;      //Battery 2
+    dTotalTicks = 362;      //Battery 2
   }
   else if (degree <= 45)
   {
@@ -626,7 +719,7 @@ void moveAdjustB()
   int pwm1 = -355, pwm2 = -315;
   //  int pwm1 = -100, pwm2 = -80;
 
-  dTotalTicks = 2;
+  dTotalTicks = 4;
 
   while (mLTicks < dTotalTicks)
   {
@@ -657,18 +750,18 @@ double readLongRange(uint8_t sensor, double offset)
   //    distance = (-0.000002327809079 * pow(data, 3) + 0.002391620795912 * pow(data, 2) - 0.846619727510112 * data + 120.305243788885000) - offset;
   //  else // A2 long sensor
   //  {
-  distance = (-0.000001074940896 * pow(data,3) + 0.001439155329794 * pow(data,2) - 0.721559420662975*data + 155.236671815831000) - offset;
+  distance = (-0.000000478715139 * pow(data, 3) + 0.000697599228477 * pow(data, 2) - 0.423545499540302 * data + 115.325540693115000) - offset;
   if (distance <= 19)
     distance = 10;
-   else if (distance < 25)
+  else if (distance <= 25)
     distance = 20;
-  else if (distance >= 25 &&  distance < 35)
+  else if (distance > 25 &&  distance <= 35)
     distance = 30;
-  else if (distance >= 35 && distance < 45)
+  else if (distance > 35 && distance <= 45)
     distance = 40;
-  else if (distance >= 45 && distance < 55)
+  else if (distance > 45 && distance <= 55)
     distance = 50;
-  else if (distance >= 55 && distance < 65)
+  else if (distance > 55 && distance <= 65)
     distance = 60;
 
   distance += 10;
@@ -732,7 +825,7 @@ void getRMedian()
 
 void getRMedianFront()
 {
-  for (int sCount = 0; sCount < 20 ; sCount++)
+  for (int sCount = 0; sCount < 50 ; sCount++)
   {
     disFL = readSensor(sensorFL, -5.8); //Calculate the distance in centimeters and store the value in a variable
 
@@ -748,11 +841,11 @@ void getRMedianFront()
 
 void getRMedianLeft()
 {
-  for (int sCount = 0; sCount < 20 ; sCount++)
+  for (int sCount = 0; sCount < 50 ; sCount++)
   {
 
     disLF = readSensor(sensorLF, -10);
-    disLB = readSensor(sensorLB, -10);
+    disLB = readSensor(sensorLB, -9.9);
 
     //add the variables into arrays as samples
     LeftF.add(disLF);
@@ -868,12 +961,6 @@ void getSensorsData2() {
 
   getRMedianLeft();
   Serial.print('P');
-  Serial.print(FrontL.getAverage());
-  Serial.print(",");
-  Serial.print(FrontC.getAverage());
-  Serial.print(",");
-  Serial.print(FrontR.getAverage());
-  Serial.print(",");
   Serial.print(LeftF.getAverage());
   Serial.print(",");
   Serial.println(LeftB.getAverage());
@@ -963,7 +1050,7 @@ void adjustAngle()
     {
       if ((disFL > 3 && disFL < 11) && (disFR > 3 && disFR < 11))
       {
-        if (abs(dErrorDiff_1) < 0.5)
+        if (abs(dErrorDiff_1) < 0.3)
         {
           break;
         }
@@ -979,7 +1066,7 @@ void adjustAngle()
       }
       else if ((disFC > 3 && disFC < 11) && (disFL > 3 && disFL < 11))
       {
-        if (abs(dErrorDiff_2) < 0.5)
+        if (abs(dErrorDiff_2) < 0.3)
         {
           break;
         }
@@ -995,7 +1082,7 @@ void adjustAngle()
       }
       else if ((disFC > 3 && disFC < 11) && (disFR > 3 && disFR < 11))
       {
-        if (abs(dErrorDiff_3) < 0.5)
+        if (abs(dErrorDiff_3) < 0.3)
         {
           break;
         }
@@ -1044,10 +1131,10 @@ void adjustAngle()
 
     dErrorDiff_4 = dErrorLeftFront - dErrorLeftBack;
 
-    if ((disLF > 3 && disLF < 11) && (disLB > 3 && disLB < 11))
+    if ((disLF > 3 && disLF < 18) && (disLB > 3 && disLB < 18))
     {
 
-      if (abs(dErrorDiff_4) < 0.5)
+      if (abs(dErrorDiff_4) < 0.3)
       {
         break;
       }
@@ -1097,13 +1184,13 @@ void adjustDistance()
 
     //    if ((disFC >= 2 && disFC <= 4) || (disFL >= 4 && disFL <= 6) || (disFR >= 4 && disFR <= 6))
     //    if ((disFC > 2 && disFC <= 6) || (disFL > 4 && disFL <= 6) || (disFR > 4 && disFR <= 6))
-    if (disFL >= 9 && disFL < 10)
+    if (disFL >= 8.2 && disFL < 10.5)
     {
       moveAdjustB();
       delay(100);
     }
     //    else if ((disFC > 8 && disFC <= 13) || (disFL > 8 && disFL <= 13) || (disFR > 8 && disFR <= 13))
-    else if (disFL > 10 && disFL <= 17)
+    else if (disFL > 11.5 && disFL <= 17)
     {
       moveAdjustF();
       delay(100);
@@ -1117,292 +1204,292 @@ void adjustDistance()
 
 
 //*md
-void moveDigonal()
-{
-  double dTotalTicks = 0;
-  double output;
-  double disFL, disFC, disFR, disLF, disLB, disR;
-
-  int pwm1 = 331, pwm2 = 322;
-
-  dTotalTicks = 310 / 10 * 100;  // *10 = 10cm
-
-  while (mLTicks < dTotalTicks)
-  {
-    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
-    disFR = readSensor(sensorFR, 0);
-    disFC = readSensor(sensorFC, 0);
-    disR = readLongRange(sensorR, 0);
-    disLF = readSensor(sensorLF, 0);
-    disLB = readSensor(sensorLB, 0);
-
-    //add the variables into arrays as samples
-    FrontR.add(disFR);
-    FrontL.add(disFL);
-    FrontC.add(disFC);
-    Right.add(disR);
-    LeftF.add(disLF);
-    LeftB.add(disLB);
-
-    if ((FrontC.getMedian()) < 20 || (FrontR.getMedian()) < 20 || (FrontL.getMedian()) < 20)
-    {
-      break;
-    }
-
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
-  }
-
-  brake();
-
-  delay(200);
-
-  while (1)
-  {
-    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
-    disFR = readSensor(sensorFR, 0);
-    disFC = readSensor(sensorFC, 0);
-    disR = readLongRange(sensorR, 0);
-    disLF = readSensor(sensorLF, 0);
-    disLB = readSensor(sensorLB, 0);
-
-    //add the variables into arrays as samples
-    FrontR.add(disFR);
-    FrontL.add(disFL);
-    FrontC.add(disFC);
-    Right.add(disR);
-    LeftF.add(disLF);
-    LeftB.add(disLB);
-
-
-    if ((FrontC.getMedian()) < 13 || (FrontR.getMedian()) < 13 || (FrontL.getMedian()) < 13)
-    {
-      moveAdjustB();
-      delay(10);
-    }
-    else
-    {
-      brake();
-      break;
-    }
-  }
-  delay(200);
-
-  if ((LeftF.getMedian() > 30 || LeftB.getMedian() > 30) && FrontR.getMedian() < 20 )
-  {
-    digonalLeft();
-
-  }
-  else if ((Right.getMedian()) > 30 && (FrontL.getMedian()) < 20 )
-  {
-    digonalRight();
-  }
-  else if (FrontC.getMedian() < 20)
-  {
-    digonalLeft();
-  }
-  else {
-    brake();
-  }
-
-}
+//void moveDigonal()
+//{
+//  double dTotalTicks = 0;
+//  double output;
+//  double disFL, disFC, disFR, disLF, disLB, disR;
+//
+//  int pwm1 = 331, pwm2 = 322;
+//
+//  dTotalTicks = 310 / 10 * 100;  // *10 = 10cm
+//
+//  while (mLTicks < dTotalTicks)
+//  {
+//    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
+//    disFR = readSensor(sensorFR, 0);
+//    disFC = readSensor(sensorFC, 0);
+//    disR = readLongRange(sensorR, 0);
+//    disLF = readSensor(sensorLF, 0);
+//    disLB = readSensor(sensorLB, 0);
+//
+//    //add the variables into arrays as samples
+//    FrontR.add(disFR);
+//    FrontL.add(disFL);
+//    FrontC.add(disFC);
+//    Right.add(disR);
+//    LeftF.add(disLF);
+//    LeftB.add(disLB);
+//
+//    if ((FrontC.getMedian()) < 20 || (FrontR.getMedian()) < 20 || (FrontL.getMedian()) < 20)
+//    {
+//      break;
+//    }
+//
+//    output = pidControl(mLTicks, mRTicks);
+//    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
+//  }
+//
+//  brake();
+//
+//  delay(200);
+//
+//  while (1)
+//  {
+//    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
+//    disFR = readSensor(sensorFR, 0);
+//    disFC = readSensor(sensorFC, 0);
+//    disR = readLongRange(sensorR, 0);
+//    disLF = readSensor(sensorLF, 0);
+//    disLB = readSensor(sensorLB, 0);
+//
+//    //add the variables into arrays as samples
+//    FrontR.add(disFR);
+//    FrontL.add(disFL);
+//    FrontC.add(disFC);
+//    Right.add(disR);
+//    LeftF.add(disLF);
+//    LeftB.add(disLB);
+//
+//
+//    if ((FrontC.getMedian()) < 13 || (FrontR.getMedian()) < 13 || (FrontL.getMedian()) < 13)
+//    {
+//      moveAdjustB();
+//      delay(10);
+//    }
+//    else
+//    {
+//      brake();
+//      break;
+//    }
+//  }
+//  delay(200);
+//
+//  if ((LeftF.getMedian() > 30 || LeftB.getMedian() > 30) && FrontR.getMedian() < 20 )
+//  {
+//    digonalLeft();
+//
+//  }
+//  else if ((Right.getMedian()) > 30 && (FrontL.getMedian()) < 20 )
+//  {
+//    digonalRight();
+//  }
+//  else if (FrontC.getMedian() < 20)
+//  {
+//    digonalLeft();
+//  }
+//  else {
+//    brake();
+//  }
+//
+//}
 
 //*a
-void avoid()
-{
-  double dTotalTicks = 0;
-  double output;
-  double disFL, disFC, disFR, disLF, disLB, disR;
-
-  int pwm1 = 331, pwm2 = 322;
-
-  dTotalTicks = 310 / 10 * 100;  // *10 = 10cm
-
-  while (mLTicks < dTotalTicks)
-  {
-    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
-    disFR = readSensor(sensorFR, 0);
-    disFC = readSensor(sensorFC, 0);
-    disR = readLongRange(sensorR, 0);
-    disLF = readSensor(sensorLF, 0);
-    disLB = readSensor(sensorLB, 0);
-
-    //add the variables into arrays as samples
-    FrontR.add(disFR);
-    FrontL.add(disFL);
-    FrontC.add(disFC);
-    Right.add(disR);
-    LeftF.add(disLF);
-    LeftB.add(disLB);
-
-    if ((FrontC.getMedian()) < 20 || (FrontR.getMedian()) < 20 || (FrontL.getMedian()) < 20)
-    {
-      break;
-    }
-
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
-  }
-
-  brake();
-  delay(200);
-
-  if (LeftF.getMedian() > 30 || LeftB.getMedian() > 30)
-  {
-    turnLeft(90);
-    delay(200);
-    moveSpeedup(2);
-    delay(200);
-    turnRight(90);
-    delay(200);
-    moveSpeedup(5);
-    delay(200);
-    turnRight(90);
-    delay(200);
-    moveSpeedup(2);
-    delay(200);
-    turnLeft(90);
-    delay(200);
-    moveSpeedup(2);
-    delay(200);
-  }
-  else if (Right.getMedian() > 30)
-  {
-    turnRight(90);
-    delay(200);
-    moveSpeedup(2);
-    delay(200);
-    turnLeft(90);
-    delay(200);
-    moveSpeedup(5);
-    delay(200);
-    turnLeft(90);
-    delay(200);
-    moveSpeedup(2);
-    delay(200);
-    turnRight(90);
-    delay(200);
-    moveSpeedup(2);
-    delay(200);
-  }
-  else
-  {
-    brake();
-  }
-}
+//void avoid()
+//{
+//  double dTotalTicks = 0;
+//  double output;
+//  double disFL, disFC, disFR, disLF, disLB, disR;
+//
+//  int pwm1 = 331, pwm2 = 322;
+//
+//  dTotalTicks = 310 / 10 * 100;  // *10 = 10cm
+//
+//  while (mLTicks < dTotalTicks)
+//  {
+//    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
+//    disFR = readSensor(sensorFR, 0);
+//    disFC = readSensor(sensorFC, 0);
+//    disR = readLongRange(sensorR, 0);
+//    disLF = readSensor(sensorLF, 0);
+//    disLB = readSensor(sensorLB, 0);
+//
+//    //add the variables into arrays as samples
+//    FrontR.add(disFR);
+//    FrontL.add(disFL);
+//    FrontC.add(disFC);
+//    Right.add(disR);
+//    LeftF.add(disLF);
+//    LeftB.add(disLB);
+//
+//    if ((FrontC.getMedian()) < 20 || (FrontR.getMedian()) < 20 || (FrontL.getMedian()) < 20)
+//    {
+//      break;
+//    }
+//
+//    output = pidControl(mLTicks, mRTicks);
+//    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
+//  }
+//
+//  brake();
+//  delay(200);
+//
+//  if (LeftF.getMedian() > 30 || LeftB.getMedian() > 30)
+//  {
+//    turnLeft(90);
+//    delay(200);
+//    moveSpeedup(2);
+//    delay(200);
+//    turnRight(90);
+//    delay(200);
+//    moveSpeedup(5);
+//    delay(200);
+//    turnRight(90);
+//    delay(200);
+//    moveSpeedup(2);
+//    delay(200);
+//    turnLeft(90);
+//    delay(200);
+//    moveSpeedup(2);
+//    delay(200);
+//  }
+//  else if (Right.getMedian() > 30)
+//  {
+//    turnRight(90);
+//    delay(200);
+//    moveSpeedup(2);
+//    delay(200);
+//    turnLeft(90);
+//    delay(200);
+//    moveSpeedup(5);
+//    delay(200);
+//    turnLeft(90);
+//    delay(200);
+//    moveSpeedup(2);
+//    delay(200);
+//    turnRight(90);
+//    delay(200);
+//    moveSpeedup(2);
+//    delay(200);
+//  }
+//  else
+//  {
+//    brake();
+//  }
+//}
 
 
 //*dr
-void digonalRight()
-{
-  turnRight(45);
-  delay(250);
-  moveSpeedup(4);
-  delay(250);
-  turnLeft(45);
-  delay(250);
-  moveSpeedup(2);
-  delay(250);
-  turnLeft(90);
-  delay(250);
-  moveSpeedup(3);
-  delay(250);
-  turnRight(90);
-  delay(250);
-  moveSpeedup(2);
-}
+//void digonalRight()
+//{
+//  turnRight(45);
+//  delay(250);
+//  moveSpeedup(4);
+//  delay(250);
+//  turnLeft(45);
+//  delay(250);
+//  moveSpeedup(2);
+//  delay(250);
+//  turnLeft(90);
+//  delay(250);
+//  moveSpeedup(3);
+//  delay(250);
+//  turnRight(90);
+//  delay(250);
+//  moveSpeedup(2);
+//}
 
 //*dl
-void digonalLeft()
-{
-  turnLeft(45);
-  delay(250);
-  moveSpeedup(4);
-  delay(250);
-  turnRight(45);
-  delay(250);
-  moveSpeedup(2);
-  delay(250);
-  turnRight(90);
-  delay(250);
-  moveSpeedup(3);
-  delay(250);
-  turnLeft(90);
-  delay(250);
-  moveSpeedup(2);
-}
+//void digonalLeft()
+//{
+//  turnLeft(45);
+//  delay(250);
+//  moveSpeedup(4);
+//  delay(250);
+//  turnRight(45);
+//  delay(250);
+//  moveSpeedup(2);
+//  delay(250);
+//  turnRight(90);
+//  delay(250);
+//  moveSpeedup(3);
+//  delay(250);
+//  turnLeft(90);
+//  delay(250);
+//  moveSpeedup(2);
+//}
 
 
 //*debug
-void debug(String str)
-{
-  //Sample string        QC10L355R317T295
-  String outputString;
-  for (int i = 1; i < str.length(); i++)
-  {
-    outputString += str[i];
-  }
-  //  Serial.print("outputString:");
-  //  Serial.println(outputString);
-  int coefficient, leftpwm, righpwm, totaltick;
-
-  String value = "";
-
-  for (int i = 1; i < 3; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  coefficient = value.toInt();
-  //  Serial.print("coefficient:");
-  //  Serial.println(coefficient);
-
-
-  value = "";
-  for (int i = 4; i < 7; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  leftpwm = value.toInt();
-  //  Serial.print("leftpwm:");
-  //  Serial.println(leftpwm);
-
-
-  value = "";
-  for (int i = 8; i < 11; i++)
-  {
-    value += outputString.charAt(i);
-  }
-  righpwm = value.toInt();
-  //  Serial.print("righpwm:");
-  //  Serial.println(righpwm);
-
-
-  value = "";
-  int index = outputString.indexOf('T');
-  for (int i = index + 1; i < outputString.length(); i++)
-  {
-    value += outputString.charAt(i);
-  }
-  totaltick = value.toInt();
-  //  Serial.print("totaltick:");
-  //  Serial.println(totaltick);
-
-  double output;
-  double dTotalTicks = totaltick;
-
-  int pwm1 = -leftpwm, pwm2 = righpwm;
-
-  while (mLTicks < dTotalTicks)
-  {
-
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * coefficient, pwm2 + output * coefficient);     //check coiffient for debug
-
-  }
-
-  brake();
-
-}
+//void debug(String str)
+//{
+//  //Sample string        QC10L355R317T295
+//  String outputString;
+//  for (int i = 1; i < str.length(); i++)
+//  {
+//    outputString += str[i];
+//  }
+//  //  Serial.print("outputString:");
+//  //  Serial.println(outputString);
+//  int coefficient, leftpwm, righpwm, totaltick;
+//
+//  String value = "";
+//
+//  for (int i = 1; i < 3; i++)
+//  {
+//    value += outputString.charAt(i);
+//  }
+//  coefficient = value.toInt();
+//  //  Serial.print("coefficient:");
+//  //  Serial.println(coefficient);
+//
+//
+//  value = "";
+//  for (int i = 4; i < 7; i++)
+//  {
+//    value += outputString.charAt(i);
+//  }
+//  leftpwm = value.toInt();
+//  //  Serial.print("leftpwm:");
+//  //  Serial.println(leftpwm);
+//
+//
+//  value = "";
+//  for (int i = 8; i < 11; i++)
+//  {
+//    value += outputString.charAt(i);
+//  }
+//  righpwm = value.toInt();
+//  //  Serial.print("righpwm:");
+//  //  Serial.println(righpwm);
+//
+//
+//  value = "";
+//  int index = outputString.indexOf('T');
+//  for (int i = index + 1; i < outputString.length(); i++)
+//  {
+//    value += outputString.charAt(i);
+//  }
+//  totaltick = value.toInt();
+//  //  Serial.print("totaltick:");
+//  //  Serial.println(totaltick);
+//
+//  double output;
+//  double dTotalTicks = totaltick;
+//
+//  int pwm1 = -leftpwm, pwm2 = righpwm;
+//
+//  while (mLTicks < dTotalTicks)
+//  {
+//
+//    output = pidControl(mLTicks, mRTicks);
+//    md.setSpeeds(pwm1 - output * coefficient, pwm2 + output * coefficient);     //check coiffient for debug
+//
+//  }
+//
+//  brake();
+//
+//}
 
 
 void compute_mL_ticks()
