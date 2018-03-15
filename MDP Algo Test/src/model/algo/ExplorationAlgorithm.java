@@ -151,19 +151,19 @@ public class ExplorationAlgorithm implements Algorithm {
 	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
-	                } else if (robot.ableToCalibrateFront()) {
-	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-	                    isCalibrated = true;
-	                    calibrationCount = 0;
 	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
-	                }else if(robot.isObstacleOnRightSideForCalibration()) {
+	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
-	                } 
+	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
+	                    isCalibrated = true;
+	                    calibrationCount = 0;
+	                }  
 	                
 	                if(isCalibrated) {
 	                	// Arduino will send an "OK" message after calibration
@@ -195,21 +195,21 @@ public class ExplorationAlgorithm implements Algorithm {
                 // sense the surrounding after making the forward move
 	            robot.sense(realRun);
 	            
-	            // Checks if robot is able to Calibrate
-            	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+	            // checks if robot is able to calibrate
+                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
                     SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
                     isCalibrated = true;
                     calibrationCount = 0;
-                } else if (robot.ableToCalibrateFront()) {
-                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
+                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
+                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
                     isCalibrated = true;
                     calibrationCount = 0;
-                }  else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                    isCalibrated = true;
-                    calibrationCount = 0;
-                } else if(robot.isObstacleOnRightSideForCalibration()) {
+                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                 	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
+                    isCalibrated = true;
+                    calibrationCount = 0;
+                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                     isCalibrated = true;
                     calibrationCount = 0;
                 }
@@ -454,13 +454,19 @@ public class ExplorationAlgorithm implements Algorithm {
             		}
             	}
             	
-            	if(!resultFound)
-            		System.out.println("Nearest Neighbour Algorithm fails to find nearest cell");
+            	if(!resultFound) {
+            		System.out.println("Nearest Neighbour Algorithm fails to find nearest cell.\nExecuting First Reachable Unexplored Algorithm");
+            		resultFound = startFirstReachableUnexploredAlgo(realRun, grid, robot);
+            		
+            		if(!resultFound)
+            			System.out.println("First Reachable Unexplored Algoritm fails to find a reachable unexplored path.");
+            	}
+            		
             }
 		}
 	        
         // Start Second exploration if robot is back to starting zone but the exploration is not 100%
-        if(grid.checkPercentageExplored() < 95.0) {
+        if(grid.checkPercentageExplored() < 100.0) {
         	// Duplicate the current grid
             Grid firstRunExplored = new Grid();
             for (int x = 0; x < MAP_COLUMNS; x++) {
@@ -648,8 +654,13 @@ public class ExplorationAlgorithm implements Algorithm {
                             		}
                             	}
                             	
-                            	if(!resultFound)
-                            		System.out.println("Nearest Neighbour Algorithm fails to find nearest cell");
+                            	if(!resultFound) {
+                            		System.out.println("Nearest Neighbour Algorithm fails to find nearest cell.\nExecuting First Reachable Unexplored Algorithm");
+                            		resultFound = startFirstReachableUnexploredAlgo(realRun, grid, robot);
+                            		
+                            		if(!resultFound)
+                            			System.out.println("First Reachable Unexplored Algoritm fails to find a reachable unexplored path.");
+                            	}
                             }
                         	
                         	// Checks if a turn is needed
@@ -682,21 +693,21 @@ public class ExplorationAlgorithm implements Algorithm {
                 		                sendAndroid(grid, robot, realRun);
                 		            }*/
                     		            
-                    		        // Check if robot is able to calibrate
-                                    if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                        SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                        isCalibrated = true;
-                                        calibrationCount = 0;
-                                    } else if (robot.ableToCalibrateFront()) {
-                                        SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                        isCalibrated = true;
-                                        calibrationCount = 0;
-                                    }  else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                    	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                    	isCalibrated = true;
-                                    	calibrationCount = 0;
-                                	} else if(robot.isObstacleOnRightSideForCalibration()) {
+                                	// checks if robot is able to calibrate
+                	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+                	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
+                	                    isCalibrated = true;
+                	                    calibrationCount = 0;
+                	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
+                	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
+                	                    isCalibrated = true;
+                	                    calibrationCount = 0;
+                	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
+                	                    isCalibrated = true;
+                	                    calibrationCount = 0;
+                	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
                 	                }
@@ -734,21 +745,21 @@ public class ExplorationAlgorithm implements Algorithm {
                             	// sense the surrounding after making the forward move
                             	robot.sense(realRun);
                             	
-                            	// Checks if robot is able to Calibrate
-                            	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                    isCalibrated = true;
-                                    calibrationCount = 0;
-                                } else if (robot.ableToCalibrateFront()) {
-                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                    isCalibrated = true;
-                                    calibrationCount = 0;
-                                }  else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                    isCalibrated = true;
-                                    calibrationCount = 0;
-                                } else if(robot.isObstacleOnRightSideForCalibration()) {
+                            	// checks if robot is able to calibrate
+            	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+            	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
+            	                    isCalibrated = true;
+            	                    calibrationCount = 0;
+            	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
+            	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
+            	                    isCalibrated = true;
+            	                    calibrationCount = 0;
+            	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
             	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
+            	                    isCalibrated = true;
+            	                    calibrationCount = 0;
+            	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+            	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
             	                    isCalibrated = true;
             	                    calibrationCount = 0;
             	                }
@@ -805,20 +816,21 @@ public class ExplorationAlgorithm implements Algorithm {
                     		                sendAndroid(grid, robot, realRun);
                     		            }*/
                                 		
-                                		if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                			isCalibrated = true;
-                                        	calibrationCount = 0;
-                                		} else if (robot.ableToCalibrateFront()) {
-                                			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                			isCalibrated = true;
-                                			calibrationCount = 0;
-                                		} else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                			isCalibrated = true;
-                                			calibrationCount = 0;
-                                		} else if(robot.isObstacleOnRightSideForCalibration()) {
+                                		// checks if robot is able to calibrate
+                    	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+                    	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
+                    	                    isCalibrated = true;
+                    	                    calibrationCount = 0;
+                    	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
+                    	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
+                    	                    isCalibrated = true;
+                    	                    calibrationCount = 0;
+                    	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                     	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
+                    	                    isCalibrated = true;
+                    	                    calibrationCount = 0;
+                    	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                    	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                     	                    isCalibrated = true;
                     	                    calibrationCount = 0;
                     	                }
@@ -854,21 +866,21 @@ public class ExplorationAlgorithm implements Algorithm {
                                 	calibrationCount++;
                                 	robot.sense(realRun);
                                 	
-                                	// Checks if robot is able to Calibrate
-                                	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                            			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                            			isCalibrated = true;
-                                    	calibrationCount = 0;
-                            		} else if (robot.ableToCalibrateFront()) {
-                                        SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                        isCalibrated = true;
-                                        calibrationCount = 0;
-                                    }  else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                    	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                        isCalibrated = true;
-                                        calibrationCount = 0;
-                                    } else if(robot.isObstacleOnRightSideForCalibration()) {
+                                	// checks if robot is able to calibrate
+                	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+                	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
+                	                    isCalibrated = true;
+                	                    calibrationCount = 0;
+                	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
+                	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
+                	                    isCalibrated = true;
+                	                    calibrationCount = 0;
+                	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
+                	                    isCalibrated = true;
+                	                    calibrationCount = 0;
+                	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
                 	                }
@@ -1042,8 +1054,13 @@ public class ExplorationAlgorithm implements Algorithm {
                                 		}
                                 	}
                                 	
-                                	if(!resultFound)
-                                		System.out.println("Nearest Neighbour Algorithm fails to find nearest cell");
+                                	if(!resultFound) {
+                                		System.out.println("Nearest Neighbour Algorithm fails to find nearest cell.\nExecuting First Reachable Unexplored Algorithm");
+                                		resultFound = startFirstReachableUnexploredAlgo(realRun, grid, robot);
+                                		
+                                		if(!resultFound)
+                                			System.out.println("First Reachable Unexplored Algoritm fails to find a reachable unexplored path.");
+                                	}
                                 }
                             }
                         }
@@ -1401,6 +1418,24 @@ public class ExplorationAlgorithm implements Algorithm {
 				default:
 		}
 		
+		return false;
+	}
+	
+	private boolean startFirstReachableUnexploredAlgo(boolean realRun, Grid grid, Robot robot) {
+		//checking for reachable cells in the arena.
+        for (int y = MAP_ROWS - 1; y >= 0; y--) {
+            for (int x = MAP_COLUMNS - 1; x >= 0; x--) {
+            	//check for unexplored cells and if neighbors are reachable.
+                if (!grid.getIsExplored(x, y) &&
+			            		((checkUnexploredCell(realRun, grid, robot, x, y + 1)
+			                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)
+			                    || checkUnexploredCell(realRun, grid, robot, x + 1, y)
+			                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)))) {
+                	return true;
+                }
+            }
+        }
+        
 		return false;
 	}
 	
