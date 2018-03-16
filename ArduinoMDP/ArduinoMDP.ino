@@ -198,7 +198,8 @@ void fastPath(String str)
         //        Serial.println("Fast L");
         break;
       case 'U':
-        turnLeft(180);
+        turnLeft(90);
+        turnLeft(90);
         //        Serial.println("Fast L");
         break;
     }
