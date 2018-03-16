@@ -185,7 +185,7 @@ public class ExplorationAlgorithm implements Algorithm {
 			System.out.println("----------------------Moving Forward----------------------");
 			System.out.println(robotMovementString);
 			robot.move();
-			stepTaken();
+//			stepTaken();
 			// Update Android that there is a move forward
 			sendAndroid(grid, robot, realRun);
 			
@@ -278,7 +278,7 @@ public class ExplorationAlgorithm implements Algorithm {
                             robot.turn(LEFT);
                             robot.turn(LEFT);
                         }                        
-                        stepTaken();
+//                        stepTaken();
                         // Update Android that there is a move or turn
                         sendAndroid(grid, robot, realRun);
                     }
@@ -732,7 +732,7 @@ public class ExplorationAlgorithm implements Algorithm {
                             System.out.println("----------------------Moving Forward----------------------");
             				System.out.println(robotMovementString);
                             robot.move();
-                            stepTaken();
+//                            stepTaken();
                                 
                             // Update Android that there is a move forward
                             sendAndroid(grid, robot, realRun);
@@ -855,7 +855,7 @@ public class ExplorationAlgorithm implements Algorithm {
                                 System.out.println("----------------------Moving Forward----------------------");
                 				System.out.println(robotMovementString);
                                 robot.move();
-                                stepTaken();
+//                                stepTaken();
 
                                 // Update Android that there is a move forward
                                 sendAndroid(grid, robot, realRun);
@@ -1114,7 +1114,7 @@ public class ExplorationAlgorithm implements Algorithm {
                                 robotMovementString += "r";
                                 robot.turn(RIGHT);
                             }
-                            stepTaken();
+//                            stepTaken();
                             // Update Android that there is a move or turn
                             sendAndroid(grid, robot, realRun);
                         }
@@ -1214,7 +1214,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 // Update Android that there is a move or turn
     			sendAndroid(grid, robot, realRun);
                 
-                stepTaken();
+//                stepTaken();
             }
             return true;
         } else {	
@@ -1239,7 +1239,7 @@ public class ExplorationAlgorithm implements Algorithm {
 					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 					robotMovementString+="R";
 					robot.turn(RIGHT);
-	                stepTaken();
+//	                stepTaken();
 					robot.sense(realRun);
 					if(!robot.isObstacleInfront()) {
 						uTurnHalt = true;
@@ -1248,12 +1248,12 @@ public class ExplorationAlgorithm implements Algorithm {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 						robotMovementString+="R";
 						robot.turn(RIGHT);
-		                stepTaken();
+//		                stepTaken();
 					}
 				} else {
 					robot.turn(RIGHT);
 					robot.turn(RIGHT);
-	                stepTaken();
+//	                stepTaken();
 				}
 			} else if(robot.isObstacleOnLeftSide()){
 				System.out.println("---------------------Making a Right Turn-------------------");
@@ -1262,7 +1262,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="R";
                 robot.turn(RIGHT);
-                stepTaken();
+//                stepTaken();
 			} else {
 				System.out.println("---------------------Making a Left Turn--------------------");
                 if (realRun) {
@@ -1270,7 +1270,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="L";
                 robot.turn(LEFT);
-                stepTaken();
+//                stepTaken();
 			}
 			
 			// Update Android that there is a turn
@@ -1284,7 +1284,7 @@ public class ExplorationAlgorithm implements Algorithm {
             }
             robotMovementString+="L";
             robot.turn(LEFT);
-            stepTaken();
+//            stepTaken();
             System.out.println(robotMovementString);
             // Update Android that there is a turn
             sendAndroid(grid, robot, realRun);
