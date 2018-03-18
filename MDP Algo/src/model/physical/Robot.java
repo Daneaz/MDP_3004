@@ -12,7 +12,7 @@ import static constant.CommunicationConstant.*;
 
 
 public class Robot extends Observable {
-	private boolean rightObstWithinFrontRange = false, turnBackToOriginal = false, detectNextMove = false, rightSensor = false;
+	private boolean rightObstWithinFrontRange = false, turnBackToOriginal = false, detectNextMove = false, rightSensor = false, fastestPathCalibration = false;
 	private int positionX = STARTING_X_POSITION;
 	private int positionY = STARTING_Y_POSITION;
 	private int direction = NORTH;
@@ -25,6 +25,10 @@ public class Robot extends Observable {
 		for(int i = 0; i < sensor.size(); i++){
 			sensor.get(i).setSensorOnRobot(this);
 		}
+	}
+	
+	public void setFastestPathCalibration(boolean fastestPathCalibration) {
+		this.fastestPathCalibration = fastestPathCalibration;
 	}
 
 	public void setDetectNextMove(boolean detectNextMove) {
@@ -85,37 +89,43 @@ public class Robot extends Observable {
                 while ((sensorReadings = MessageMgr.parseSensorData(sensorData, sensor.size())) == null) {
                 	sensorData = SocketMgr.getInstance().receiveMessage(false);
                 }
-	            for (int i = 0; i < sensor.size(); i++) {
-	            	int heading = sensor.get(i).getRealDirection();
-	            	int range = sensor.get(i).getRange();
-		          	int x = sensor.get(i).getRealPositionX();
-		          	int y = sensor.get(i).getRealPositionY();
-		          	
-		          	// Right Sensor
-		          	/*if(i == sensor.size() - 1) {
-		          		rightSensor = true;
-		          		// Only check when the rightObstWithinFrontRange flag is false
-		          		if(!rightObstWithinFrontRange) {
-			          		// Obstacle detected
-		            		if(sensorReadings[i] <= range) {
-		            			// Since right sensor is computed from the center
-		            			// the reading 2 and 3 will be within the front sensor range
-		            			// Technically, 1 should not be given, 
-		            			// but I included it in the case so that the front sensor can correct it
-		            			if(!detectNextMove && sensorReadings[i] <= 3) {
-		            				rightObstWithinFrontRange = true;
-		            			} else {
-		            				rightObstWithinFrontRange = false;
-		            			}
-		            		}
-		            	}
-		          	} else {
-		          		rightSensor = false;
-		          	}*/
-		          	
-		           	updateMap(sensorReadings[i], heading, range, x, y, true, sensor.get(i).getAccuracy());
-	            }
-       
+                
+                // only update the map if it is not the fastest path calibration 
+                // at the start point at the end of the exploration
+                if(!fastestPathCalibration) {
+                	for (int i = 0; i < sensor.size(); i++) {
+    	            	int heading = sensor.get(i).getRealDirection();
+    	            	int range = sensor.get(i).getRange();
+    		          	int x = sensor.get(i).getRealPositionX();
+    		          	int y = sensor.get(i).getRealPositionY();
+    		          	
+    		          	// Right Sensor
+    		          	/*if(i == sensor.size() - 1) {
+    		          		rightSensor = true;
+    		          		// Only check when the rightObstWithinFrontRange flag is false
+    		          		if(!rightObstWithinFrontRange) {
+    			          		// Obstacle detected
+    		            		if(sensorReadings[i] <= range) {
+    		            			// Since right sensor is computed from the center
+    		            			// the reading 2 and 3 will be within the front sensor range
+    		            			// Technically, 1 should not be given, 
+    		            			// but I included it in the case so that the front sensor can correct it
+    		            			if(!detectNextMove && sensorReadings[i] <= 3) {
+    		            				rightObstWithinFrontRange = true;
+    		            			} else {
+    		            				rightObstWithinFrontRange = false;
+    		            			}
+    		            		}
+    		            	}
+    		          	} else {
+    		          		rightSensor = false;
+    		          	}*/
+    		          	
+    		           	updateMap(sensorReadings[i], heading, range, x, y, true, sensor.get(i).getAccuracy());
+    	            }
+                } else {
+                	System.out.println("Fastest Path Calibration at Start Position.\nNo Updating of Map");
+                }
         } else { 
             for (Sensor eachSensor : sensor) {
                 int sensedDistance = eachSensor.sense(this.grid);          
