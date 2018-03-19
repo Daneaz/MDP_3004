@@ -86,18 +86,28 @@ public class MessageMgr {
     }
 
 	public static int[] parseSensorData(String sensorData, int size) {
-		if(sensorData!=null) {
-    		System.out.println("Parsing Sensor Data: " + sensorData);
+		// no need to process the data if the sensorData is null
+		if(sensorData == null) {
+			System.out.println("Sensor Data is null");
+    		return null;
     	}
     
+		System.out.println("Parsing Sensor Data: " + sensorData);
+		
+		// sensor data will be 1,2,1,1,2,6
+		// using split to get the sensor data for respective sensors
     	String[] sensorReadings = sensorData.split(",", size);
+    	
+    	// the size of the sensorReadings does not match the number of sensors
     	if(sensorReadings.length != size) {
-    		System.out.println("Invalid Sensor Data / Invalid Data Format");
+    		System.out.println("Invalid Sensor Data size");
     		return null;
     	} else {
+    		// Instantiate a new integer array based on number of sensors
     		int[] sensorsConvertedDistance = new int[sensorReadings.length];
 
             try {
+            	// Process every sensors data into sensorsConvertedDistance and return it
             	for(int i=0; i<sensorReadings.length; i++) {
             		/*int returnedDistance = (int)Double.parseDouble(sensorReadings[i].trim());
                     double Distance = returnedDistance;
@@ -115,25 +125,31 @@ public class MessageMgr {
             		int returnedDistance;
             		
             		// Right Sensor received exact Obstacles Block Distance
-            		if (i == (size-1)) {
-            			returnedDistance = (int)Double.parseDouble(sensorReadings[i].trim());
-            		} 
+            		//if (i == (size-1)) {
+            		
+            		// Arduino will now send the exact block distance so no need for rounding and ceiling
+            		// Parse to Double in case Arduino sends 1.0 instead of 1
+            		returnedDistance = (int)Double.parseDouble(sensorReadings[i].trim());
+            		
+            		//} 
             		// All the other sensors Ceiling the value after dividing by 10
-            		else {
+            		/*else {
             			returnedDistance = (int)Double.parseDouble(sensorReadings[i].trim());
             			double Distance = returnedDistance;
             			returnedDistance = (int) Math.ceil(Distance/10.0);
-            		}
+            		}*/
                     System.out.println("Casting " + returnedDistance + "\n");
                     sensorsConvertedDistance[i] = returnedDistance;
             	}
                 return sensorsConvertedDistance;
             } catch (NumberFormatException e1) {
             	e1.printStackTrace();
+            	System.out.println("Invalid Sensor Data Number Format");
                 return null;
             }
             catch (Exception e) {
                 e.printStackTrace();
+                System.out.println("Invalid Sensor Data / Invalid Data Format");
                 return null;
             }
     	}
