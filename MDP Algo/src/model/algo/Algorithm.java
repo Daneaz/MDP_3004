@@ -279,7 +279,7 @@ public interface Algorithm {
 	}
 
 
-	static String compressPath(List<String> actionWithCalibration) {
+	/*static String compressPath(List<String> actionWithCalibration) {
         int moveCount = 0;
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("X");
@@ -316,6 +316,73 @@ public interface Algorithm {
         	}
         	stringBuilder.append("M");
         	stringBuilder.append(moveCount);
+        }
+
+        return stringBuilder.toString();
+	}*/
+	
+	static String compressPath(List<String> actionWithCalibration) {
+        int moveCount = 0;
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("X");
+        
+        for (String action : actionWithCalibration){
+            if ( action.equals("R") || action.equals("L") || action.equals("U") || action.equals("C")){
+                if (moveCount != 0) {
+                	               	
+                	if(moveCount > 9){
+                		
+                		int firstDigit = moveCount/10;
+                		int remainder = moveCount - (firstDigit * 10);
+                		
+                		stringBuilder.append("M");
+                    	stringBuilder.append(firstDigit);
+                    	stringBuilder.append(remainder);
+                    	moveCount = 0;
+                	}
+                	
+                	else{
+                	
+		            	stringBuilder.append("M");
+		            	stringBuilder.append(0);
+		            	stringBuilder.append(moveCount);
+		                moveCount = 0;
+                	}
+                	
+                }
+                
+                
+                stringBuilder.append(action);
+            }
+            
+            else if (action.equals("M")){
+            	moveCount++;
+            }
+        }
+        
+        
+        if (moveCount != 0){
+        	
+        	if(moveCount > 9){
+        		
+        		int firstDigit = moveCount/10;
+        		int remainder = moveCount - (firstDigit * 10);
+        		
+        		stringBuilder.append("M");
+            	stringBuilder.append(firstDigit);
+            	stringBuilder.append(remainder);
+            	moveCount = 0;
+        	}
+        	
+        	else{
+        	
+            	stringBuilder.append("M");
+            	stringBuilder.append(0);
+            	stringBuilder.append(moveCount);
+                moveCount = 0;
+        	}
+        	
+        	
         }
 
         return stringBuilder.toString();
