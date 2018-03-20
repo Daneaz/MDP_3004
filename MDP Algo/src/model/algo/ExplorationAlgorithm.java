@@ -81,19 +81,28 @@ public class ExplorationAlgorithm implements Algorithm {
 
 	private void calibrateAndTurn(boolean realRun, Robot robot) {
 		if (realRun) {
+				// set the flag to disable updating of map
+				robot.setFastestPathCalibration(true);
 	            while (robot.getDirection() != SOUTH) {
 	                robot.turn(LEFT);
 	                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
 	                robot.sense(realRun);
 	            }
-	            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
+	            /*SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
 	            flushCalibration();
 	            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 	            robot.sense(realRun);
 	            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
 	            flushCalibration();
 	            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-	            robot.sense(realRun);
+	            robot.sense(realRun);*/
+	            
+	            // Send the calibration command to Arduino
+	            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "P");
+	            flushCalibration();
+	            
+	            // set the flag to enable updating of map
+	            robot.setFastestPathCalibration(false);
 	        }
 		
 	}
@@ -121,17 +130,19 @@ public class ExplorationAlgorithm implements Algorithm {
 			
 			// A turn has been made 
 			if (turn) {
-				// CALIBRATION
+				// Actual Run
 				if (realRun) {
-					isCalibrated = false;
-					calibrationCount++;
-					// Sense the surrounding since a turn has been made
+					//isCalibrated = false;
+					//calibrationCount++;
+					
+					// uTurnHalt is used to detect that a U turn has been interfered
+					// No need to sense the surrounding if the U turn has been interfered
 		            if(uTurnHalt) {
 		            	uTurnHalt = false;
 		            } else {
+		            	// Sense the surrounding since a turn has been made
 		            	robot.sense(realRun);
 		            }
-					
 		            
 		            // special case for U turn; if after U-Turn and the left has no obstacles
 		            // Turn left, this needs to be added in because the right sensor is not accurate
@@ -147,7 +158,7 @@ public class ExplorationAlgorithm implements Algorithm {
 		            }*/
 		            
 		            // checks if robot is able to calibrate
-	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+	                /*if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
 	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
@@ -169,8 +180,10 @@ public class ExplorationAlgorithm implements Algorithm {
 	                	// Arduino will send an "OK" message after calibration
 	                	// flush the message
 						flushCalibration();
-			        }
-				} else {
+			        }*/
+				} 
+				// Sense for simulator
+				else {
 					robot.sense(realRun);
 				}
 			}
@@ -184,12 +197,23 @@ public class ExplorationAlgorithm implements Algorithm {
 			robotMovementString+="M";
 			System.out.println("----------------------Moving Forward----------------------");
 			System.out.println(robotMovementString);
+			
+			// show the robot move forward on the simulator
 			robot.move();
-//			stepTaken();
+			
+			// Only give delay for simulator
+			if(!realRun) {
+				stepTaken();
+			}
+			
 			// Update Android that there is a move forward
 			sendAndroid(grid, robot, realRun);
 			
-            if (realRun) {
+			// Does not matter Actual Run or Simulator Run
+			// Sense the surrounding
+			robot.sense(realRun);
+			
+            /*if (realRun) {
             	isCalibrated = false;
                 calibrationCount++;
                 // sense the surrounding after making the forward move
@@ -221,7 +245,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
             } else {
             	robot.sense(realRun);
-            }
+            }*/
             
             // checks if robot enters the endZone
             if(Grid.isInEndingZone(robot.getPositionX(), robot.getPositionY())) {
@@ -277,8 +301,13 @@ public class ExplorationAlgorithm implements Algorithm {
                         } else if (action.equals("U")) {
                             robot.turn(LEFT);
                             robot.turn(LEFT);
-                        }                        
-//                        stepTaken();
+                        }
+                        
+                        // Only give delay for simulator 
+                        if(!realRun) {
+                        	stepTaken();
+                        }
+                        
                         // Update Android that there is a move or turn
                         sendAndroid(grid, robot, realRun);
                     }
@@ -447,8 +476,14 @@ public class ExplorationAlgorithm implements Algorithm {
             	for(int i = zoneNumber; i <= ((zoneNumber+3)%4); i++) {
             		resultFound = checkZoneForUnexplored(i, realRun, grid, robot);
             		if(resultFound) {
-            			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+            			if(realRun) {
+            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+            			}
             			robot.turn(RIGHT);
+            			// Only give delay for simulator 
+                        if(!realRun) {
+                        	stepTaken();
+                        }
             			robot.sense(realRun);
             			break;
             		}
@@ -647,8 +682,14 @@ public class ExplorationAlgorithm implements Algorithm {
                             	for(int i = zoneNumber; i <= ((zoneNumber+3)%4); i++) {
                             		resultFound = checkZoneForUnexplored(i, realRun, grid, robot);
                             		if(resultFound) {
-                            			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                            			if(realRun) {
+                            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                            			}
                             			robot.turn(RIGHT);
+                            			// Only give delay for simulator 
+                                        if(!realRun) {
+                                        	stepTaken();
+                                        }
                             			robot.sense(realRun);
                             			break;
                             		}
@@ -668,12 +709,14 @@ public class ExplorationAlgorithm implements Algorithm {
                             
                             // A turn has been made
                             if (turned) {
-                                // CALIBRATION
+                                // Actual Run
                                 if (realRun) {
-                                	isCalibrated = false;
-                                	calibrationCount++;
-                                    
-                                	if(uTurnHalt) {
+                                	//isCalibrated = false;
+                                	//calibrationCount++;
+                                	
+                                	// uTurnHalt is used to detect that a U turn has been interfered
+                					// No need to sense the surrounding if the U turn has been interfered
+                		            if(uTurnHalt) {
                 		            	uTurnHalt = false;
                 		            } else {
                 		            	// Sense the surrounding since a turn has been made
@@ -694,7 +737,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 		            }*/
                     		            
                                 	// checks if robot is able to calibrate
-                	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+                	                /*if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
                 	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
@@ -716,8 +759,10 @@ public class ExplorationAlgorithm implements Algorithm {
                                 		// Arduino will send an "OK" message after calibration
                                 		// flush the message
                                 		flushCalibration();
-                                	}
-                                } else {
+                                	}*/
+                                } 
+                                // Simulator Run
+                                else {
                                 	robot.sense(realRun);
                                 }
                             }
@@ -732,14 +777,21 @@ public class ExplorationAlgorithm implements Algorithm {
                             System.out.println("----------------------Moving Forward----------------------");
             				System.out.println(robotMovementString);
                             robot.move();
-//                            stepTaken();
-                                
+                            
+                            // Only give delay for simulator 
+                            if(!realRun) {
+                            	stepTaken();
+                            }
+                            
                             // Update Android that there is a move forward
                             sendAndroid(grid, robot, realRun);
                             
+                            // Doesn't matter Actual Run or Simulator Run
+                            // Sense the surrounding after moving forward
+                            robot.sense(realRun);
                             
                             // CALIBRATION
-                            if (realRun) {
+                            /*if (realRun) {
                             	isCalibrated = false;
                             	calibrationCount++;
                             	// sense the surrounding after making the forward move
@@ -771,7 +823,7 @@ public class ExplorationAlgorithm implements Algorithm {
                                 }
                             } else {
                             	robot.sense(realRun);
-                            }
+                            }*/
                             
                             // breaks out of the while loop is map has been fully explored
                             if (grid.checkPercentageExplored() == 100) { 
@@ -791,12 +843,14 @@ public class ExplorationAlgorithm implements Algorithm {
                                 
                                 // A turn has been made
                                 if (turned) {
-                                	// CALIBRATION
+                                	// Actual Run
                                 	if (realRun) {
-                                		isCalibrated = false;
-                                		calibrationCount++;
+                                		//isCalibrated = false;
+                                		//calibrationCount++;
                                 		
-                                		if(uTurnHalt) {
+                                		// uTurnHalt is used to detect that a U turn has been interfered
+                    					// No need to sense the surrounding if the U turn has been interfered
+                    		            if(uTurnHalt) {
                     		            	uTurnHalt = false;
                     		            } else {
                     		            	// Sense the surrounding since a turn has been made
@@ -817,7 +871,7 @@ public class ExplorationAlgorithm implements Algorithm {
                     		            }*/
                                 		
                                 		// checks if robot is able to calibrate
-                    	                if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
+                    	                /*if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
                     	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
                     	                    isCalibrated = true;
                     	                    calibrationCount = 0;
@@ -839,8 +893,11 @@ public class ExplorationAlgorithm implements Algorithm {
                                 			// Arduino will send an "OK" message after calibration
                     	                	// flush the message
                                             flushCalibration();
-                                        }
-                                	} else {
+                                        }*/
+                                	}
+                                	// Simulator Run
+                                	else {
+                                		// Sense the surrounding since a turn has been made
                                 		robot.sense(realRun);
                                 	}
                                 }
@@ -855,13 +912,21 @@ public class ExplorationAlgorithm implements Algorithm {
                                 System.out.println("----------------------Moving Forward----------------------");
                 				System.out.println(robotMovementString);
                                 robot.move();
-//                                stepTaken();
-
+                                
+                                // Only give delay for simulator 
+                                if(!realRun) {
+                                	stepTaken();
+                                }
+                                
                                 // Update Android that there is a move forward
                                 sendAndroid(grid, robot, realRun);
                                 
+                                // Doesn't matter Actual Run or Simulator Run
+                                // Sense the surrounding after moving forward
+                                robot.sense(realRun);
+                                
                                 // CALIBRATION
-                                if (realRun) {
+                                /*if (realRun) {
                                 	isCalibrated = false;
                                 	calibrationCount++;
                                 	robot.sense(realRun);
@@ -892,8 +957,9 @@ public class ExplorationAlgorithm implements Algorithm {
                                     }
                                 } else {
                                 	robot.sense(realRun);
-                                }
+                                }*/
                                 
+                                // Check if there is a Cycle
                                 if(checkForCycle()) {
                                 	/*if(!robot.isObstacleInfront()) {
                                 		// Move a step forward if there is no obstacle in front
@@ -1047,8 +1113,14 @@ public class ExplorationAlgorithm implements Algorithm {
                                 	for(int i = zoneNumber; i <= ((zoneNumber+3)%4); i++) {
                                 		resultFound = checkZoneForUnexplored(i, realRun, grid, robot);
                                 		if(resultFound) {
-                                			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                                			if(realRun) {
+                                				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                                			}
                                 			robot.turn(RIGHT);
+                                			// Only give delay for simulator 
+                                            if(!realRun) {
+                                            	stepTaken();
+                                            }
                                 			robot.sense(realRun);
                                 			break;
                                 		}
@@ -1114,7 +1186,10 @@ public class ExplorationAlgorithm implements Algorithm {
                                 robotMovementString += "r";
                                 robot.turn(RIGHT);
                             }
-//                            stepTaken();
+                            // Only give delay for simulator 
+                            if(!realRun) {
+                            	stepTaken();
+                            }
                             // Update Android that there is a move or turn
                             sendAndroid(grid, robot, realRun);
                         }
@@ -1130,6 +1205,7 @@ public class ExplorationAlgorithm implements Algorithm {
         	// Inform Android Tablet to stop the Exploration Timer
         	SocketMgr.getInstance().sendMessage(CALL_ANDROID, "exploreComplete");
             
+        	// Need to give a delay in between so that raspberry can send the messages separately
         	try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -1214,7 +1290,10 @@ public class ExplorationAlgorithm implements Algorithm {
                 // Update Android that there is a move or turn
     			sendAndroid(grid, robot, realRun);
                 
-//                stepTaken();
+    			// Only give delay for simulator 
+                if(!realRun) {
+                	stepTaken();
+                }
             }
             return true;
         } else {	
@@ -1232,37 +1311,42 @@ public class ExplorationAlgorithm implements Algorithm {
 
 	private boolean leftHugging(boolean realRun, Robot robot, Grid grid) {
 		if(robot.isObstacleInfront()) {
-			if(robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()){
+			if(robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()) {
 				System.out.println("---------------------Making a U-Turn--------------------");
 				if (realRun) {
 					//SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
 					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 					robotMovementString+="R";
 					robot.turn(RIGHT);
-//	                stepTaken();
 					robot.sense(realRun);
 					if(!robot.isObstacleInfront()) {
 						uTurnHalt = true;
+						System.out.println("---------------------U-Turn Halted, Only Made a Right Turn--------------------");
+						System.out.println(robotMovementString);
 						return true;
 					} else {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 						robotMovementString+="R";
 						robot.turn(RIGHT);
-//		                stepTaken();
 					}
 				} else {
+					robotMovementString+="RR";
 					robot.turn(RIGHT);
 					robot.turn(RIGHT);
-//	                stepTaken();
+					// Only give delay for simulator
+                    stepTaken();
 				}
-			} else if(robot.isObstacleOnLeftSide()){
+			} else if(robot.isObstacleOnLeftSide()) {
 				System.out.println("---------------------Making a Right Turn-------------------");
                 if (realRun) {
                 	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
                 }
                 robotMovementString+="R";
                 robot.turn(RIGHT);
-//                stepTaken();
+                // Only give delay for simulator 
+                if(!realRun) {
+                	stepTaken();
+                }
 			} else {
 				System.out.println("---------------------Making a Left Turn--------------------");
                 if (realRun) {
@@ -1270,11 +1354,16 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="L";
                 robot.turn(LEFT);
-//                stepTaken();
+                // Only give delay for simulator 
+                if(!realRun) {
+                	stepTaken();
+                }
 			}
 			
 			// Update Android that there is a turn
 			sendAndroid(grid, robot, realRun);
+			
+			System.out.println(robotMovementString);
 			return true;
 		}
 		else if(!robot.isObstacleOnLeftSide()) {
@@ -1284,12 +1373,18 @@ public class ExplorationAlgorithm implements Algorithm {
             }
             robotMovementString+="L";
             robot.turn(LEFT);
-//            stepTaken();
-            System.out.println(robotMovementString);
+            // Only give delay for simulator 
+            if(!realRun) {
+            	stepTaken();
+            }
+            
             // Update Android that there is a turn
             sendAndroid(grid, robot, realRun);
+            
+            System.out.println(robotMovementString);
             return true;
 		}
+		
 		return false;
 	}
 	
@@ -1310,7 +1405,7 @@ public class ExplorationAlgorithm implements Algorithm {
 	
 	public boolean checkForCycle() {
 		int patternCount = 0;
-		int pattern1Count = 0;
+		//int pattern1Count = 0;
 		String pattern = "LMLMLM";
 		//String pattern1 = "RMRMRMRM";
 		
