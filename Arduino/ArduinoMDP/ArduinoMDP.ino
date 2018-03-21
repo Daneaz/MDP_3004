@@ -16,12 +16,12 @@ SharpIR sensorLB(GP2Y0A21YK0F, A4);
 DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 
 //Median variables
-static RunningMedian FrontR = RunningMedian(100);
-static RunningMedian FrontL = RunningMedian(100);
-static RunningMedian FrontC = RunningMedian(100);
-static RunningMedian Right = RunningMedian(100);
-static RunningMedian LeftF = RunningMedian(100);
-static RunningMedian LeftB = RunningMedian(100);
+static RunningMedian FrontR = RunningMedian(300);
+static RunningMedian FrontL = RunningMedian(300);
+static RunningMedian FrontC = RunningMedian(300);
+static RunningMedian Right = RunningMedian(300);
+static RunningMedian LeftF = RunningMedian(300);
+static RunningMedian LeftB = RunningMedian(300);
 
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
@@ -717,7 +717,7 @@ double readSensor(SharpIR sensor, double offset)
 //get all sensor data
 void getRMedian()
 {
-  for (int sCount = 0; sCount < 100 ; sCount++)
+  for (int sCount = 0; sCount < 300 ; sCount++)
   {
     //Calculate the distance in centimeters and store the value in a variable
     disFL = readSensor(sensorFL, -4);
