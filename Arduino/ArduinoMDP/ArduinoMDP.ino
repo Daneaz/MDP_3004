@@ -16,21 +16,13 @@ SharpIR sensorLB(GP2Y0A21YK0F, A4);
 DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 
 //Median variables
-<<<<<<< HEAD
 static RunningMedian FrontR = RunningMedian(300);
 static RunningMedian FrontL = RunningMedian(300);
 static RunningMedian FrontC = RunningMedian(300);
 static RunningMedian Right = RunningMedian(300);
 static RunningMedian LeftF = RunningMedian(300);
 static RunningMedian LeftB = RunningMedian(300);
-=======
-static RunningMedian FrontR = RunningMedian(50);
-static RunningMedian FrontL = RunningMedian(50);
-static RunningMedian FrontC = RunningMedian(50);
-static RunningMedian Right = RunningMedian(50);
-static RunningMedian LeftF = RunningMedian(50);
-static RunningMedian LeftB = RunningMedian(50);
->>>>>>> parent of a4e751d... week9 v2
+
 
 volatile int mLTicks = 0;
 volatile int mRTicks = 0;
@@ -117,8 +109,8 @@ void fastPath(String str)
       cmd = str[i];
     }
     dis = cdis.toInt();
-    Serial.println(cmd);
-    Serial.println(dis);
+    //    Serial.println(cmd);
+    //    Serial.println(dis);
 
     switch (cmd)
     {
@@ -220,10 +212,22 @@ void runCMD(char cmd, int target)
       }
       getSensorsData();
       break;
-    //debug function
+
+    case 'P':
+      autoCalibrate();
+      turnRight(90);
+      autoCalibrate();
+      turnRight(90);
+      Serial.println("POK");
+      break;
+      //debug function
+    case '/':
+      stairCaseTest();
+      break;
     case 'F':
       getSensorsDataFront();
       break;
+
     case 'G':
       getSensorsDataLeft();
       break;
@@ -274,39 +278,43 @@ void moveSpeedup(int dis)
 
   double dTotalTicks = 0;
   double output;
-  //  int count = 0;
-  //  double avg, total = 0;
+  //      int count = 0;
+  //      double avg, total = 0;
 
   //  int pwm1 = 282, pwm2 = 330;
   //    int pwm1 = 360, pwm2 = 370;
   //  int pwm1 = 374, pwm2 = 375;
-  int pwm1 = 374, pwm2 = 368;
+  int pwm1 = 386, pwm2 = 374;
 
   //  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 265;   //B2
+    dTotalTicks = 267;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
-    dTotalTicks = 281 * dis;  // 1 to 3 box
+    dTotalTicks = 278 * dis;  // 1 to 3 box
   }
   else if (dis > 3 && dis <= 5)
   {
-    dTotalTicks = 289 * dis;  // 3 to 5 box
+    dTotalTicks = 288 * dis;  // 3 to 5 box
   }
   else if (dis > 5 && dis <= 7)
   {
-    dTotalTicks = 291 * dis;  //5 to 7 box
+    dTotalTicks = 290 * dis;  //5 to 7 box
   }
   else if (dis > 7 && dis <= 10)
   {
-    dTotalTicks = 293 * dis;  //7 to 10 box
+    dTotalTicks = 291 * dis;  //7 to 10 box
   }
   else if (dis > 10 && dis <= 13)
   {
-    dTotalTicks = 296 * dis;  //7 to 10 box
+    dTotalTicks = 292 * dis;  //7 to 10 box
+  }
+  else if (dis > 13 && dis <= 17)
+  {
+    dTotalTicks = 294 * dis;  //7 to 10 box
   }
 
 
@@ -314,25 +322,24 @@ void moveSpeedup(int dis)
   {
 
     output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 3);    //check coiffient for debug
-
-    //    count++;
-    //    total += abs(mLTicks - mRTicks);
-    //    Serial.println(mLTicks - mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.println(mRTicks);
+    md.setSpeeds(pwm1 - output * 10, pwm2 + output * 10);    //check coiffient for debug
+    //            count++;
+    //            total += abs(mLTicks - mRTicks);
+    //            Serial.println(mLTicks - mRTicks);
+    //            Serial.print(mLTicks);
+    //            Serial.print("/");
+    //            Serial.println(mRTicks);
   }
-  //  avg = total / count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
+  //      avg = total / count;
+  //      Serial.print("Avg:");
+  //      Serial.println(avg);
 
   fbrake();
 
   movementCount++;
-  if ( movementCount >= 4)
+  if ( movementCount >= 5)
   {
-    while (mLTicks < 6)
+    while (mLTicks < 12)
       md.setSpeeds(200, 0);
     movementCount = 0;
   }
@@ -344,45 +351,68 @@ void fastForward(int dis)
 
   double dTotalTicks = 0;
   double output;
+  //  int count = 0;
+  //  double avg, total = 0;
 
   //  int pwm1 = 282, pwm2 = 330;
-  int pwm1 = 375, pwm2 = 374;
+  int pwm1 = 380, pwm2 = 384;
 
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
     dTotalTicks = 265;   //B2
   }
-  else if (dis > 1 && dis <= 3 )
+  else if (dis == 2 )
   {
-    dTotalTicks = 276 * dis;  // 1 to 3 box
+    dTotalTicks = 278.5 * dis;
   }
-  else if (dis > 3 && dis <= 5)
+  else if (dis == 3)
   {
-    dTotalTicks = 286 * dis;  // 3 to 5 box
+    dTotalTicks = 280 * dis;
   }
-  else if (dis > 5 && dis <= 7)
+  else if (dis == 4)
   {
-    dTotalTicks = 286 * dis;  //5 to 7 box
+    dTotalTicks = 288 * dis;
+  }
+  else if (dis == 5)
+  {
+    dTotalTicks = 289 * dis;
+  }
+  else if (dis == 6)
+  {
+    dTotalTicks = 290 * dis;
+  }
+  else if (dis == 7)
+  {
+    dTotalTicks = 292 * dis;
   }
   else if (dis > 7 && dis <= 10)
   {
-    dTotalTicks = 290 * dis;  //7 to 10 box
+    dTotalTicks = 296 * dis;  //7 to 10 box
   }
   else if (dis > 10 && dis <= 13)
   {
-    dTotalTicks = 292 * dis;  //7 to 10 box
+    dTotalTicks = 298 * dis;  //7 to 10 box
   }
   else if (dis > 13 && dis <= 17)
   {
-    dTotalTicks = 293 * dis;  //7 to 10 box
+    dTotalTicks = 301 * dis;  //7 to 10 box
   }
 
   while (mLTicks < dTotalTicks)
   {
     output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 3);    //check coiffient for debug
+    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);    //check coiffient for debug
+    //    count++;
+    //    total += abs(mLTicks - mRTicks);
+    //    Serial.println(mLTicks - mRTicks);
+    //    Serial.print(mLTicks);
+    //    Serial.print("/");
+    //    Serial.println(mRTicks);
   }
+  //  avg = total / count;
+  //  Serial.print("Avg:");
+  //  Serial.println(avg);
   fbrake();
 }
 
@@ -390,8 +420,9 @@ void fbrake() {
 
   for (int i = 0; i < 10; i++)
   {
-    md.setBrakes(368, 400);
-    //    md.setBrakes(370, 400);
+    //    md.setBrakes(390, 400);
+    md.setBrakes(378, 400);
+
   }
 
   delay(100);
@@ -701,11 +732,7 @@ double readSensor(SharpIR sensor, double offset)
 //get all sensor data
 void getRMedian()
 {
-<<<<<<< HEAD
   for (int sCount = 0; sCount < 300 ; sCount++)
-=======
-  for (int sCount = 0; sCount < 50 ; sCount++)
->>>>>>> parent of a4e751d... week9 v2
   {
     //Calculate the distance in centimeters and store the value in a variable
     disFL = readSensor(sensorFL, -4);
@@ -753,7 +780,7 @@ void getRMedianLeft()
   {
 
     disLF = readSensor(sensorLF, -10);
-    disLB = readSensor(sensorLB, -9.9);
+    disLB = readSensor(sensorLB, -10.1);
 
     //add the variables into arrays as samples
     LeftF.add(disLF);
@@ -805,17 +832,17 @@ void getSensorsData() {
 
   // Message to PC
   Serial.print('P');
-  Serial.print(disFL);
+  Serial.print(FL);
   Serial.print(",");
-  Serial.print(disFC);
+  Serial.print(FC);
   Serial.print(",");
-  Serial.print(disFR);
+  Serial.print(FR);
   Serial.print(",");
-  Serial.print(disLF);
+  Serial.print(LF);
   Serial.print(",");
-  Serial.print(disLB);
+  Serial.print(LB);
   Serial.print(",");
-  Serial.println(disR);
+  Serial.println(R);
 }
 
 //Debug function for calibration
@@ -855,18 +882,25 @@ void getSensorsDataDistanceAdjust() {
 
 void checkForCalibration()
 {
-  if ((FL == 1 && FC == 1) || (FL == 1 && FR == 1) || (FC == 1 && FR == 1))
+  if ((FL <= 2 && FC <= 2) || (FL <= 2 && FR <= 2) || (FC <= 2 && FR <= 2) )
   {
-    if (LF == 1 && LB == 1)
+    if (LF <= 1 && LB <= 1)
     {
       FrontAndLeftWall();
+      adjustFailCount = 0;
+      adjustFrontFailCount = 0;
     }
     else
     {
       FrontWall();
+      adjustFrontFailCount = 0;
     }
   }
-  else if (LF == 1 && LB == 1)
+  //  else if(FL <= 2)
+  //  {
+  //    adjustDistance();
+  //  }
+  else if ((LF == 1 && LB == 1) && previousLF == 1)
   {
     LeftWall();
     adjustFrontFailCount++;
@@ -876,40 +910,45 @@ void checkForCalibration()
     adjustFailCount++;
   }
 
-  if (adjustFrontFailCount >= 6 && (previousLF == 1 && (LF == 1 || LB == 1)))
+  if (adjustFrontFailCount >= 4 && (previousLF == 1 && (LF == 1 || LB == 1)))
   {
     turnLeft(90);
     FrontWall();
+    delay(100);
     turnRight(90);
+    delay(100);
+    adjustFailCount = 0;
     adjustFrontFailCount = 0;
   }
-  else if (adjustFailCount >= 5 )
+  else if (adjustFailCount >= 4 || adjustFrontFailCount >= 4)
   {
     if (previousR == 1 && R == 1)
     {
       turnRight(90);
       FrontWall();
+      delay(100);
       turnLeft(90);
+      delay(100);
       adjustFailCount = 0;
       adjustFrontFailCount = 0;
     }
     //staircase angle calibration
-    else if (FL == 1 && FC == 2)
-    {
-      adjustAngleStaircase("FL1", "FC2");
-    }
-    else if (FL == 2 && FC == 1)
-    {
-      adjustAngleStaircase("FL2", "FC1");
-    }
-    else if (FC == 1 && FR == 2)
-    {
-      adjustAngleStaircase("FC1", "FR2");
-    }
-    else if (FC == 2 && FR == 1)
-    {
-      adjustAngleStaircase("FC2", "FR1");
-    }
+    //    else if (FL == 1 && FC == 2)
+    //    {
+    //      adjustAngleStaircase("FL1", "FC2");
+    //    }
+    //    else if (FL == 2 && FC == 1)
+    //    {
+    //      adjustAngleStaircase("FL2", "FC1");
+    //    }
+    //    else if (FC == 1 && FR == 2)
+    //    {
+    //      adjustAngleStaircase("FC1", "FR2");
+    //    }
+    //    else if (FC == 2 && FR == 1)
+    //    {
+    //      adjustAngleStaircase("FC2", "FR1");
+    //    }
   }
 
   previousR = R;
@@ -933,10 +972,10 @@ void FrontAndLeftWall()
 {
   turnLeft(90);
   autoCalibrate();
-  delay(20);
+  delay(100);
   turnRight(90);
   autoCalibrate();
-  delay(20);
+  delay(100);
 }
 
 //auto calibration
@@ -1079,7 +1118,7 @@ void adjustAngleLeft()
     dErrorLeftBack =  disLB - calibrateLeftBack;
     dErrorDiff = dErrorLeftFront - dErrorLeftBack;
 
-    if ((disLF > 3 && disLF < 18) && (disLB > 3 && disLB < 18))
+    if ((disLF > 1 && disLF < 18) && (disLB > 1 && disLB < 18))
     {
 
       if (abs(dErrorDiff) < 0.3)
@@ -1089,11 +1128,12 @@ void adjustAngleLeft()
       if (dErrorLeftFront < dErrorLeftBack)
       {
         turnRightabit(1);
-
+        delay(50);
       }
       else if (dErrorLeftFront > dErrorLeftBack)
       {
         turnLeftabit(1);
+        delay(50);
       }
     }
     //break the while loop instead of wait for 5s
@@ -1256,47 +1296,45 @@ void adjustDistance()
     clearRMedian();
 
     //Use Front Left Sensor adjust distance
-    if (disFL >= 8.2 && disFL <= 17)
+    if (disFL >= 8.2 && disFL < 10.5)
     {
-      if (disFL >= 8.2 && disFL < 10.5)
-      {
-        moveAdjustB();
-        delay(10);      //original is delay(100) reduce to speedup
-      }
-      else if (disFL > 11.5 && disFL <= 17)
-      {
-        moveAdjustF();
-        delay(10);
-      }
+      moveAdjustB();
+      delay(10);      //original is delay(100) reduce to speedup
     }
+    else if (disFL > 11.5 && disFL <= 14)
+    {
+      moveAdjustF();
+      delay(10);
+    }
+
     //use front center
-    else if (disFC >= 7.2 && disFC <= 16)
-    {
-      if (disFC >= 7.2 && disFC < 9.5)
-      {
-        moveAdjustB();
-        delay(10);
-      }
-      else if (disFC > 10.5 && disFC <= 16)
-      {
-        moveAdjustF();
-        delay(10);
-      }
-    }
-    //use Front Right
-    else if (disFR >= 8.2 && disFR <= 17)
-    {
-      if (disFR >= 8.2 && disFR < 10.5)
-      {
-        moveAdjustB();
-        delay(10);      //original is delay(100) reduce to speedup
-      }
-      else if (disFR > 11.5 && disFR <= 17)
-      {
-        moveAdjustF();
-        delay(10);
-      }
-    }
+    //    else if (disFC >= 7.2 && disFC <= 16)
+    //    {
+    //      if (disFC >= 7.2 && disFC < 9.5)
+    //      {
+    //        moveAdjustB();
+    //        delay(10);
+    //      }
+    //      else if (disFC > 10.5 && disFC <= 16)
+    //      {
+    //        moveAdjustF();
+    //        delay(10);
+    //      }
+    //    }
+    //    //use Front Right
+    //    else if (disFR >= 8.2 && disFR <= 17)
+    //    {
+    //      if (disFR >= 8.2 && disFR < 10.5)
+    //      {
+    //        moveAdjustB();
+    //        delay(10);      //original is delay(100) reduce to speedup
+    //      }
+    //      else if (disFR > 11.5 && disFR <= 17)
+    //      {
+    //        moveAdjustF();
+    //        delay(10);
+    //      }
+    //    }
     else
     {
       break;

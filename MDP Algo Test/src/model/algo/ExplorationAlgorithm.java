@@ -200,16 +200,16 @@ public class ExplorationAlgorithm implements Algorithm {
 			
 			// show the robot move forward on the simulator
 			robot.move();
-<<<<<<< HEAD
+
 			
 			// Only give delay for simulator
-			if(!realRun) {
-				stepTaken();
-			}
+//			if(!realRun) {
+//				stepTaken();
+//			}
 			
-=======
-			stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+
+//			stepTaken();
+
 			// Update Android that there is a move forward
 			sendAndroid(grid, robot, realRun);
 			
@@ -305,18 +305,15 @@ public class ExplorationAlgorithm implements Algorithm {
                         } else if (action.equals("U")) {
                             robot.turn(LEFT);
                             robot.turn(LEFT);
-<<<<<<< HEAD
                         }
                         
                         // Only give delay for simulator 
-                        if(!realRun) {
-                        	stepTaken();
-                        }
+//                        if(!realRun) {
+//                        	stepTaken();
+//                        }
                         
-=======
                         }                        
-                        stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//                        stepTaken();
                         // Update Android that there is a move or turn
                         sendAndroid(grid, robot, realRun);
                     }
@@ -330,7 +327,8 @@ public class ExplorationAlgorithm implements Algorithm {
                 if (Grid.isInStartingZone(robot.getPositionX() + 2, robot.getPositionY()) && inEndZone) {
                     inStartZone = true;
                 }
-            } else if(checkForCycle()) {
+            }  
+		if(checkForCycle()) {
             	// only make the robot move forward when there is no obstacles in front
             	/*if(!robot.isObstacleInfront()) {
             		// Move a step forward
@@ -507,7 +505,8 @@ public class ExplorationAlgorithm implements Algorithm {
             	}
             		
             }
-		}
+            
+		
 	        
         // Start Second exploration if robot is back to starting zone but the exploration is not 100%
         if(grid.checkPercentageExplored() < 100.0) {
@@ -696,9 +695,9 @@ public class ExplorationAlgorithm implements Algorithm {
                             			}
                             			robot.turn(RIGHT);
                             			// Only give delay for simulator 
-                                        if(!realRun) {
-                                        	stepTaken();
-                                        }
+//                                        if(!realRun) {
+//                                        	stepTaken();
+//                                        }
                             			robot.sense(realRun);
                             			break;
                             		}
@@ -786,17 +785,15 @@ public class ExplorationAlgorithm implements Algorithm {
                             System.out.println("----------------------Moving Forward----------------------");
             				System.out.println(robotMovementString);
                             robot.move();
-<<<<<<< HEAD
+
                             
                             // Only give delay for simulator 
                             if(!realRun) {
                             	stepTaken();
                             }
                             
-=======
                             stepTaken();
                                 
->>>>>>> parent of e7a4c10... remove delay speed up
                             // Update Android that there is a move forward
                             sendAndroid(grid, robot, realRun);
                             
@@ -926,17 +923,14 @@ public class ExplorationAlgorithm implements Algorithm {
                                 System.out.println("----------------------Moving Forward----------------------");
                 				System.out.println(robotMovementString);
                                 robot.move();
-<<<<<<< HEAD
-                                
-                                // Only give delay for simulator 
-                                if(!realRun) {
-                                	stepTaken();
-                                }
-                                
-=======
-                                stepTaken();
 
->>>>>>> parent of e7a4c10... remove delay speed up
+                                // Only give delay for simulator 
+//                                if(!realRun) {
+//                                	stepTaken();
+//                                }
+                                
+//                                stepTaken();
+
                                 // Update Android that there is a move forward
                                 sendAndroid(grid, robot, realRun);
                                 
@@ -1205,14 +1199,13 @@ public class ExplorationAlgorithm implements Algorithm {
                                 robotMovementString += "r";
                                 robot.turn(RIGHT);
                             }
-<<<<<<< HEAD
                             // Only give delay for simulator 
-                            if(!realRun) {
-                            	stepTaken();
-                            }
-=======
-                            stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//                            if(!realRun) {
+//                            	stepTaken();
+//                            }
+
+//                            stepTaken();
+
                             // Update Android that there is a move or turn
                             sendAndroid(grid, robot, realRun);
                         }
@@ -1313,14 +1306,13 @@ public class ExplorationAlgorithm implements Algorithm {
                 // Update Android that there is a move or turn
     			sendAndroid(grid, robot, realRun);
                 
-<<<<<<< HEAD
     			// Only give delay for simulator 
-                if(!realRun) {
-                	stepTaken();
-                }
-=======
-                stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//                if(!realRun) {
+//                	stepTaken();
+//                }
+
+//                stepTaken();
+
             }
             return true;
         } else {	
@@ -1345,10 +1337,7 @@ public class ExplorationAlgorithm implements Algorithm {
 					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 					robotMovementString+="R";
 					robot.turn(RIGHT);
-<<<<<<< HEAD
-=======
-	                stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//	                stepTaken();
 					robot.sense(realRun);
 					if(!robot.isObstacleInfront()) {
 						uTurnHalt = true;
@@ -1359,21 +1348,15 @@ public class ExplorationAlgorithm implements Algorithm {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 						robotMovementString+="R";
 						robot.turn(RIGHT);
-<<<<<<< HEAD
-=======
-		                stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//		                stepTaken();
 					}
 				} else {
 					robotMovementString+="RR";
 					robot.turn(RIGHT);
 					robot.turn(RIGHT);
-<<<<<<< HEAD
 					// Only give delay for simulator
-                    stepTaken();
-=======
-	                stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//                    stepTaken();
+//	                stepTaken();
 				}
 			} else if(robot.isObstacleOnLeftSide()) {
 				System.out.println("---------------------Making a Right Turn-------------------");
@@ -1382,14 +1365,11 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="R";
                 robot.turn(RIGHT);
-<<<<<<< HEAD
                 // Only give delay for simulator 
-                if(!realRun) {
-                	stepTaken();
-                }
-=======
-                stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//                if(!realRun) {
+//                	stepTaken();
+//                }
+//                stepTaken();
 			} else {
 				System.out.println("---------------------Making a Left Turn--------------------");
                 if (realRun) {
@@ -1397,14 +1377,14 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="L";
                 robot.turn(LEFT);
-<<<<<<< HEAD
+
                 // Only give delay for simulator 
-                if(!realRun) {
-                	stepTaken();
-                }
-=======
-                stepTaken();
->>>>>>> parent of e7a4c10... remove delay speed up
+//                if(!realRun) {
+//                	stepTaken();
+//                }
+
+//                stepTaken();
+
 			}
 			
 			// Update Android that there is a turn
@@ -1420,16 +1400,14 @@ public class ExplorationAlgorithm implements Algorithm {
             }
             robotMovementString+="L";
             robot.turn(LEFT);
-<<<<<<< HEAD
             // Only give delay for simulator 
-            if(!realRun) {
-            	stepTaken();
-            }
-            
-=======
-            stepTaken();
+//            if(!realRun) {
+//            	stepTaken();
+//            }
+//            
+//            stepTaken();
             System.out.println(robotMovementString);
->>>>>>> parent of e7a4c10... remove delay speed up
+
             // Update Android that there is a turn
             sendAndroid(grid, robot, realRun);
             
