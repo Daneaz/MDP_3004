@@ -294,13 +294,13 @@ void moveSpeedup(int dis)
   //  int pwm1 = 282, pwm2 = 330;
   //    int pwm1 = 360, pwm2 = 370;
   //  int pwm1 = 374, pwm2 = 375;
-  int pwm1 = 372, pwm2 = 368;
+  int pwm1 = 366, pwm2 = 368;
 
   //  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 265;   //B2
+    dTotalTicks = 266;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
@@ -343,14 +343,14 @@ void moveSpeedup(int dis)
 
   fbrake();
 
-  movementCount++;
-  if ( movementCount >= 4)
-  {
-    while (mLTicks < 6)
-      md.setSpeeds(200, 0);
-    movementCount = 0;
-  }
-  fbrake();
+//  movementCount++;
+//  if ( movementCount >= 4)
+//  {
+//    while (mLTicks < 6)
+//      md.setSpeeds(200, 0);
+//    movementCount = 0;
+//  }
+//  fbrake();
 }
 
 void fastForward(int dis)
@@ -360,7 +360,8 @@ void fastForward(int dis)
   double output;
 
   //  int pwm1 = 282, pwm2 = 330;
-  int pwm1 = 375, pwm2 = 374;
+//  int pwm1 = 375, pwm2 = 374;
+  int pwm1 = 366, pwm2 = 368;
 
   if (dis <= 1)
   {
@@ -373,23 +374,23 @@ void fastForward(int dis)
   }
   else if (dis > 3 && dis <= 5)
   {
-    dTotalTicks = 286 * dis;  // 3 to 5 box
+    dTotalTicks = 289 * dis;  // 3 to 5 box
   }
   else if (dis > 5 && dis <= 7)
   {
-    dTotalTicks = 286 * dis;  //5 to 7 box
+    dTotalTicks = 291 * dis;  //5 to 7 box
   }
   else if (dis > 7 && dis <= 10)
   {
-    dTotalTicks = 290 * dis;  //7 to 10 box
+    dTotalTicks = 292 * dis;  //7 to 10 box
   }
   else if (dis > 10 && dis <= 13)
   {
-    dTotalTicks = 292 * dis;  //7 to 10 box
+    dTotalTicks = 293 * dis;  //7 to 10 box
   }
   else if (dis > 13 && dis <= 17)
   {
-    dTotalTicks = 293 * dis;  //7 to 10 box
+    dTotalTicks = 294 * dis;  //7 to 10 box
   }
 
   while (mLTicks < dTotalTicks)
@@ -453,7 +454,7 @@ void turnRight(int degree) {
   {
     //    dTotalTicks = 391;
     //    dTotalTicks = 379 / 90 * 90;     //Battery 1
-    dTotalTicks = 367;        //Battery 2
+    dTotalTicks = 370;        //Battery 2
   }
   else if (degree <= 45)
   {
@@ -504,7 +505,7 @@ void turnLeft(int degree) {
   if (degree == 0)
   {
     //    dTotalTicks = 405 / 90 * 90;    //Battery 1
-    dTotalTicks = 362;      //Battery 2
+    dTotalTicks = 363;      //Battery 2
   }
   else if (degree <= 45)
   {
@@ -685,7 +686,7 @@ double readLongRange(uint8_t sensor, double offset)
   //Reading analog voltage of sensor
   data = analogRead(sensor);
 
-  distance = (-0.000000478715139 * pow(data, 3) + 0.000697599228477 * pow(data, 2) - 0.423545499540302 * data + 115.325540693115000) - offset;
+  distance = (-0.000001009070685*pow(data,3) + 0.001384719398215*pow(data,2) - 0.714610710758354*data + 157.962500900771000) - offset;
 
   if (distance <= 19)
     distance = 10;
@@ -697,6 +698,7 @@ double readLongRange(uint8_t sensor, double offset)
     distance = 40;
   else if (distance > 45 && distance <= 55)
     distance = 50;
+    
   else if (distance > 55 && distance <= 65)
     distance = 60;
   return distance;
@@ -1308,12 +1310,12 @@ void adjustDistance()
     if (disFL >= 7.2 && disFL < 10.5)
     {
       moveAdjustB();
-      delay(10);      //original is delay(100) reduce to speedup
+      delay(50);      //original is delay(100) reduce to speedup
     }
     else if (disFL > 11.5 && disFL <= 17)
     {
       moveAdjustF();
-      delay(10);
+      delay(50);
     }
     //    }
     //use front center
