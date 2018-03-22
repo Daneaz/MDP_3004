@@ -82,8 +82,8 @@ public class ExplorationAlgorithm implements Algorithm {
 		if (realRun) {
 				// set the flag to disable updating of map
 				robot.setFastestPathCalibration(true);
-	            //while (robot.getDirection() != SOUTH) {
-				while (robot.getDirection() != NORTH) {
+	            while (robot.getDirection() != SOUTH) {
+				//while (robot.getDirection() != NORTH) {
 	                robot.turn(LEFT);
 	                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
 	                robot.sense(realRun);
@@ -600,8 +600,6 @@ public class ExplorationAlgorithm implements Algorithm {
                             if(!realRun) {
                             	stepTaken();
                             }
-                            
-                            stepTaken();
                                 
                             // Update Android that there is a move forward
                             sendAndroid(grid, robot, realRun);
@@ -879,10 +877,10 @@ public class ExplorationAlgorithm implements Algorithm {
                             if(!realRun) {
                             	stepTaken();
                             }
-
-                            // Update Android that there is a move or turn
-                            sendAndroid(grid, robot, realRun);
                         }
+                        stepTaken();
+                     // Update Android that there is a move or turn
+                        sendAndroid(grid, robot, realRun);
                     }
                     grid.clearClosedSet();
                     
@@ -969,7 +967,7 @@ public class ExplorationAlgorithm implements Algorithm {
             
         	// Need to give a delay in between so that raspberry can send the messages separately
         	try {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -978,6 +976,7 @@ public class ExplorationAlgorithm implements Algorithm {
             // Update Android when the exploration is completed
             sendAndroid(grid, robot, realRun);
         }
+        grid.clearClosedSet();
         System.out.println("Whole Maze Robot Movement: " + robotMovementString);
         System.out.println("EXPLORATION COMPLETED!");
         System.out.println("AREA EXPLORED: " + grid.checkPercentageExplored() + "%!");
