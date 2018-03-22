@@ -155,11 +155,11 @@ public class ExplorationAlgorithm implements Algorithm {
 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
-	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
+	                } /*else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
-	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+	                }*/ else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
 	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
 	                    isCalibrated = true;
 	                    calibrationCount = 0;
@@ -185,7 +185,9 @@ public class ExplorationAlgorithm implements Algorithm {
 			System.out.println("----------------------Moving Forward----------------------");
 			System.out.println(robotMovementString);
 			robot.move();
-			stepTaken();
+			if(!realRun) {
+				stepTaken();
+			}
 			// Update Android that there is a move forward
 			sendAndroid(grid, robot, realRun);
 			
@@ -204,11 +206,11 @@ public class ExplorationAlgorithm implements Algorithm {
                 	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
                     isCalibrated = true;
                     calibrationCount = 0;
-                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
+                } /*else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                 	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
                     isCalibrated = true;
                     calibrationCount = 0;
-                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                }*/ else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
                     SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                     isCalibrated = true;
                     calibrationCount = 0;
@@ -293,165 +295,36 @@ public class ExplorationAlgorithm implements Algorithm {
                     inStartZone = true;
                 }
             } else if(checkForCycle()) {
-            	// only make the robot move forward when there is no obstacles in front
-            	/*if(!robot.isObstacleInfront()) {
-            		// Move a step forward
-        			if (realRun) {
-        				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-        				robot.setDetectNextMove(false);
-        			}
-        			// add small "m" so that i can see where a cycle has been detected
-        			robotMovementString+="m";
-                    robot.move();
-                    stepTaken();
-                    // Update Android that there is a move forward
-                    sendAndroid(grid, robot, realRun);
-                    
-                    if (realRun) {
-                    	isCalibrated = false;
-                        calibrationCount++;
-                        // sense the surrounding after making the forward move
-        	            robot.sense(realRun);
-        	            
-        	            // Checks if robot is able to Calibrate
-                    	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                            isCalibrated = true;
-                            calibrationCount = 0;
-                        } else if (robot.ableToCalibrateFront()) {
-                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                            isCalibrated = true;
-                            calibrationCount = 0;
-                        } else if(robot.isObstacleOnRightSideForCalibration()) {
-    	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-    	                    isCalibrated = true;
-    	                    calibrationCount = 0;
-    	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                            isCalibrated = true;
-                            calibrationCount = 0;
-                        }
-                    	
-                    	if(isCalibrated) {
-                    		// Arduino will send an "OK" message after calibration
-                        	// flush the message
-                        	flushCalibration();	
-                        }
-                    } else {
-                    	robot.sense(realRun);
-                    }
-                    
-                    if(!robot.isObstacleInfront()) {
-                		// Move a step forward
-            			if (realRun) {
-            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-            				robot.setDetectNextMove(false);
-            			}
-            			// add small "m" so that i can see where a cycle has been detected
-            			robotMovementString+="m";
-                        robot.move();
-                        stepTaken();
-                        // Update Android that there is a move forward
-                        sendAndroid(grid, robot, realRun);
-                        
-                        if (realRun) {
-                        	isCalibrated = false;
-                            calibrationCount++;
-                            // sense the surrounding after making the forward move
-            	            robot.sense(realRun);
-            	            
-            	            // Checks if robot is able to Calibrate
-                        	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                isCalibrated = true;
-                                calibrationCount = 0;
-                            } else if (robot.ableToCalibrateFront()) {
-                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                isCalibrated = true;
-                                calibrationCount = 0;
-                            } else if(robot.isObstacleOnRightSideForCalibration()) {
-        	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-        	                    isCalibrated = true;
-        	                    calibrationCount = 0;
-        	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                isCalibrated = true;
-                                calibrationCount = 0;
-                            }
-                        	
-                        	if(isCalibrated) {
-                        		// Arduino will send an "OK" message after calibration
-                            	// flush the message
-                            	flushCalibration();	
-                            }
-                        } else {
-                        	robot.sense(realRun);
-                        }
-                	}
-                    
-                    if(!robot.isObstacleInfront()) {
-                		// Move a step forward
-            			if (realRun) {
-            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-            				robot.setDetectNextMove(false);
-            			}
-            			// add small "m" so that i can see where a cycle has been detected
-            			robotMovementString+="m";
-                        robot.move();
-                        stepTaken();
-                        // Update Android that there is a move forward
-                        sendAndroid(grid, robot, realRun);
-                        
-                        if (realRun) {
-                        	isCalibrated = false;
-                            calibrationCount++;
-                            // sense the surrounding after making the forward move
-            	            robot.sense(realRun);
-            	            
-            	            // Checks if robot is able to Calibrate
-                        	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                isCalibrated = true;
-                                calibrationCount = 0;
-                            } else if (robot.ableToCalibrateFront()) {
-                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                isCalibrated = true;
-                                calibrationCount = 0;
-                            } else if(robot.isObstacleOnRightSideForCalibration()) {
-        	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-        	                    isCalibrated = true;
-        	                    calibrationCount = 0;
-        	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                isCalibrated = true;
-                                calibrationCount = 0;
-                            }
-                        	
-                        	if(isCalibrated) {
-                        		// Arduino will send an "OK" message after calibration
-                            	// flush the message
-                            	flushCalibration();	
-                            }
-                        } else {
-                        	robot.sense(realRun);
-                        }
-                	}
-            	}*/
+            	if (grid.checkPercentageExplored() == 100) { 
+                    break;
+                }
             	
             	// Using Nearest Neighbour to break the cycle
             	// Find out which zone the robot is in
             	int zoneNumber = getExploringZone(robot.getPositionX(), robot.getPositionY());
+            	System.out.println("Zone number is " + zoneNumber);
             	
             	boolean resultFound = false;
+            	int count = 0;
             	// Loop through the 4 zones to look for unexplored cell starting from the zone the robot is in
-            	for(int i = zoneNumber; i <= ((zoneNumber+3)%4); i++) {
-            		resultFound = checkZoneForUnexplored(i, realRun, grid, robot);
+            	while(!resultFound || count < 4) {
+            		resultFound = checkZoneForUnexplored(zoneNumber, realRun, grid, robot);
             		if(resultFound) {
-            			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+            			if(realRun) {
+            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+            			}
             			robot.turn(RIGHT);
+            			System.out.println("Robot Direction: " + robot.getDirection());
+            			// Only give delay for simulator 
+                        if(!realRun) {
+                        	stepTaken();
+                        }
             			robot.sense(realRun);
             			break;
             		}
+            		
+            		count++;
+            		zoneNumber = (zoneNumber+1)%4;
             	}
             	
             	if(!resultFound) {
@@ -461,7 +334,6 @@ public class ExplorationAlgorithm implements Algorithm {
             		if(!resultFound)
             			System.out.println("First Reachable Unexplored Algoritm fails to find a reachable unexplored path.");
             	}
-            		
             }
 		}
 	        
@@ -494,164 +366,36 @@ public class ExplorationAlgorithm implements Algorithm {
                         	isInStartPoint = false; 
                         	
                         	if(checkForCycle()) {
-                            	// only make the robot move forward when there is no obstacles in front
-                            	/*if(!robot.isObstacleInfront()) {
-                            		// Move a step forward
-                        			if (realRun) {
-                        				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-                        				robot.setDetectNextMove(false);
-                        			}
-                        			// add small "m" so that i can see where a cycle has been detected
-                        			robotMovementString+="m";
-                                    robot.move();
-                                    stepTaken();
-                                    // Update Android that there is a move forward
-                                    sendAndroid(grid, robot, realRun);
-                                    
-                                    if (realRun) {
-                                    	isCalibrated = false;
-                                        calibrationCount++;
-                                        // sense the surrounding after making the forward move
-                        	            robot.sense(realRun);
-                        	            
-                        	            // Checks if robot is able to Calibrate
-                                    	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                            isCalibrated = true;
-                                            calibrationCount = 0;
-                                        } else if (robot.ableToCalibrateFront()) {
-                                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                            isCalibrated = true;
-                                            calibrationCount = 0;
-                                        } else if(robot.isObstacleOnRightSideForCalibration()) {
-                    	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-                    	                    isCalibrated = true;
-                    	                    calibrationCount = 0;
-                    	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                            isCalibrated = true;
-                                            calibrationCount = 0;
-                                        }
-                                    	
-                                    	if(isCalibrated) {
-                                    		// Arduino will send an "OK" message after calibration
-                                        	// flush the message
-                                        	flushCalibration();	
-                                        }
-                                    } else {
-                                    	robot.sense(realRun);
-                                    }
-                                    
-                                    if(!robot.isObstacleInfront()) {
-                                		// Move a step forward
-                            			if (realRun) {
-                            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-                            				robot.setDetectNextMove(false);
-                            			}
-                            			// add small "m" so that i can see where a cycle has been detected
-                            			robotMovementString+="m";
-                                        robot.move();
-                                        stepTaken();
-                                        // Update Android that there is a move forward
-                                        sendAndroid(grid, robot, realRun);
-                                        
-                                        if (realRun) {
-                                        	isCalibrated = false;
-                                            calibrationCount++;
-                                            // sense the surrounding after making the forward move
-                            	            robot.sense(realRun);
-                            	            
-                            	            // Checks if robot is able to Calibrate
-                                        	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            } else if (robot.ableToCalibrateFront()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            } else if(robot.isObstacleOnRightSideForCalibration()) {
-                        	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-                        	                    isCalibrated = true;
-                        	                    calibrationCount = 0;
-                        	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            }
-                                        	
-                                        	if(isCalibrated) {
-                                        		// Arduino will send an "OK" message after calibration
-                                            	// flush the message
-                                            	flushCalibration();	
-                                            }
-                                        } else {
-                                        	robot.sense(realRun);
-                                        }
-                                	}
-                                    
-                                    if(!robot.isObstacleInfront()) {
-                                		// Move a step forward
-                            			if (realRun) {
-                            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-                            				robot.setDetectNextMove(false);
-                            			}
-                            			// add small "m" so that i can see where a cycle has been detected
-                            			robotMovementString+="m";
-                                        robot.move();
-                                        stepTaken();
-                                        // Update Android that there is a move forward
-                                        sendAndroid(grid, robot, realRun);
-                                        
-                                        if (realRun) {
-                                        	isCalibrated = false;
-                                            calibrationCount++;
-                                            // sense the surrounding after making the forward move
-                            	            robot.sense(realRun);
-                            	            
-                            	            // Checks if robot is able to Calibrate
-                                        	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            } else if (robot.ableToCalibrateFront()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            } else if(robot.isObstacleOnRightSideForCalibration()) {
-                        	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-                        	                    isCalibrated = true;
-                        	                    calibrationCount = 0;
-                        	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            }
-                                        	
-                                        	if(isCalibrated) {
-                                        		// Arduino will send an "OK" message after calibration
-                                            	// flush the message
-                                            	flushCalibration();	
-                                            }
-                                        } else {
-                                        	robot.sense(realRun);
-                                        }
-                                	}
-                            	}*/
+                        		if (grid.checkPercentageExplored() == 100) { 
+                                    break;
+                                }
                             	
                             	// Using Nearest Neighbour to break the cycle
                             	// Find out which zone the robot is in
                             	int zoneNumber = getExploringZone(robot.getPositionX(), robot.getPositionY());
+                            	System.out.println("Zone number is " + zoneNumber);
+                            	
                             	boolean resultFound = false;
+                            	int count = 0;
                             	// Loop through the 4 zones to look for unexplored cell starting from the zone the robot is in
-                            	for(int i = zoneNumber; i <= ((zoneNumber+3)%4); i++) {
-                            		resultFound = checkZoneForUnexplored(i, realRun, grid, robot);
+                            	while(!resultFound || count < 4) {
+                            		resultFound = checkZoneForUnexplored(zoneNumber, realRun, grid, robot);
                             		if(resultFound) {
-                            			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                            			if(realRun) {
+                            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                            			}
                             			robot.turn(RIGHT);
+                            			System.out.println("Robot Direction: " + robot.getDirection());
+                            			// Only give delay for simulator 
+                                        if(!realRun) {
+                                        	stepTaken();
+                                        }
                             			robot.sense(realRun);
                             			break;
                             		}
+                            		
+                            		count++;
+                            		zoneNumber = (zoneNumber+1)%4;
                             	}
                             	
                             	if(!resultFound) {
@@ -702,11 +446,11 @@ public class ExplorationAlgorithm implements Algorithm {
                 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
-                	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
+                	                } /*else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
-                	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                	                }*/ else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
                 	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
@@ -732,7 +476,9 @@ public class ExplorationAlgorithm implements Algorithm {
                             System.out.println("----------------------Moving Forward----------------------");
             				System.out.println(robotMovementString);
                             robot.move();
-                            stepTaken();
+                            if(!realRun) {
+                				stepTaken();
+                			}
                                 
                             // Update Android that there is a move forward
                             sendAndroid(grid, robot, realRun);
@@ -754,11 +500,11 @@ public class ExplorationAlgorithm implements Algorithm {
             	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
             	                    isCalibrated = true;
             	                    calibrationCount = 0;
-            	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
+            	                } /*else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
             	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
             	                    isCalibrated = true;
             	                    calibrationCount = 0;
-            	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+            	                }*/ else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
             	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
             	                    isCalibrated = true;
             	                    calibrationCount = 0;
@@ -825,11 +571,11 @@ public class ExplorationAlgorithm implements Algorithm {
                     	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
                     	                    isCalibrated = true;
                     	                    calibrationCount = 0;
-                    	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
+                    	                } /*else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                     	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
                     	                    isCalibrated = true;
                     	                    calibrationCount = 0;
-                    	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                    	                }*/ else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
                     	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                     	                    isCalibrated = true;
                     	                    calibrationCount = 0;
@@ -855,7 +601,9 @@ public class ExplorationAlgorithm implements Algorithm {
                                 System.out.println("----------------------Moving Forward----------------------");
                 				System.out.println(robotMovementString);
                                 robot.move();
-                                stepTaken();
+                                if(!realRun) {
+                    				stepTaken();
+                    			}
 
                                 // Update Android that there is a move forward
                                 sendAndroid(grid, robot, realRun);
@@ -875,11 +623,11 @@ public class ExplorationAlgorithm implements Algorithm {
                 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
-                	                } else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
+                	                } /*else if(calibrationCount >= CALIBRATION_LIMIT && robot.isObstacleOnRightSideForCalibration()) {
                 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
-                	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
+                	                }*/ else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateFront()) {
                 	                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
                 	                    isCalibrated = true;
                 	                    calibrationCount = 0;
@@ -895,163 +643,36 @@ public class ExplorationAlgorithm implements Algorithm {
                                 }
                                 
                                 if(checkForCycle()) {
-                                	/*if(!robot.isObstacleInfront()) {
-                                		// Move a step forward if there is no obstacle in front
-                            			if (realRun) {
-                            				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-                            				robot.setDetectNextMove(false);
-                            			}
-                            			// small "m" so that i can see when the cycle force move happens
-                            			robotMovementString+="m";
-                                        robot.move();
-                                        stepTaken();
-                                        // Update Android that there is a move forward
-                                        sendAndroid(grid, robot, realRun);
-                                        
-                                        if (realRun) {
-                                        	isCalibrated = false;
-                                            calibrationCount++;
-                                            // sense the surrounding after making the forward move
-                            	            robot.sense(realRun);
-                            	            
-                            	            // Checks if robot is able to Calibrate
-                                        	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            } else if (robot.ableToCalibrateFront()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            } else if(robot.isObstacleOnRightSideForCalibration()) {
-                        	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-                        	                    isCalibrated = true;
-                        	                    calibrationCount = 0;
-                        	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                                SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                                isCalibrated = true;
-                                                calibrationCount = 0;
-                                            }
-                                        	
-                                        	if(isCalibrated) {
-                                        		// Arduino will send an "OK" message after calibration
-                                            	// flush the message
-                                            	flushCalibration();	
-                                            }
-                                        } else {
-                                        	robot.sense(realRun);
-                                        }
-                                        
-                                        if(!robot.isObstacleInfront()) {
-                                    		// Move a step forward
-                                			if (realRun) {
-                                				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-                                				robot.setDetectNextMove(false);
-                                			}
-                                			// add small "m" so that i can see where a cycle has been detected
-                                			robotMovementString+="m";
-                                            robot.move();
-                                            stepTaken();
-                                            // Update Android that there is a move forward
-                                            sendAndroid(grid, robot, realRun);
-                                            
-                                            if (realRun) {
-                                            	isCalibrated = false;
-                                                calibrationCount++;
-                                                // sense the surrounding after making the forward move
-                                	            robot.sense(realRun);
-                                	            
-                                	            // Checks if robot is able to Calibrate
-                                            	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                                    isCalibrated = true;
-                                                    calibrationCount = 0;
-                                                } else if (robot.ableToCalibrateFront()) {
-                                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                                    isCalibrated = true;
-                                                    calibrationCount = 0;
-                                                } else if(robot.isObstacleOnRightSideForCalibration()) {
-                            	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-                            	                    isCalibrated = true;
-                            	                    calibrationCount = 0;
-                            	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                                    isCalibrated = true;
-                                                    calibrationCount = 0;
-                                                }
-                                            	
-                                            	if(isCalibrated) {
-                                            		// Arduino will send an "OK" message after calibration
-                                                	// flush the message
-                                                	flushCalibration();	
-                                                }
-                                            } else {
-                                            	robot.sense(realRun);
-                                            }
-                                    	}
-                                        
-                                        if(!robot.isObstacleInfront()) {
-                                    		// Move a step forward
-                                			if (realRun) {
-                                				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-                                				robot.setDetectNextMove(false);
-                                			}
-                                			// add small "m" so that i can see where a cycle has been detected
-                                			robotMovementString+="m";
-                                            robot.move();
-                                            stepTaken();
-                                            // Update Android that there is a move forward
-                                            sendAndroid(grid, robot, realRun);
-                                            
-                                            if (realRun) {
-                                            	isCalibrated = false;
-                                                calibrationCount++;
-                                                // sense the surrounding after making the forward move
-                                	            robot.sense(realRun);
-                                	            
-                                	            // Checks if robot is able to Calibrate
-                                            	if (robot.ableToCalibrateFront() && robot.ableToCalibrateLeft()) {
-                                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "A");
-                                                    isCalibrated = true;
-                                                    calibrationCount = 0;
-                                                } else if (robot.ableToCalibrateFront()) {
-                                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "C");
-                                                    isCalibrated = true;
-                                                    calibrationCount = 0;
-                                                } else if(robot.isObstacleOnRightSideForCalibration()) {
-                            	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "E");
-                            	                    isCalibrated = true;
-                            	                    calibrationCount = 0;
-                            	                } else if (calibrationCount >= CALIBRATION_LIMIT && robot.ableToCalibrateLeft()) {
-                                                    SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "Q");
-                                                    isCalibrated = true;
-                                                    calibrationCount = 0;
-                                                }
-                                            	
-                                            	if(isCalibrated) {
-                                            		// Arduino will send an "OK" message after calibration
-                                                	// flush the message
-                                                	flushCalibration();	
-                                                }
-                                            } else {
-                                            	robot.sense(realRun);
-                                            }
-                                    	}
-                                	}*/
+                                	if (grid.checkPercentageExplored() == 100) { 
+                                        break;
+                                    }
                                 	
                                 	// Using Nearest Neighbour to break the cycle
                                 	// Find out which zone the robot is in
                                 	int zoneNumber = getExploringZone(robot.getPositionX(), robot.getPositionY());
+                                	System.out.println("Zone number is " + zoneNumber);
+                                	
                                 	boolean resultFound = false;
+                                	int count = 0;
                                 	// Loop through the 4 zones to look for unexplored cell starting from the zone the robot is in
-                                	for(int i = zoneNumber; i <= ((zoneNumber+3)%4); i++) {
-                                		resultFound = checkZoneForUnexplored(i, realRun, grid, robot);
+                                	while(!resultFound || count < 4) {
+                                		resultFound = checkZoneForUnexplored(zoneNumber, realRun, grid, robot);
                                 		if(resultFound) {
-                                			SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                                			if(realRun) {
+                                				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+                                			}
                                 			robot.turn(RIGHT);
+                                			System.out.println("Robot Direction: " + robot.getDirection());
+                                			// Only give delay for simulator 
+                                            if(!realRun) {
+                                            	stepTaken();
+                                            }
                                 			robot.sense(realRun);
                                 			break;
                                 		}
+                                		
+                                		count++;
+                                		zoneNumber = (zoneNumber+1)%4;
                                 	}
                                 	
                                 	if(!resultFound) {
@@ -1214,7 +835,9 @@ public class ExplorationAlgorithm implements Algorithm {
                 // Update Android that there is a move or turn
     			sendAndroid(grid, robot, realRun);
                 
-                stepTaken();
+    			if(!realRun) {
+    				stepTaken();
+    			}
             }
             return true;
         } else {	
@@ -1239,7 +862,6 @@ public class ExplorationAlgorithm implements Algorithm {
 					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 					robotMovementString+="R";
 					robot.turn(RIGHT);
-	                stepTaken();
 					robot.sense(realRun);
 					if(!robot.isObstacleInfront()) {
 						uTurnHalt = true;
@@ -1248,7 +870,6 @@ public class ExplorationAlgorithm implements Algorithm {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 						robotMovementString+="R";
 						robot.turn(RIGHT);
-		                stepTaken();
 					}
 				} else {
 					robot.turn(RIGHT);
@@ -1262,7 +883,9 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="R";
                 robot.turn(RIGHT);
-                stepTaken();
+                if(!realRun) {
+    				stepTaken();
+    			}
 			} else {
 				System.out.println("---------------------Making a Left Turn--------------------");
                 if (realRun) {
@@ -1270,7 +893,9 @@ public class ExplorationAlgorithm implements Algorithm {
                 }
                 robotMovementString+="L";
                 robot.turn(LEFT);
-                stepTaken();
+                if(!realRun) {
+    				stepTaken();
+    			}
 			}
 			
 			// Update Android that there is a turn
@@ -1284,7 +909,9 @@ public class ExplorationAlgorithm implements Algorithm {
             }
             robotMovementString+="L";
             robot.turn(LEFT);
-            stepTaken();
+            if(!realRun) {
+				stepTaken();
+			}
             System.out.println(robotMovementString);
             // Update Android that there is a turn
             sendAndroid(grid, robot, realRun);
@@ -1310,8 +937,8 @@ public class ExplorationAlgorithm implements Algorithm {
 	
 	public boolean checkForCycle() {
 		int patternCount = 0;
-		int pattern1Count = 0;
-		String pattern = "LMLMLM";
+		//int pattern1Count = 0;
+		String pattern = "LMLM";
 		//String pattern1 = "RMRMRMRM";
 		
 		// Only checks the pattern if the movement string is longer or same length as the pattern
@@ -1356,62 +983,198 @@ public class ExplorationAlgorithm implements Algorithm {
 	private boolean checkZoneForUnexplored(int zoneNum, boolean realRun, Grid grid, Robot robot) {
 		switch(zoneNum) {
 			case 0:
-				// check for any unexplored cells in zone 0, x: 0-7, y: 10-19
-				for (int y = (MAP_ROWS/2); y < MAP_ROWS; y++) {
-		            for (int x = 0; x <= ((int) (MAP_COLUMNS/2)); x++) {
+				// To prevent the robot to move towards the center scan the area nearer to the wall first
+				// If there is no reachable cells near to the wall then there is no choice but to move towards the center
+				
+				// check for any unexplored cells in zone 0, x: 0-3, y: 10-19
+				for (int x = 0; x <= ((int) (MAP_COLUMNS/2)); x++) {
+					for (int y = (MAP_ROWS/2); y < MAP_ROWS; y++) {
+		            	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
 		            	//check for unexplored cells and if neighbors are reachable.
-		                if (!grid.getIsExplored(x, y) &&
-					            		((checkUnexploredCell(realRun, grid, robot, x, y + 1)
-					                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)
-					                    || checkUnexploredCell(realRun, grid, robot, x + 1, y)
-					                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)))) {
-		                	return true;
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
 		                }
+		            	//grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
 		            }
 				}
 				break;
 			case 1:
-				//check for any unexplored cells in zone 1, x: 0-7, y: 0-9
-    			for (int y = 0; y < (MAP_ROWS/2); y++) {
-                    for (int x = 0; x <= ((int) (MAP_COLUMNS/2)); x++) {
+				// To prevent the robot to move towards the center scan the area nearer to the wall first
+				// If there is no reachable cells near to the wall then there is no choice but to move towards the center
+				
+				//check for any unexplored cells in zone 1, x: 0-3, y: 0-9
+				for (int x = 0; x <= ((int) (MAP_COLUMNS/4)); x++) {
+					for (int y = (MAP_ROWS/2) - 1; y >= 0; y--) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+		            	
                     	//check for unexplored cells and if neighbors are reachable.
-                        if (!grid.getIsExplored(x, y) &&
-    				            		((checkUnexploredCell(realRun, grid, robot, x, y + 1)
-    				                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)
-    				                    || checkUnexploredCell(realRun, grid, robot, x + 1, y)
-    				                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)))) {
-                        	return true;
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
                         }
+		            	//grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    }
+        		}
+    			
+    			//check for any unexplored cells in zone 1, x: 4-7, y: 0-9
+				for (int y = 0; y <= (MAP_ROWS/2) - 1; y++) {
+					for (int x = (((int) (MAP_COLUMNS/4))) + 1; x <= ((int) (MAP_COLUMNS/2)); x++) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+		            	
+                    	//check for unexplored cells and if neighbors are reachable.
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
+                        }
+		            	//grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
                     }
         		}
 				break;
 			case 2:
-				//check for any unexplored cells in zone 2, x: 8-14, y: 0-9
-				for (int y = 0; y < (MAP_ROWS/2); y++) {
-                    for (int x = ((int) Math.ceil(MAP_COLUMNS/2)); x < MAP_COLUMNS; x++) {
+				// To prevent the robot to move towards the center scan the area nearer to the wall first
+				// If there is no reachable cells near to the wall then there is no choice but to move towards the center
+				
+				//check for any unexplored cells in zone 2, x: 8-14, y: 0-4
+				for (int y = 0; y <= (MAP_ROWS/5); y++) {
+					for (int x = ((int) Math.ceil(MAP_COLUMNS/2)) + 1 ; x < MAP_COLUMNS; x++) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    	
                     	//check for unexplored cells and if neighbors are reachable.
-                        if (!grid.getIsExplored(x, y) &&
-    				            		((checkUnexploredCell(realRun, grid, robot, x, y + 1)
-    				                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)
-    				                    || checkUnexploredCell(realRun, grid, robot, x + 1, y)
-    				                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)))) {
-                        	return true;
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
                         }
+		            	
+                        //grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    }
+        		}
+				
+				//check for any unexplored cells in zone 2, x: 11-14, y: 5-9
+				for (int x = MAP_COLUMNS - 1; x >= (((int) Math.ceil(MAP_COLUMNS/2)) + 1); x--) {
+					for (int y = (MAP_ROWS/4); y < (MAP_ROWS/2); y++) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    	
+                    	//check for unexplored cells and if neighbors are reachable.
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
+		            	}
+		            	
+                       // grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
                     }
         		}
 				break;
 			case 3:
-				//check for any unexplored cells in zone 3, x: 8-14, y: 10-19
-				for (int y = (MAP_ROWS/2); y < MAP_ROWS; y++) {
-                    for (int x = ((int) Math.ceil(MAP_COLUMNS/2)); x < MAP_COLUMNS; x++) {
+				// To prevent the robot to move towards the center scan the area nearer to the wall first
+				// If there is no reachable cells near to the wall then there is no choice but to move towards the center
+				
+				//check for any unexplored cells in zone 3, x: 11-14, y: 10-19
+				for (int x = MAP_COLUMNS - 1; x >= MAP_COLUMNS - (((int) Math.ceil(MAP_COLUMNS/4)) + 1); x--) {
+					for (int y = (MAP_ROWS/2); y < MAP_ROWS; y++) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    	
                     	//check for unexplored cells and if neighbors are reachable.
-                        if (!grid.getIsExplored(x, y) &&
-    				            		((checkUnexploredCell(realRun, grid, robot, x, y + 1)
-    				                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)
-    				                    || checkUnexploredCell(realRun, grid, robot, x + 1, y)
-    				                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)))) {
-                        	return true;
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
                         }
+		            	
+		            	//grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    }
+        		}
+				
+				//check for any unexplored cells in zone 3, x: 8-10, y: 15-19
+				for (int y = (MAP_ROWS - 1); y >= ((MAP_ROWS/4)*3); y--) {
+					for (int x = MAP_COLUMNS - (((int) Math.ceil(MAP_COLUMNS/4)) + 2); x >= (((int) Math.ceil(MAP_COLUMNS/2)) + 1); x--) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    	
+                    	//check for unexplored cells and if neighbors are reachable.
+		            	if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
+                        }
+		            	
+		            	//grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    }
+        		}
+				
+				//check for any unexplored cells in zone 3, x: 8-10, y: 10-14
+				for (int x = MAP_COLUMNS - (((int) Math.ceil(MAP_COLUMNS/4)) + 2); x >= (((int) Math.ceil(MAP_COLUMNS/2)) + 1); x--) {
+					for (int y = (MAP_ROWS/2); y < ((MAP_ROWS/4)*3); y++) {
+                    	//grid.getCell()[x][y].setisChecking(true);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
+                    	
+                    	//check for unexplored cells and if neighbors are reachable.
+	                    if (!grid.getIsExplored(x, y) &&
+	                            ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+	                                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
+		            		//grid.getCell()[x][y].setisChecking(false);
+		            		return true;
+                        }
+		            	
+		            	//grid.getCell()[x][y].setisChecking(false);
+		            	//robot.turn(RIGHT);
+		            	//robot.turn(LEFT);
                     }
         		}
 				break;
@@ -1426,11 +1189,11 @@ public class ExplorationAlgorithm implements Algorithm {
         for (int y = MAP_ROWS - 1; y >= 0; y--) {
             for (int x = MAP_COLUMNS - 1; x >= 0; x--) {
             	//check for unexplored cells and if neighbors are reachable.
-                if (!grid.getIsExplored(x, y) &&
-			            		((checkUnexploredCell(realRun, grid, robot, x, y + 1)
-			                    || checkUnexploredCell(realRun, grid, robot, x, y - 1)
-			                    || checkUnexploredCell(realRun, grid, robot, x + 1, y)
-			                    || checkUnexploredCell(realRun, grid, robot, x - 1, y)))) {
+            	if (!grid.getIsExplored(x, y) &&
+                        ((checkUnexploredCell(realRun, grid, robot, x + 1, y)
+                                || checkUnexploredCell(realRun, grid, robot, x - 1, y)
+                                || checkUnexploredCell(realRun, grid, robot, x, y + 1)
+                                || checkUnexploredCell(realRun, grid, robot, x, y - 1)))) {
                 	return true;
                 }
             }
@@ -1438,5 +1201,4 @@ public class ExplorationAlgorithm implements Algorithm {
         
 		return false;
 	}
-	
 }

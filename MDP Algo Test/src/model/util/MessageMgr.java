@@ -115,15 +115,15 @@ public class MessageMgr {
             		int returnedDistance;
             		
             		// Right Sensor received exact Obstacles Block Distance
-            		if (i == (size-1)) {
+            		//if (i == (size-1)) {
             			returnedDistance = (int)Double.parseDouble(sensorReadings[i].trim());
-            		} 
+            		//} 
             		// All the other sensors Ceiling the value after dividing by 10
-            		else {
+            		/*else {
             			returnedDistance = (int)Double.parseDouble(sensorReadings[i].trim());
             			double Distance = returnedDistance;
             			returnedDistance = (int) Math.ceil(Distance/10.0);
-            		}
+            		}*/
                     System.out.println("Casting " + returnedDistance + "\n");
                     sensorsConvertedDistance[i] = returnedDistance;
             	}

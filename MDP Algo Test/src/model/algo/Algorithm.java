@@ -287,18 +287,29 @@ public interface Algorithm {
         for (String action : actionWithCalibration){
             if ( action.equals("R") || action.equals("L") || action.equals("U") || action.equals("C")){
                 if (moveCount != 0) {
-                	
-                	while(moveCount > 9){
+                	               	
+                	if(moveCount > 9){
+                		
+                		int firstDigit = moveCount/10;
+                		int remainder = moveCount - (firstDigit * 10);
                 		
                 		stringBuilder.append("M");
-                    	stringBuilder.append(9);
-                    	moveCount -= 9;
+                    	stringBuilder.append(firstDigit);
+                    	stringBuilder.append(remainder);
+                    	moveCount = 0;
                 	}
                 	
-                	stringBuilder.append("M");
-                	stringBuilder.append(moveCount);
-                    moveCount = 0;
+                	else{
+                	
+		            	stringBuilder.append("M");
+		            	stringBuilder.append(0);
+		            	stringBuilder.append(moveCount);
+		                moveCount = 0;
+                	}
+                	
                 }
+                
+                
                 stringBuilder.append(action);
             }
             
@@ -306,16 +317,30 @@ public interface Algorithm {
             	moveCount++;
             }
         }
+        
+        
         if (moveCount != 0){
         	
-        	while(moveCount > 9){
+        	if(moveCount > 9){
+        		
+        		int firstDigit = moveCount/10;
+        		int remainder = moveCount - (firstDigit * 10);
         		
         		stringBuilder.append("M");
-            	stringBuilder.append(9);
-            	moveCount -= 9;
+            	stringBuilder.append(firstDigit);
+            	stringBuilder.append(remainder);
+            	moveCount = 0;
         	}
-        	stringBuilder.append("M");
-        	stringBuilder.append(moveCount);
+        	
+        	else{
+        	
+            	stringBuilder.append("M");
+            	stringBuilder.append(0);
+            	stringBuilder.append(moveCount);
+                moveCount = 0;
+        	}
+        	
+        	
         }
 
         return stringBuilder.toString();
