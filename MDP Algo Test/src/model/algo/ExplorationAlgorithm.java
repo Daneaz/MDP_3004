@@ -323,7 +323,7 @@ public class ExplorationAlgorithm implements Algorithm {
                         }
                         
                         // Update Android that there is a move or turn
-                        sendAndroid(grid, robot, realRun);
+//                        sendAndroid(grid, robot, realRun);
                     }
                     
                     /*

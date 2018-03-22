@@ -195,24 +195,24 @@ void runCMD(char cmd, int target)
   {
     case 'M':
       moveSpeedup(target);
-      getSensorsData();
+      getSensorsData(cmd);
       break;
     case 'R':
       turnRight(target);
-      getSensorsData();
+      getSensorsData(cmd);
       break;
     case 'L':
       turnLeft(target);
-      getSensorsData();
+      getSensorsData(cmd);
       break;
     case 'U':
       turnLeft(90);
       turnLeft(90);
-      getSensorsData();
+      getSensorsData(cmd);
       break;
     case 'S':
       moveBack(target);
-      getSensorsData();
+      getSensorsData(cmd);
       break;
     case 'A':
       turnLeft(90);
@@ -242,7 +242,7 @@ void runCMD(char cmd, int target)
       break;
     case 'C':
       adjustDistance();
-      //  adjustAngleLeft();
+      adjustAngleLeft();
       adjustAngleFront();
       //      getSensorsData();
       Serial.println("POK");
@@ -263,7 +263,7 @@ void runCMD(char cmd, int target)
         turnRight(90);
         flag = true;
       }
-      getSensorsData();
+      getSensorsData(cmd);
       break;
 
     case 'P':
@@ -344,7 +344,7 @@ void moveSpeedup(int dis)
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 252;   //B2
+    dTotalTicks = 251;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
@@ -438,20 +438,49 @@ void fastForward(int dis)
   }
   else if (dis == 7)
   {
+    dTotalTicks = 291 * dis;
+  }
+  else if (dis == 8)
+  {
     dTotalTicks = 292 * dis;
   }
-  else if (dis > 7 && dis <= 10)
+  else if (dis == 9)
   {
-    dTotalTicks = 296 * dis;  //7 to 10 box
+    dTotalTicks = 293 * dis;
   }
-  else if (dis > 10 && dis <= 13)
+  else if (dis == 10)
   {
-    dTotalTicks = 298 * dis;  //7 to 10 box
+    dTotalTicks = 293.5 * dis;
   }
-  else if (dis > 13 && dis <= 17)
+  else if (dis == 11)
   {
-    dTotalTicks = 301 * dis;  //7 to 10 box
+    dTotalTicks = 294 * dis;
   }
+  else if (dis == 12)
+  {
+    dTotalTicks = 295 * dis;
+  }
+  else if (dis == 13)
+  {
+    dTotalTicks = 295 * dis;
+  }
+  else if (dis == 14)
+  {
+    dTotalTicks = 295.5 * dis;
+  }
+  else if (dis == 15)
+  {
+    dTotalTicks = 296 * dis;
+  }
+  else if (dis == 16)
+  {
+    dTotalTicks = 296.5 * dis;
+  }
+  else if (dis == 17)
+  {
+    dTotalTicks = 297 * dis;
+  }
+
 
   while (mLTicks < dTotalTicks)
   {
@@ -870,7 +899,7 @@ double readLongRange(uint8_t sensor, double offset)
   //Reading analog voltage of sensor
   data = analogRead(sensor);
 
-  distance = (-0.000001054638851*pow(data,3) + 0.001439068689074*pow(data,2) - 0.733791466136353*data + 158.106148536651000) - offset;
+  distance = (-0.000001054638851 * pow(data, 3) + 0.001439068689074 * pow(data, 2) - 0.733791466136353 * data + 158.106148536651000) - offset;
 
   if (distance < 18)
     distance = 10;
@@ -962,13 +991,13 @@ void getRMedianDistanceAdjust()
   for (int sCount = 0; sCount < 20 ; sCount++)
   {
     disFL = readSensor(sensorFL, 0);
-    disFC = readSensor(sensorFC, 0);
-    disFR = readSensor(sensorFR, 0);
+    //    disFC = readSensor(sensorFC, 0);
+    //    disFR = readSensor(sensorFR, 0);
 
     //add the variables into arrays as samples
     FrontL.add(disFL);
-    FrontC.add(disFC);
-    FrontR.add(disFR);
+    //    FrontC.add(disFC);
+    //    FrontR.add(disFR);
 
   }
 }
@@ -1010,7 +1039,7 @@ void getSensorsDataActual() {
 }
 
 //*gsd
-void getSensorsData() {
+void getSensorsData(char cmd) {
 
   getRMedian();
   FL = FrontL.getMedian() / 10 + 1;
@@ -1022,7 +1051,7 @@ void getSensorsData() {
   clearRMedian();
 
 
-  checkForCalibration();
+  checkForCalibration(cmd);
   delay(100);
   // Message to PC
   Serial.print('P');
@@ -1068,43 +1097,45 @@ void getSensorsDataDistanceAdjust() {
 
   getRMedianDistanceAdjust();
   Serial.print('P');
-  Serial.print(LeftF.getAverage());
-  Serial.print(",");
-  Serial.println(LeftB.getAverage());
+  Serial.println(FrontL.getAverage());
   clearRMedian();
 }
-
-void checkForCalibration()
+int countFAndLWall = 0;
+void checkForCalibration(char cmd)
 {
   if ((FL  <= 1 && FC  <= 1) || (FL  <= 1 && FR  <= 1) || (FC  <= 1 && FR  <= 1) )
   {
-    if (LF  <= 2 && LB  <= 2 && (adjustFailCount >=4 || adjustFrontFailCount >=4 ))
+    if (LF  <= 2 && LB  <= 2 && countFAndLWall >= 3 )
     {
       FrontAndLeftWall();
       adjustFailCount = 0;
       adjustFrontFailCount = 0;
-//      Serial.println("Left and Front Wall");
+      countFAndLWall = 0;
+      //      Serial.println("Left and Front Wall");
     }
     else
     {
       FrontWall();
       adjustFrontFailCount = 0;
-//      Serial.println("Front Wall");
+      countFAndLWall++;
+      //      Serial.println("Front Wall");
     }
   }
-  else if ((LF  <= 1 && LB  <= 1) && previousLF  <= 1 && adjustFailCount >= 4)
+  else if ((LF  <= 1 && LB  <= 1) && previousLF  <= 1 && adjustFailCount >= 4 && (cmd != 'R' || cmd != 'L'))
   {
     LeftWall();
     adjustFrontFailCount++;
-//    Serial.println("Left Wall");
+    countFAndLWall++;
+    //    Serial.println("Left Wall");
   }
   else
   {
     adjustFrontFailCount++;
     adjustFailCount++;
+    countFAndLWall++;
   }
 
-  if (adjustFrontFailCount >= 5 && (previousLF  <= 1 && (LF  <= 1 || LB <= 1)))
+  if (adjustFrontFailCount >= 5 && (previousLF  <= 1 && (LF  <= 1 || LB <= 1) && (cmd != 'R' || cmd != 'L')))
   {
     turnLeft(90);
     FrontWall();
@@ -1113,7 +1144,8 @@ void checkForCalibration()
     delay(100);
     adjustFailCount = 0;
     adjustFrontFailCount = 0;
-//    Serial.println("Turn Left Calibrate");
+    countFAndLWall++;
+    //    Serial.println("Turn Left Calibrate");
   }
   else if (adjustFailCount >= 6 || adjustFrontFailCount >= 6)
   {
@@ -1125,8 +1157,9 @@ void checkForCalibration()
       turnLeft(90);
       delay(100);
       adjustFailCount = 0;
+      countFAndLWall++;
       adjustFrontFailCount = 0;
-//      Serial.println("Turn Right Calibrate");
+      //      Serial.println("Turn Right Calibrate");
     }
 
     //staircase angle calibration
@@ -1525,12 +1558,12 @@ void adjustDistance()
     clearRMedian();
 
     //Use Front Left Sensor adjust distance
-    if (disFL >= 8.2 && disFL < 10.5)
+    if (disFL >= 7.2 && disFL < 9.5)
     {
       moveAdjustB();
       delay(10);      //original is delay(100) reduce to speedup
     }
-    else if (disFL > 11.5 && disFL <= 17)
+    else if (disFL > 10.5 && disFL <= 16)
     {
       moveAdjustF();
       delay(10);
