@@ -14,4 +14,5 @@ public class MapConstant {
 	public static final Color OBSTACLE = Color.BLACK;
 	public static final Color STARTZONE = new Color(78,187,157);
 	public static final Color GOALZONE = new Color(255,166,56);
+	public static final Color FASTESTPATH = new Color(255,0,0);
 }

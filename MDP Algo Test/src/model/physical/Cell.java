@@ -9,6 +9,10 @@ public class Cell implements Comparable<Cell> {
 	private boolean isObstacle;
 	private int count = 0;
 	
+	private boolean isFastest;
+	private boolean isChecking;
+	private boolean isClosedSet;
+	
 	Cell() {}
 	
 	public Cell (int x, int y){
@@ -74,5 +78,29 @@ public class Cell implements Comparable<Cell> {
 		}
 		
 		return false;
+	}
+
+	public boolean getIsFastestPath() {
+		return isFastest;
+	}
+	
+	public void setIsFastestPath(boolean isFastest) {
+		this.isFastest = isFastest;
+	}
+
+	public boolean getIsChecking() {
+		return isChecking;
+	}
+	
+	public void setisChecking(boolean isChecking) {
+		this.isChecking = isChecking;
+	}
+	
+	public boolean getIsClosedSet() {
+		return isClosedSet;
+	}
+	
+	public void setIsClosedSet(boolean isClosedSet) {
+		this.isClosedSet = isClosedSet;
 	}
 }

@@ -40,18 +40,18 @@ public class FastestPathAlgorithm implements Algorithm {
 		robot.resetRobot();
 		
 		if (realRun) {
-//			SocketMgr.getInstance().sendMessage(CALL_ANDROID,
-//                    MessageMgr.generateMapDescriptorMsg(grid.generateMapDescriptor1(), grid.generateMapDescriptor2(), robot.getCenterPositionX(), robot.getCenterPositionY(), robot.getDirection()));
-//            String msg = SocketMgr.getInstance().receiveMessage(false);
-//            while (!msg.equals("fps")) {
-//                msg = SocketMgr.getInstance().receiveMessage(false);
-//            }
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			SocketMgr.getInstance().sendMessage(CALL_ANDROID,
+                    MessageMgr.generateMapDescriptorMsg(grid.generateMapDescriptor1(), grid.generateMapDescriptor2(), robot.getCenterPositionX(), robot.getCenterPositionY(), robot.getDirection()));
+            String msg = SocketMgr.getInstance().receiveMessage(false);
+            while (!msg.equals("fps")) {
+                msg = SocketMgr.getInstance().receiveMessage(false);
+            }
+//			try {
+//				Thread.sleep(5000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
         }
 		
 		int wayPointX, wayPointY;
