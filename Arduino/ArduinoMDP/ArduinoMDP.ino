@@ -16,12 +16,12 @@ SharpIR sensorLB(GP2Y0A21YK0F, A4);
 DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 
 //Median variables
-static RunningMedian FrontR = RunningMedian(300);
-static RunningMedian FrontL = RunningMedian(300);
-static RunningMedian FrontC = RunningMedian(300);
-static RunningMedian Right = RunningMedian(300);
-static RunningMedian LeftF = RunningMedian(300);
-static RunningMedian LeftB = RunningMedian(300);
+static RunningMedian FrontR = RunningMedian(100);
+static RunningMedian FrontL = RunningMedian(100);
+static RunningMedian FrontC = RunningMedian(100);
+static RunningMedian Right = RunningMedian(100);
+static RunningMedian LeftF = RunningMedian(100);
+static RunningMedian LeftB = RunningMedian(100);
 
 
 volatile int mLTicks = 0;
@@ -119,6 +119,56 @@ void fastPath(String str)
         //        Serial.println(dis);
         break;
       case 'R':
+        turnRightFast(90);
+        //        Serial.println("Fast R");
+        break;
+      case 'L':
+        turnLeftFast(90);
+        //        Serial.println("Fast L");
+        break;
+      case 'U':
+        turnLeftFast(90);
+        turnLeftFast(90);
+        //        Serial.println("Fast U");
+        break;
+    }
+    cdis = "";
+    dis = 0;
+  }
+  Serial.println("BS");
+}
+
+void fastPathEx(String str)
+{
+  char cmd;
+  String cdis;
+  int dis = 0;
+
+  for (int i = 1; i < str.length(); i++)
+  {
+    if (str[i] == 'M')
+    {
+      cmd = 'M';
+      i++;
+      cdis = str[i];
+      i++;
+      cdis += str[i];
+    }
+    else
+    {
+      cmd = str[i];
+    }
+    dis = cdis.toInt();
+    //    Serial.println(cmd);
+    //    Serial.println(dis);
+
+    switch (cmd)
+    {
+      case 'M':
+        fastForward(dis);
+        //        Serial.println(dis);
+        break;
+      case 'R':
         turnRight(90);
         //        Serial.println("Fast R");
         break;
@@ -132,6 +182,7 @@ void fastPath(String str)
         //        Serial.println("Fast U");
         break;
     }
+    checkForCalibrationFastEx();
     cdis = "";
     dis = 0;
   }
@@ -190,7 +241,9 @@ void runCMD(char cmd, int target)
       Serial.println("POK");
       break;
     case 'C':
-      autoCalibrate();
+      adjustDistance();
+      //  adjustAngleLeft();
+      adjustAngleFront();
       //      getSensorsData();
       Serial.println("POK");
       break;
@@ -220,19 +273,24 @@ void runCMD(char cmd, int target)
       turnRight(90);
       Serial.println("POK");
       break;
-      //debug function
+    case 'Z':
+      fastPathEx(inString);
+      break;
+    //debug function
     case '/':
       stairCaseTest();
       break;
     case 'F':
       getSensorsDataFront();
       break;
-
     case 'G':
       getSensorsDataLeft();
       break;
     case 'H':
       getSensorsDataDistanceAdjust();
+      break;
+    case 'J':
+      getSensorsDataActual();
       break;
     case '+':
       moveAdjustF();
@@ -240,10 +298,6 @@ void runCMD(char cmd, int target)
     case '-':
       moveAdjustB();
       break;
-    //checklist function
-    //    case 'Z':
-    //      moveDigonal();
-    //      break;
     default:
       break;
   }
@@ -284,13 +338,13 @@ void moveSpeedup(int dis)
   //  int pwm1 = 282, pwm2 = 330;
   //    int pwm1 = 360, pwm2 = 370;
   //  int pwm1 = 374, pwm2 = 375;
-  int pwm1 = 386, pwm2 = 374;
+  int pwm1 = 372, pwm2 = 368;
 
   //  dTotalTicks = 295 / 10.0 * 10;  // *10 = 10cm
   if (dis <= 1)
   {
     //    dTotalTicks = 310;  // 1 box
-    dTotalTicks = 267;   //B2
+    dTotalTicks = 252;   //B2
   }
   else if (dis > 1 && dis <= 3 )
   {
@@ -421,7 +475,7 @@ void fbrake() {
   for (int i = 0; i < 10; i++)
   {
     //    md.setBrakes(390, 400);
-    md.setBrakes(378, 400);
+    md.setBrakes(368, 400);
 
   }
 
@@ -470,7 +524,7 @@ void turnRight(int degree) {
   {
     //    dTotalTicks = 391;
     //    dTotalTicks = 379 / 90 * 90;     //Battery 1
-    dTotalTicks = 367;        //Battery 2
+    dTotalTicks = 357;        //Battery 2
   }
   else if (degree <= 45)
   {
@@ -490,9 +544,10 @@ void turnRight(int degree) {
   while (mLTicks < dTotalTicks)
   {
 
-    output = pidControl(mLTicks, mRTicks);
+    //    output = pidControl(mLTicks, mRTicks);
 
-    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+    //    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+    md.setSpeeds(pwm1 , pwm2);
     //    count++;
     //    total += abs(mLTicks - mRTicks);
     //    Serial.println(mLTicks - mRTicks);
@@ -521,7 +576,120 @@ void turnLeft(int degree) {
   if (degree == 0)
   {
     //    dTotalTicks = 405 / 90 * 90;    //Battery 1
-    dTotalTicks = 362;      //Battery 2
+    dTotalTicks = 363;      //Battery 2
+  }
+  else if (degree <= 45)
+  {
+    dTotalTicks = 198 / 45 * degree; // 45 degree
+    //    dTotalTicks = 206 / 45 * degree; // 45 degree
+  }
+  else if (degree > 45 && degree <= 90 )
+  {
+    dTotalTicks = 405 / 90 * degree; // 90 degree
+    //    dTotalTicks = 410 / 90 * degree; // 90 degree
+  }
+  else if (degree > 90 && degree <= 180)
+  {
+    dTotalTicks = 808 / 180 * degree; // 180 degree
+    //    dTotalTicks = 818 / 180 * degree; // 180 degree
+  }
+  else if (degree > 180 && degree <= 360)
+  {
+    dTotalTicks = 1656; // 360 degree
+    //    dTotalTicks = 1632 / 360 * degree; // 360 degree
+
+
+  }
+
+  while (mLTicks < dTotalTicks)
+  {
+    //    output = pidControl(mLTicks, mRTicks);
+    //    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
+    md.setSpeeds(pwm1, pwm2);
+    //    count++;
+    //    total += abs(mLTicks - mRTicks);
+    //    Serial.println(mLTicks - mRTicks);
+    //    Serial.print(mLTicks);
+    //    Serial.print("/");
+    //    Serial.print(mRTicks);
+    //    Serial.print("/");
+    //    Serial.println(dTotalTicks);
+  }
+  //  avg = total / count;
+  //  Serial.print("Avg:");
+  //  Serial.println(avg);
+
+  brake();
+}
+
+
+//*tr
+void turnRightFast(int degree) {
+
+  double dTotalTicks = 0;
+  double output;
+  //  int count = 0;
+  //  double avg, total = 0;
+  //  int pwm1 = 355, pwm2 = -330;        //Battery 1
+  int pwm1 = 344, pwm2 = -316;
+
+  if (degree == 0)
+  {
+    //    dTotalTicks = 391;
+    //    dTotalTicks = 379 / 90 * 90;     //Battery 1
+    dTotalTicks = 356;        //Battery 2
+  }
+  else if (degree <= 45)
+  {
+    dTotalTicks = 189 / 45 * degree; // 45 degree
+    //    dTotalTicks = 204 / 45 * degree; // 45 degree
+  }
+  else if (degree > 45 && degree <= 90 )
+  {
+    dTotalTicks = 379 / 90 * degree; // 90 degree
+    //    dTotalTicks = 381 / 90 * degree; // 90 degree
+  }
+  else if (degree > 90)
+  {
+    dTotalTicks = 1657 / 360 * degree; // 360 degree  // For checklist
+  }
+
+  while (mLTicks < dTotalTicks)
+  {
+
+    output = pidControl(mLTicks, mRTicks);
+
+    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+    //    md.setSpeeds(pwm1 , pwm2);
+    //    count++;
+    //    total += abs(mLTicks - mRTicks);
+    //    Serial.println(mLTicks - mRTicks);
+    //    Serial.print(mLTicks);
+    //    Serial.print("/");
+    //    Serial.print(mRTicks);
+    //    Serial.print("/");
+    //    Serial.println(dTotalTicks);
+  }
+  //  avg = total / count;
+  //  Serial.print("Avg:");
+  //  Serial.println(avg);
+
+  brake();
+}
+
+
+void turnLeftFast(int degree) {
+  double dTotalTicks = 0;
+  double output;
+  //  int count = 0;
+  //  double avg, total = 0;
+  //  int pwm1 = -355, pwm2 = 316;    //Battery 1
+  int pwm1 = -344, pwm2 = 316;
+  //    int pwm1 = -355, pwm2 = 326;        //Battery 2
+  if (degree == 0)
+  {
+    //    dTotalTicks = 405 / 90 * 90;    //Battery 1
+    dTotalTicks = 351;      //Battery 2
   }
   else if (degree <= 45)
   {
@@ -550,7 +718,7 @@ void turnLeft(int degree) {
   {
     output = pidControl(mLTicks, mRTicks);
     md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
-
+    //    md.setSpeeds(pwm1, pwm2);
     //    count++;
     //    total += abs(mLTicks - mRTicks);
     //    Serial.println(mLTicks - mRTicks);
@@ -702,9 +870,9 @@ double readLongRange(uint8_t sensor, double offset)
   //Reading analog voltage of sensor
   data = analogRead(sensor);
 
-  distance = (-0.000000478715139 * pow(data, 3) + 0.000697599228477 * pow(data, 2) - 0.423545499540302 * data + 115.325540693115000) - offset;
+  distance = (-0.000001054638851*pow(data,3) + 0.001439068689074*pow(data,2) - 0.733791466136353*data + 158.106148536651000) - offset;
 
-  if (distance <= 19)
+  if (distance < 18)
     distance = 10;
   else if (distance <= 25)
     distance = 20;
@@ -732,7 +900,7 @@ double readSensor(SharpIR sensor, double offset)
 //get all sensor data
 void getRMedian()
 {
-  for (int sCount = 0; sCount < 300 ; sCount++)
+  for (int sCount = 0; sCount < 100 ; sCount++)
   {
     //Calculate the distance in centimeters and store the value in a variable
     disFL = readSensor(sensorFL, -4);
@@ -815,6 +983,32 @@ void clearRMedian() {
   LeftB.clear();
 }
 
+void getSensorsDataActual() {
+
+  getRMedian();
+  disFL = FrontL.getMedian() ;
+  disFC = FrontC.getMedian() ;
+  disFR = FrontR.getMedian() ;
+  disLF = LeftF.getMedian() ;
+  disLB = LeftB.getMedian() ;
+  disR = Right.getMedian();
+  clearRMedian();
+
+  // Message to PC
+  Serial.print('P');
+  Serial.print(disFL);
+  Serial.print(",");
+  Serial.print(disFC);
+  Serial.print(",");
+  Serial.print(disFR);
+  Serial.print(",");
+  Serial.print(disLF);
+  Serial.print(",");
+  Serial.print(disLB);
+  Serial.print(",");
+  Serial.println(disR);
+}
+
 //*gsd
 void getSensorsData() {
 
@@ -829,7 +1023,7 @@ void getSensorsData() {
 
 
   checkForCalibration();
-
+  delay(100);
   // Message to PC
   Serial.print('P');
   Serial.print(FL);
@@ -882,9 +1076,90 @@ void getSensorsDataDistanceAdjust() {
 
 void checkForCalibration()
 {
-  if ((FL <= 2 && FC <= 2) || (FL <= 2 && FR <= 2) || (FC <= 2 && FR <= 2) )
+  if ((FL  <= 1 && FC  <= 1) || (FL  <= 1 && FR  <= 1) || (FC  <= 1 && FR  <= 1) )
   {
-    if (LF <= 1 && LB <= 1)
+    if (LF  <= 2 && LB  <= 2 && (adjustFailCount >=4 || adjustFrontFailCount >=4 ))
+    {
+      FrontAndLeftWall();
+      adjustFailCount = 0;
+      adjustFrontFailCount = 0;
+//      Serial.println("Left and Front Wall");
+    }
+    else
+    {
+      FrontWall();
+      adjustFrontFailCount = 0;
+//      Serial.println("Front Wall");
+    }
+  }
+  else if ((LF  <= 1 && LB  <= 1) && previousLF  <= 1 && adjustFailCount >= 4)
+  {
+    LeftWall();
+    adjustFrontFailCount++;
+//    Serial.println("Left Wall");
+  }
+  else
+  {
+    adjustFrontFailCount++;
+    adjustFailCount++;
+  }
+
+  if (adjustFrontFailCount >= 5 && (previousLF  <= 1 && (LF  <= 1 || LB <= 1)))
+  {
+    turnLeft(90);
+    FrontWall();
+    delay(100);
+    turnRight(90);
+    delay(100);
+    adjustFailCount = 0;
+    adjustFrontFailCount = 0;
+//    Serial.println("Turn Left Calibrate");
+  }
+  else if (adjustFailCount >= 6 || adjustFrontFailCount >= 6)
+  {
+    if (previousR == 2 && R == 2)
+    {
+      turnRight(90);
+      FrontWall();
+      delay(100);
+      turnLeft(90);
+      delay(100);
+      adjustFailCount = 0;
+      adjustFrontFailCount = 0;
+//      Serial.println("Turn Right Calibrate");
+    }
+
+    //staircase angle calibration
+    //    else if (FL == 1 && FC == 2)
+    //    {
+    //      adjustAngleStaircase("FL1", "FR2");
+    //    }
+    //    else if (FL == 2 && FC == 1)
+    //    {
+    //      adjustAngleStaircase("FL2", "FR1");
+    //    }
+  }
+
+  previousR = R;
+  previousLF = LF;
+
+}
+
+void checkForCalibrationFastEx()
+{
+
+  getRMedian();
+  FL = FrontL.getMedian() / 10 + 1;
+  FC = FrontC.getMedian() / 10 + 1;
+  FR = FrontR.getMedian() / 10 + 1;
+  LF = LeftF.getMedian() / 10 + 1;
+  LB = LeftB.getMedian() / 10 + 1;
+  R = Right.getMedian() / 10 + 1;
+  clearRMedian();
+
+  if ((FL  <= 2 && FC  <= 2) || (FL  <= 2 && FR  <= 2) || (FC  <= 2 && FR  <= 2) )
+  {
+    if (LF  <= 1 && LB  <= 1)
     {
       FrontAndLeftWall();
       adjustFailCount = 0;
@@ -896,21 +1171,7 @@ void checkForCalibration()
       adjustFrontFailCount = 0;
     }
   }
-  //  else if(FL <= 2)
-  //  {
-  //    adjustDistance();
-  //  }
-  else if ((LF == 1 && LB == 1) && previousLF == 1)
-  {
-    LeftWall();
-    adjustFrontFailCount++;
-  }
-  else
-  {
-    adjustFailCount++;
-  }
-
-  if (adjustFrontFailCount >= 4 && (previousLF == 1 && (LF == 1 || LB == 1)))
+  else if (LF  <= 1 && LB <= 1 )
   {
     turnLeft(90);
     FrontWall();
@@ -920,40 +1181,6 @@ void checkForCalibration()
     adjustFailCount = 0;
     adjustFrontFailCount = 0;
   }
-  else if (adjustFailCount >= 4 || adjustFrontFailCount >= 4)
-  {
-    if (previousR == 1 && R == 1)
-    {
-      turnRight(90);
-      FrontWall();
-      delay(100);
-      turnLeft(90);
-      delay(100);
-      adjustFailCount = 0;
-      adjustFrontFailCount = 0;
-    }
-    //staircase angle calibration
-    //    else if (FL == 1 && FC == 2)
-    //    {
-    //      adjustAngleStaircase("FL1", "FC2");
-    //    }
-    //    else if (FL == 2 && FC == 1)
-    //    {
-    //      adjustAngleStaircase("FL2", "FC1");
-    //    }
-    //    else if (FC == 1 && FR == 2)
-    //    {
-    //      adjustAngleStaircase("FC1", "FR2");
-    //    }
-    //    else if (FC == 2 && FR == 1)
-    //    {
-    //      adjustAngleStaircase("FC2", "FR1");
-    //    }
-  }
-
-  previousR = R;
-  previousLF = LF;
-
 }
 
 
@@ -982,8 +1209,9 @@ void FrontAndLeftWall()
 void autoCalibrate()
 {
   adjustDistance();
-  adjustAngleFront();
   adjustAngleLeft();
+  adjustAngleFront();
+
 }
 
 //*aa
@@ -1009,7 +1237,7 @@ void adjustAngleFront()
   {
     curTime = millis();
 
-    if (curTime - preTime > 5000)
+    if (curTime - preTime > 3000)
     {
       break;
     }
@@ -1105,7 +1333,7 @@ void adjustAngleLeft()
   {
     curTime = millis();
 
-    if (curTime - preTime > 5000)
+    if (curTime - preTime > 3000)
     {
       break;
     }
@@ -1153,8 +1381,8 @@ void adjustAngleStaircase(String sensor1, String sensor2)
   double calibrateFC = 0;
   double calibrateFR = 0;
 
-  double dErrorFC = 0;
   double dErrorFL = 0;
+  double dErrorFC = 0;
   double dErrorFR = 0;
 
   double dErrorDiffLC = 0, dErrorDiffCR = 0;
@@ -1173,12 +1401,12 @@ void adjustAngleStaircase(String sensor1, String sensor2)
     calibrateFL = 19;
     calibrateFC = 9;
   }
-  else if (sensor1 == "FC1" && sensor2 == "FR2")
-  {
-    calibrateFC = 9;
-    calibrateFR = 19;
-  }
   else if (sensor1 == "FC2" && sensor2 == "FR1")
+  {
+    calibrateFC = 19;
+    calibrateFR = 9;
+  }
+  else if (sensor1 == "FC1" && sensor2 == "FR2")
   {
     calibrateFC = 19;
     calibrateFR = 9;
@@ -1188,7 +1416,7 @@ void adjustAngleStaircase(String sensor1, String sensor2)
   {
     curTime = millis();
 
-    if (curTime - preTime > 5000)
+    if (curTime - preTime > 3000)
     {
       break;
     }
@@ -1199,8 +1427,8 @@ void adjustAngleStaircase(String sensor1, String sensor2)
     disFR = FrontR.getAverage();
     clearRMedian();
 
-    dErrorFC =  disFC - calibrateFC;
     dErrorFL =  disFL - calibrateFL;
+    dErrorFC =  disFC - calibrateFC;
     dErrorFR =  disFR - calibrateFR;
 
     dErrorDiffLC = dErrorFL - dErrorFC;
@@ -1221,28 +1449,13 @@ void adjustAngleStaircase(String sensor1, String sensor2)
         turnRightabit(1);
       }
     }
-    else if ((disFC > 3 && disFC < 21) && (disFL > 3 && disFL < 11))
+    else if ((disFL > 3 && disFL < 21) && (disFC > 3 && disFC < 11))
     {
       if (abs(dErrorDiffLC) < 0.3)
       {
         break;
       }
-      if (dErrorFL > dErrorFC)
-      {
-        turnRightabit(1);
-      }
-      else
-      {
-        turnLeftabit(1);
-      }
-    }
-    else if ((disFC > 3 && disFC < 11) && (disFR > 3 && disFR < 21))
-    {
-      if (abs(dErrorDiffCR) < 0.3)
-      {
-        break;
-      }
-      if (dErrorFR > dErrorFC)
+      if (dErrorFL < dErrorFC)
       {
         turnLeftabit(1);
       }
@@ -1257,7 +1470,22 @@ void adjustAngleStaircase(String sensor1, String sensor2)
       {
         break;
       }
-      if (dErrorFR > dErrorFC)
+      if (dErrorFC < dErrorFR)
+      {
+        turnLeftabit(1);
+      }
+      else
+      {
+        turnRightabit(1);
+      }
+    }
+    else if ((disFC > 3 && disFC < 11) && (disFR > 3 && disFR < 21))
+    {
+      if (abs(dErrorDiffCR) < 0.3)
+      {
+        break;
+      }
+      if (dErrorFC < dErrorFR)
       {
         turnLeftabit(1);
       }
@@ -1273,8 +1501,9 @@ void adjustAngleStaircase(String sensor1, String sensor2)
     }
   }
   //May need a delay here
-
 }
+
+
 
 //*ad
 void adjustDistance()
@@ -1285,7 +1514,7 @@ void adjustDistance()
   while (1)
   {
     curTime = millis();
-    if (curTime - preTime > 5000)
+    if (curTime - preTime > 3000)
     {
       break;
     }
@@ -1301,7 +1530,7 @@ void adjustDistance()
       moveAdjustB();
       delay(10);      //original is delay(100) reduce to speedup
     }
-    else if (disFL > 11.5 && disFL <= 14)
+    else if (disFL > 11.5 && disFL <= 17)
     {
       moveAdjustF();
       delay(10);
@@ -1355,19 +1584,11 @@ void stairCaseTest()
 
   if (FL == 1 && FC == 2)
   {
-    adjustAngleStaircase("FL1", "FC2");
+    adjustAngleStaircase("FL1", "FR2");
   }
   else if (FL == 2 && FC == 1)
   {
-    adjustAngleStaircase("FL2", "FC1");
-  }
-  else if (FC == 1 && FR == 2)
-  {
-    adjustAngleStaircase("FC1", "FR2");
-  }
-  else if (FC == 2 && FR == 1)
-  {
-    adjustAngleStaircase("FC2", "FR1");
+    adjustAngleStaircase("FL2", "FR1");
   }
 }
 
