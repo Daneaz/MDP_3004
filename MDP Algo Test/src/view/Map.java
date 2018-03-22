@@ -52,6 +52,19 @@ public class Map extends JPanel implements Observer {
                 } else {
                     g.setColor(UNEXPLORED);
                 }
+                
+                if(cells[x][y].getIsFastestPath()) {
+                	g.setColor(FASTESTPATH);
+                }
+                
+                if(cells[x][y].getIsChecking()) {
+                	g.setColor(Color.GREEN);
+                }
+                
+                if(cells[x][y].getIsClosedSet()) {
+                	g.setColor(Color.BLUE);
+                }
+                
                 g.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                 
                 g.setColor(new Color(152,152,152));

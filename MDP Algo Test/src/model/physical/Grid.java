@@ -186,7 +186,12 @@ public class Grid extends Observable {
 
         return stringBuilder.toString();
 	}
-	
-	
-	
+
+	public void clearClosedSet() {
+		for (int x = 0; x < MAP_COLUMNS; x++){
+			for ( int y = 0; y < MAP_ROWS; y++){
+				cells[x][y].setIsClosedSet(false);;
+			}
+		}
+	}
 }

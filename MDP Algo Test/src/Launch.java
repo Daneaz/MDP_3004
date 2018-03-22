@@ -28,7 +28,7 @@ public class Launch extends Application {
         Sensor sensor3 = new Sensor(2, 0, 2, MIDDLE, 4); //front right
         Sensor sensor4 = new Sensor(0, 0, 2, LEFT, 4);//left front
         Sensor sensor5 = new Sensor(0, 2, 2, LEFT, 4); //left back
-        Sensor sensor6 = new Sensor(1, 0, 6, RIGHT, 1); //right center
+        Sensor sensor6 = new Sensor(1, 0, 4, RIGHT, 1); //right center
         
         	List<Sensor> sensors = new ArrayList<>();
         	sensors.add(sensor1);

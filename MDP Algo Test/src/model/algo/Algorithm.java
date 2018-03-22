@@ -12,8 +12,6 @@ import java.util.List;
 import static constant.MapConstant.MAP_COLUMNS;
 import static constant.MapConstant.MAP_ROWS;
 import static constant.RobotConstant.*;
-import static constant.RobotConstant.LEFT;
-import static constant.RobotConstant.RIGHT;
 
 
 /**
@@ -26,76 +24,93 @@ public interface Algorithm {
     
 	static List<String> startAstarSearch(int startingPositionX, int startingPositionY, int endingPositionX, int endingPositionY,
 			Grid grid, Robot proxyRobot) {
+		StringBuilder stringBuilder = new StringBuilder();
 	
 		//actual value
 		int[][] gValue;
 		//heuristic value
-		int[][] hValue;
+		int[][] fValue;
 		Cell[][] cells;
 		HashMap<Cell, Cell> previousPosition;
 		List<Cell> openSet;
 		boolean[][] isSetClosed;
 		
 		gValue = new int[MAP_COLUMNS - 2][MAP_ROWS - 2];
-		hValue = new int[MAP_COLUMNS - 2][MAP_ROWS - 2];
+		fValue = new int[MAP_COLUMNS - 2][MAP_ROWS - 2];
 		cells = new Cell[MAP_COLUMNS - 2][MAP_ROWS - 2];
 		previousPosition = new HashMap<>();
 		openSet = new ArrayList<>();
 		isSetClosed = new boolean[MAP_COLUMNS - 2][MAP_ROWS - 2];
 		
-		for (int x = 0; x < MAP_COLUMNS - 2; x++)
-            for (int y = 0; y < MAP_ROWS - 2; y++) {
+		for (int x = 0; x < MAP_COLUMNS - 2; x++) {
+			for (int y = 0; y < MAP_ROWS - 2; y++) {
             	gValue[x][y] = INFINITY;
-            	hValue[x][y] = INFINITY;
+            	fValue[x][y] = INFINITY;
             	cells[x][y] = new Cell(x, y);
             	isSetClosed[x][y] = false;    
             }
-		
+		}
+        grid.clearClosedSet();
+		System.out.println("-----A* Search for startX:" + startingPositionX + ", startY:" + startingPositionY + " to endX:" + endingPositionX + ", endY:" + endingPositionX + " -----");
 		gValue[startingPositionX][startingPositionY] = 0;
-		hValue[startingPositionX][startingPositionY] = estimateHowFarToGoal(startingPositionX, startingPositionY, endingPositionX, endingPositionY);
-        System.out.println("hscore is "+hValue[startingPositionX][startingPositionY]);
-        cells[startingPositionX][startingPositionY].setDistance(hValue[startingPositionX][startingPositionY]);
-        openSet.add(cells[startingPositionX][startingPositionY]);   
-        System.out.println("openSet size is "+ openSet.size());
+		fValue[startingPositionX][startingPositionY] = estimateHowFarToGoal(startingPositionX, startingPositionY, endingPositionX, endingPositionY);
+        //System.out.println("fValue for x:" + startingPositionX + ", y:" + startingPositionY + " is "+fValue[startingPositionX][startingPositionY]);
+        cells[startingPositionX][startingPositionY].setDistance(fValue[startingPositionX][startingPositionY]);
+        openSet.add(cells[startingPositionX][startingPositionY]);
 
         while (!openSet.isEmpty()) {
-            Cell currentCell = getCurrentCell(openSet, hValue);
+        	// get the Cell which has the least fValue from the openSet
+            Cell currentCell = getCurrentCell(openSet, fValue);
+            
+            // if the currentCell is the desired Goal position return the Path string
             if (currentCell.getX() == endingPositionX && currentCell.getY() == endingPositionY) {
-                return reconstructPathToGoal(proxyRobot, currentCell, previousPosition);
+                System.out.println(stringBuilder.toString());
+            	return reconstructPathToGoal(proxyRobot, currentCell, previousPosition);
             }
 
+            // Remove the currentCell from the openSet
             openSet.remove(currentCell);
+            
+            // set the currentCell as part of the fastest Path by setting the closedSet to true
             isSetClosed[currentCell.getX()][currentCell.getY()] = true;
+            grid.getCell()[currentCell.getX()][currentCell.getY()].setIsClosedSet(true);
+            stringBuilder.append("x:" + currentCell.getX() + ", y:" + currentCell.getY() + " is added to closedSet\n");
 
+            // Update the the fValues of all the neighbors of the CurrentCell
             for (Cell neighbor : generateNeighborCell(grid, currentCell, cells)) {
             	
+            	// if the neighbour is already inside the closedSet. Ignore it.
                 if (isSetClosed[neighbor.getX()][neighbor.getY()]){
                     continue;
-                    }
+                }
 
+                // if neighbor is not inside the openSet. Add it into the openSet
                 if (!openSet.contains(neighbor)){
                     openSet.add(neighbor);
-                    }
+                }
 
+                // Since it is neighbor of the CurrentCell, the neighbor GValue is just +1 of the CurrentCell GValue 
                 int tentativeGScore = gValue[currentCell.getX()][currentCell.getY()] + 1;
+                
+                // Get the previous Cell that currentCell came from
                 Cell previousCell = previousPosition.get(currentCell);
                 
                 if (previousCell != null && previousCell.getX() != neighbor.getX() && previousCell.getY() != neighbor.getY()){
                     tentativeGScore += 1;
-                    }
+                }
                 
                 if (tentativeGScore >= gValue[neighbor.getX()][neighbor.getY()]){
                     continue;
-                    }
+                }
 
-                
+                // Update the neighbor GValue, FValue and at it to the previousPosition HashMap
                 gValue[neighbor.getX()][neighbor.getY()] = tentativeGScore;
-                hValue[neighbor.getX()][neighbor.getY()] = tentativeGScore + estimateHowFarToGoal(neighbor.getX(), neighbor.getY(), endingPositionX, endingPositionY);
+                fValue[neighbor.getX()][neighbor.getY()] = tentativeGScore + estimateHowFarToGoal(neighbor.getX(), neighbor.getY(), endingPositionX, endingPositionY);
                 previousPosition.put(neighbor, currentCell);
             }
         }
-		
-		
+        
+		System.out.println("Fastest Path not found");
 		return null;
 	}
 
@@ -154,13 +169,13 @@ public interface Algorithm {
 	}
 
 
-	static Cell getCurrentCell(List<Cell> openSet, int[][] hValue) {
+	static Cell getCurrentCell(List<Cell> openSet, int[][] fValue) {
 		int minH = INFINITY;
 		Cell mCell = null;     
 		
         for (Cell cell : openSet) {
-            if (hValue[cell.getX()][cell.getY()] < minH) {
-            	minH = hValue[cell.getX()][cell.getY()];
+            if (fValue[cell.getX()][cell.getY()] < minH) {
+            	minH = fValue[cell.getX()][cell.getY()];
                 mCell = cell;
             }
         }
@@ -265,8 +280,8 @@ public interface Algorithm {
             	proxyRobot.turn(RIGHT);
             } 
             else if (action.equals("U")) {
-            	proxyRobot.turn(LEFT);
-            	proxyRobot.turn(LEFT);
+            	proxyRobot.turn(RIGHT);
+            	proxyRobot.turn(RIGHT);
             } 
             
             // check calibration
@@ -387,5 +402,103 @@ public interface Algorithm {
 
         return stringBuilder.toString();
 	}
-    
+	
+	static String explorationCompressPath(List<String> actionWithCalibration) {
+        int moveCount = 0;
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Z");
+        
+        for (String action : actionWithCalibration){
+            if ( action.equals("R") || action.equals("L") || action.equals("U") || action.equals("C")){
+                if (moveCount != 0) {
+                	               	
+                	if(moveCount > 9){
+                		
+                		int firstDigit = moveCount/10;
+                		int remainder = moveCount - (firstDigit * 10);
+                		
+                		stringBuilder.append("M");
+                    	stringBuilder.append(firstDigit);
+                    	stringBuilder.append(remainder);
+                    	moveCount = 0;
+                	}
+                	
+                	else{
+                	
+		            	stringBuilder.append("M");
+		            	stringBuilder.append(0);
+		            	stringBuilder.append(moveCount);
+		                moveCount = 0;
+                	}
+                	
+                }
+                
+                
+                stringBuilder.append(action);
+            }
+            
+            else if (action.equals("M")){
+            	moveCount++;
+            }
+        }
+        
+        
+        if (moveCount != 0){
+        	
+        	if(moveCount > 9){
+        		
+        		int firstDigit = moveCount/10;
+        		int remainder = moveCount - (firstDigit * 10);
+        		
+        		stringBuilder.append("M");
+            	stringBuilder.append(firstDigit);
+            	stringBuilder.append(remainder);
+            	moveCount = 0;
+        	}
+        	
+        	else{
+        	
+            	stringBuilder.append("M");
+            	stringBuilder.append(0);
+            	stringBuilder.append(moveCount);
+                moveCount = 0;
+        	}
+        	
+        	
+        }
+
+        return stringBuilder.toString();
+	}
+	
+	static String compressExplorationCalibrationPath(List<String> returnPath, Robot proxyRobot) {
+		
+        List<String> actionsIncludeCalibration = new ArrayList<>();
+        
+        for (String action : returnPath) {
+        	actionsIncludeCalibration.add(action); // copy action to a new list
+        	
+            // execute action on proxy robot
+        	
+        	if (action.equals("M")) {
+            	proxyRobot.move();
+            }
+        	else if (action.equals("L")) {
+            	proxyRobot.turn(LEFT);
+            } 
+            else if (action.equals("R")) {
+            	proxyRobot.turn(RIGHT);
+            } 
+            else if (action.equals("U")) {
+            	proxyRobot.turn(RIGHT);
+            	proxyRobot.turn(RIGHT);
+            } 
+            
+            // check calibration
+            if (proxyRobot.ableToCalibrateFront()) {
+            	actionsIncludeCalibration.add("C");
+            }
+        }
+
+        return explorationCompressPath(actionsIncludeCalibration);
+	}
 }
