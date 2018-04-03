@@ -151,8 +151,8 @@ public class Grid extends Observable {
             stringBuilder.append(Integer.toHexString(Integer.parseInt(string.substring(i * 4, (i + 1) * 4), 2)));
         }
 		
-		System.out.println("Map Descriptor 1:");
-		System.out.println(stringBuilder.toString());
+		/*System.out.println("Map Descriptor 1:");
+		System.out.println(stringBuilder.toString());*/
 		
 		return stringBuilder.toString();
 	}
@@ -181,17 +181,17 @@ public class Grid extends Observable {
             stringBuilder.append(Integer.toHexString(Integer.parseInt(string.substring(i * 4, (i + 1) * 4), 2)));
 
         }
-        System.out.println("Map descriptor part 2:");
-        System.out.println(stringBuilder.toString());
+        /*System.out.println("Map descriptor part 2:");
+        System.out.println(stringBuilder.toString());*/
 
         return stringBuilder.toString();
 	}
 
-	public void clearClosedSet() {
+	/*public void clearClosedSet() {
 		for (int x = 0; x < MAP_COLUMNS; x++){
 			for ( int y = 0; y < MAP_ROWS; y++){
 				cells[x][y].setIsClosedSet(false);;
 			}
 		}
-	}
+	}*/
 }
