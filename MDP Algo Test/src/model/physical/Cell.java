@@ -9,9 +9,9 @@ public class Cell implements Comparable<Cell> {
 	private boolean isObstacle;
 	private int count = 0;
 	
-	private boolean isFastest;
+	/*private boolean isFastest;
 	private boolean isChecking;
-	private boolean isClosedSet;
+	private boolean isClosedSet;*/
 	
 	Cell() {}
 	
@@ -80,7 +80,7 @@ public class Cell implements Comparable<Cell> {
 		return false;
 	}
 
-	public boolean getIsFastestPath() {
+	/*public boolean getIsFastestPath() {
 		return isFastest;
 	}
 	
@@ -102,5 +102,5 @@ public class Cell implements Comparable<Cell> {
 	
 	public void setIsClosedSet(boolean isClosedSet) {
 		this.isClosedSet = isClosedSet;
-	}
+	}*/
 }

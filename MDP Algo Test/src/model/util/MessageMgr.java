@@ -56,7 +56,7 @@ public class MessageMgr {
      */
     public static List<Integer> parseMessage(String msg) {
     	if(msg!=null) {
-    		System.out.println("I received: " + msg);
+    		//System.out.println("I received: " + msg);
     	}
     
     	String[] splitString = msg.split(",", 5);
@@ -88,11 +88,11 @@ public class MessageMgr {
 	public static int[] parseSensorData(String sensorData, int size) {
 		// no need to process the data if the sensorData is null
 		if(sensorData == null) {
-			System.out.println("Sensor Data is null");
+			//System.out.println("Sensor Data is null");
     		return null;
     	}
     
-		System.out.println("Parsing Sensor Data: " + sensorData);
+		//System.out.println("Parsing Sensor Data: " + sensorData);
 		
 		// sensor data will be 1,2,1,1,2,6
 		// using split to get the sensor data for respective sensors
@@ -100,7 +100,7 @@ public class MessageMgr {
     	
     	// the size of the sensorReadings does not match the number of sensors
     	if(sensorReadings.length != size) {
-    		System.out.println("Invalid Sensor Data size");
+    		//System.out.println("Invalid Sensor Data size");
     		return null;
     	} else {
     		// Instantiate a new integer array based on number of sensors
@@ -138,7 +138,7 @@ public class MessageMgr {
             			double Distance = returnedDistance;
             			returnedDistance = (int) Math.ceil(Distance/10.0);
             		}*/
-                    System.out.println("Casting " + returnedDistance + "\n");
+                    //System.out.println("Casting " + returnedDistance + "\n");
                     sensorsConvertedDistance[i] = returnedDistance;
             	}
                 return sensorsConvertedDistance;

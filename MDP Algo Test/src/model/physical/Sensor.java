@@ -42,9 +42,6 @@ public class Sensor {
 		return 100;
 	}
 
-	
-
-	
 	int getRealPositionX() {
 		// TODO Auto-generated method stub
 		if (this.robot.getDirection() == NORTH) {        	

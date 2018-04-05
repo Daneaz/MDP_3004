@@ -95,12 +95,19 @@ public class FastestPathAlgorithm implements Algorithm {
                     robot.turn(LEFT);
                     robot.turn(LEFT);
                 }
-                stepTaken();
-                if (realRun) {
-        			SocketMgr.getInstance().sendMessage(CALL_ANDROID,
-                            MessageMgr.generateMapDescriptorMsg(grid.generateMapDescriptor1(), grid.generateMapDescriptor2(), robot.getCenterPositionX(), robot.getCenterPositionY(), robot.getDirection()));
-                }
+                
+                if(!realRun)
+                	stepTaken();
             }
+            
+            if (realRun) {
+    			SocketMgr.getInstance().sendMessage(CALL_ANDROID,
+                        MessageMgr.generateMapDescriptorMsg(grid.generateMapDescriptor1(), grid.generateMapDescriptor2(), robot.getCenterPositionX(), robot.getCenterPositionY(), robot.getDirection()));
+            }
+            
+            /*grid.clearClosedSet();
+            robot.turn(RIGHT);
+            robot.turn(LEFT);*/
         } else {
         	System.out.println("Fastest path cannot be not found!");
         }

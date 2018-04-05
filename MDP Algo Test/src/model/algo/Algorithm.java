@@ -24,7 +24,7 @@ public interface Algorithm {
     
 	static List<String> startAstarSearch(int startingPositionX, int startingPositionY, int endingPositionX, int endingPositionY,
 			Grid grid, Robot proxyRobot) {
-		StringBuilder stringBuilder = new StringBuilder();
+//		StringBuilder stringBuilder = new StringBuilder();
 	
 		//actual value
 		int[][] gValue;
@@ -50,8 +50,8 @@ public interface Algorithm {
             	isSetClosed[x][y] = false;    
             }
 		}
-        grid.clearClosedSet();
-		System.out.println("-----A* Search for startX:" + startingPositionX + ", startY:" + startingPositionY + " to endX:" + endingPositionX + ", endY:" + endingPositionX + " -----");
+        /*grid.clearClosedSet();
+		System.out.println("-----A* Search for startX:" + startingPositionX + ", startY:" + startingPositionY + " to endX:" + endingPositionX + ", endY:" + endingPositionX + " -----");*/
 		gValue[startingPositionX][startingPositionY] = 0;
 		fValue[startingPositionX][startingPositionY] = estimateHowFarToGoal(startingPositionX, startingPositionY, endingPositionX, endingPositionY);
         //System.out.println("fValue for x:" + startingPositionX + ", y:" + startingPositionY + " is "+fValue[startingPositionX][startingPositionY]);
@@ -64,7 +64,7 @@ public interface Algorithm {
             
             // if the currentCell is the desired Goal position return the Path string
             if (currentCell.getX() == endingPositionX && currentCell.getY() == endingPositionY) {
-                System.out.println(stringBuilder.toString());
+//                System.out.println(stringBuilder.toString());
             	return reconstructPathToGoal(proxyRobot, currentCell, previousPosition);
             }
 
@@ -73,8 +73,8 @@ public interface Algorithm {
             
             // set the currentCell as part of the fastest Path by setting the closedSet to true
             isSetClosed[currentCell.getX()][currentCell.getY()] = true;
-            grid.getCell()[currentCell.getX()][currentCell.getY()].setIsClosedSet(true);
-            stringBuilder.append("x:" + currentCell.getX() + ", y:" + currentCell.getY() + " is added to closedSet\n");
+            /*grid.getCell()[currentCell.getX()][currentCell.getY()].setIsClosedSet(true);
+            stringBuilder.append("x:" + currentCell.getX() + ", y:" + currentCell.getY() + " is added to closedSet\n");*/
 
             // Update the the fValues of all the neighbors of the CurrentCell
             for (Cell neighbor : generateNeighborCell(grid, currentCell, cells)) {
@@ -110,7 +110,7 @@ public interface Algorithm {
             }
         }
         
-		System.out.println("Fastest Path not found");
+		//System.out.println("Fastest Path not found");
 		return null;
 	}
 
@@ -501,4 +501,317 @@ public interface Algorithm {
 
         return explorationCompressPath(actionsIncludeCalibration);
 	}
+	
+	/*static List<String> startNearestReachableSearch(int startingPositionX, int startingPositionY, int endingPositionX, int endingPositionY,
+			Grid grid, Robot proxyRobot) {
+		StringBuilder stringBuilder = new StringBuilder();
+	
+		//actual value
+		int[][] gValue;
+		//heuristic value
+		int[][] fValue;
+		Cell[][] cells;
+		HashMap<Cell, Cell> previousPosition;
+		List<Cell> openSet;
+		boolean[][] isSetClosed;
+		
+		gValue = new int[MAP_COLUMNS - 2][MAP_ROWS - 2];
+		fValue = new int[MAP_COLUMNS - 2][MAP_ROWS - 2];
+		cells = new Cell[MAP_COLUMNS - 2][MAP_ROWS - 2];
+		previousPosition = new HashMap<>();
+		openSet = new ArrayList<>();
+		isSetClosed = new boolean[MAP_COLUMNS - 2][MAP_ROWS - 2];
+		
+		for (int x = 0; x < MAP_COLUMNS - 2; x++) {
+			for (int y = 0; y < MAP_ROWS - 2; y++) {
+            	gValue[x][y] = INFINITY;
+            	fValue[x][y] = INFINITY;
+            	cells[x][y] = new Cell(x, y);
+            	isSetClosed[x][y] = false;    
+            }
+		}
+        grid.clearClosedSet();
+		System.out.println("-----Nearest Neighbour Search for startX:" + startingPositionX + ", startY:" + startingPositionY + " to endX:" + endingPositionX + ", endY:" + endingPositionX + " -----");
+		gValue[startingPositionX][startingPositionY] = 0;
+		fValue[startingPositionX][startingPositionY] = estimateHowFarToGoal(startingPositionX, startingPositionY, endingPositionX, endingPositionY);
+        //System.out.println("fValue for x:" + startingPositionX + ", y:" + startingPositionY + " is "+fValue[startingPositionX][startingPositionY]);
+        cells[startingPositionX][startingPositionY].setDistance(fValue[startingPositionX][startingPositionY]);
+        openSet.add(cells[startingPositionX][startingPositionY]);
+
+        while (!openSet.isEmpty()) {
+        	// get the Cell which has the least fValue from the openSet
+            Cell currentCell = getCurrentCell(openSet, fValue);
+            
+            // if the currentCell is the desired Goal position return the Path string
+            if (currentCell.getX() == endingPositionX && currentCell.getY() == endingPositionY) {
+                System.out.println(stringBuilder.toString());
+            	return reconstructPathToGoal(proxyRobot, currentCell, previousPosition);
+            }
+
+            // Remove the currentCell from the openSet
+            openSet.remove(currentCell);
+            
+            // set the currentCell as part of the fastest Path by setting the closedSet to true
+            isSetClosed[currentCell.getX()][currentCell.getY()] = true;
+            grid.getCell()[currentCell.getX()][currentCell.getY()].setIsClosedSet(true);
+            stringBuilder.append("x:" + currentCell.getX() + ", y:" + currentCell.getY() + " is added to closedSet\n");
+
+            // Update the the fValues of all the neighbors of the CurrentCell
+            for (Cell neighbor : generateReachableCell(grid, currentCell, cells)) {
+            	
+            	// if the neighbour is already inside the closedSet. Ignore it.
+                if (isSetClosed[neighbor.getX()][neighbor.getY()]){
+                    continue;
+                }
+
+                // if neighbor is not inside the openSet. Add it into the openSet
+                if (!openSet.contains(neighbor)){
+                    openSet.add(neighbor);
+                }
+
+                // Since it is neighbor of the CurrentCell, the neighbor GValue is just +1 of the CurrentCell GValue 
+                int tentativeGScore = gValue[currentCell.getX()][currentCell.getY()] + 1;
+                
+                // Get the previous Cell that currentCell came from
+                Cell previousCell = previousPosition.get(currentCell);
+                
+                if (previousCell != null && previousCell.getX() != neighbor.getX() && previousCell.getY() != neighbor.getY()){
+                    tentativeGScore += 1;
+                }
+                
+                if (tentativeGScore >= gValue[neighbor.getX()][neighbor.getY()]){
+                    continue;
+                }
+
+                // Update the neighbor GValue, FValue and at it to the previousPosition HashMap
+                gValue[neighbor.getX()][neighbor.getY()] = tentativeGScore;
+                fValue[neighbor.getX()][neighbor.getY()] = tentativeGScore + estimateHowFarToGoal(neighbor.getX(), neighbor.getY(), endingPositionX, endingPositionY);
+                previousPosition.put(neighbor, currentCell);
+            }
+        }
+        
+		System.out.println("Reachable Path not found");
+		return null;
+	}*/
+
+
+	/*static List<Cell> generateReachableCell(Grid grid, Cell current, Cell[][] cells) {
+		
+		List<Cell> neighbors = new ArrayList<>();
+		int currentCellX = current.getX(), currentCellY = current.getY();
+		
+		//Case 1
+		if(!grid.isOutOfArena(currentCellX -1, currentCellY +1) && 
+				!grid.isOutOfArena(currentCellX, currentCellY +1) &&
+				!grid.isOutOfArena(currentCellX +1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY +1) && 
+				!grid.getIsObstacle(currentCellX, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX -1, currentCellY +1) && 
+				grid.getIsExplored(currentCellX, currentCellY +1) &&
+				grid.getIsExplored(currentCellX +1, currentCellY +1)) {
+			neighbors.add(cells[currentCellX - 1][currentCellY + 1]);
+		}
+		
+		//Case 2
+		if(!grid.isOutOfArena(currentCellX -2, currentCellY +1) && 
+				!grid.isOutOfArena(currentCellX -1, currentCellY +1) &&
+				!grid.isOutOfArena(currentCellX, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX -2, currentCellY +1) && 
+				!grid.getIsObstacle(currentCellX -1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX, currentCellY +1) &&
+				grid.getIsExplored(currentCellX -2, currentCellY +1) && 
+				grid.getIsExplored(currentCellX -1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX, currentCellY +1)) {
+			neighbors.add(cells[currentCellX - 2][currentCellY + 1]);
+		}
+		
+		//Case 3
+		if(!grid.isOutOfArena(currentCellX, currentCellY +1) && 
+				!grid.isOutOfArena(currentCellX +1, currentCellY +1) &&
+				!grid.isOutOfArena(currentCellX +2, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX, currentCellY +1) && 
+				!grid.getIsObstacle(currentCellX +1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX +2, currentCellY +1) &&
+				grid.getIsExplored(currentCellX, currentCellY +1) && 
+				grid.getIsExplored(currentCellX +1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX +2, currentCellY +1)) {
+			neighbors.add(cells[currentCellX][currentCellY + 1]);
+		}
+		
+		//Case 4 & 9
+		if(!grid.isOutOfArena(currentCellX -3, currentCellY) && 
+				!grid.isOutOfArena(currentCellX -2, currentCellY) &&
+				!grid.isOutOfArena(currentCellX -1, currentCellY) &&
+				!grid.getIsObstacle(currentCellX -3, currentCellY) && 
+				!grid.getIsObstacle(currentCellX -2, currentCellY) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY) &&
+				grid.getIsExplored(currentCellX -3, currentCellY) && 
+				grid.getIsExplored(currentCellX -2, currentCellY) &&
+				grid.getIsExplored(currentCellX -1, currentCellY)) {
+			neighbors.add(cells[currentCellX -3][currentCellY]);
+			neighbors.add(cells[currentCellX -1][currentCellY]);
+		}
+		
+		//Case 5 & 10
+		if(!grid.isOutOfArena(currentCellX +1, currentCellY) && 
+				!grid.isOutOfArena(currentCellX +2, currentCellY) &&
+				!grid.isOutOfArena(currentCellX +3, currentCellY) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY) && 
+				!grid.getIsObstacle(currentCellX +2, currentCellY) &&
+				!grid.getIsObstacle(currentCellX +3, currentCellY) &&
+				grid.getIsExplored(currentCellX +1, currentCellY) && 
+				grid.getIsExplored(currentCellX +2, currentCellY) &&
+				grid.getIsExplored(currentCellX +3, currentCellY)) {
+			neighbors.add(cells[currentCellX +1][currentCellY]);
+			neighbors.add(cells[currentCellX +3][currentCellY]);
+		}
+		
+		//Case 6
+		if(!grid.isOutOfArena(currentCellX -1, currentCellY -1) && 
+				!grid.isOutOfArena(currentCellX, currentCellY -1) &&
+				!grid.isOutOfArena(currentCellX +1, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY -1) && 
+				!grid.getIsObstacle(currentCellX, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY -1) &&
+				grid.getIsExplored(currentCellX -1, currentCellY -1) && 
+				grid.getIsExplored(currentCellX, currentCellY -1) &&
+				grid.getIsExplored(currentCellX +1, currentCellY -1)) {
+			neighbors.add(cells[currentCellX +1][currentCellY -1]);
+		}
+		
+		//Case 7
+		if(!grid.isOutOfArena(currentCellX -2, currentCellY -1) && 
+				!grid.isOutOfArena(currentCellX -1, currentCellY -1) &&
+				!grid.isOutOfArena(currentCellX, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX -2, currentCellY -1) && 
+				!grid.getIsObstacle(currentCellX -1, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX, currentCellY -1) &&
+				grid.getIsExplored(currentCellX -2, currentCellY -1) && 
+				grid.getIsExplored(currentCellX -1, currentCellY -1) &&
+				grid.getIsExplored(currentCellX, currentCellY -1)) {
+			neighbors.add(cells[currentCellX][currentCellY -1]);
+		}
+		
+		//Case 8
+		if(!grid.isOutOfArena(currentCellX, currentCellY -1) && 
+				!grid.isOutOfArena(currentCellX +1, currentCellY -1) &&
+				!grid.isOutOfArena(currentCellX +2, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX, currentCellY -1) && 
+				!grid.getIsObstacle(currentCellX +1, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX +2, currentCellY -1) &&
+				grid.getIsExplored(currentCellX, currentCellY -1) && 
+				grid.getIsExplored(currentCellX +1, currentCellY -1) &&
+				grid.getIsExplored(currentCellX +2, currentCellY -1)) {
+			neighbors.add(cells[currentCellX +2][currentCellY -1]);
+		}
+		
+		//Case 11
+		if(!grid.isOutOfArena(currentCellX -1, currentCellY -1) && 
+				!grid.isOutOfArena(currentCellX -1, currentCellY) &&
+				!grid.isOutOfArena(currentCellX -1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY -1) && 
+				!grid.getIsObstacle(currentCellX -1, currentCellY) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX -1, currentCellY -1) && 
+				grid.getIsExplored(currentCellX -1, currentCellY) &&
+				grid.getIsExplored(currentCellX -1, currentCellY +1)) {
+			neighbors.add(cells[currentCellX -1][currentCellY -1]);
+		}
+		
+		//Case 12
+		if(!grid.isOutOfArena(currentCellX -1, currentCellY) && 
+				!grid.isOutOfArena(currentCellX -1, currentCellY -1) &&
+				!grid.isOutOfArena(currentCellX -1, currentCellY -2) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY) && 
+				!grid.getIsObstacle(currentCellX -1, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY -2) &&
+				grid.getIsExplored(currentCellX -1, currentCellY) && 
+				grid.getIsExplored(currentCellX -1, currentCellY -1) &&
+				grid.getIsExplored(currentCellX -1, currentCellY -2)) {
+			neighbors.add(cells[currentCellX -1][currentCellY -2]);
+		}
+		
+		//Case 13
+		if(!grid.isOutOfArena(currentCellX -1, currentCellY) && 
+				!grid.isOutOfArena(currentCellX -1, currentCellY +1) &&
+				!grid.isOutOfArena(currentCellX -1, currentCellY +2) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY) && 
+				!grid.getIsObstacle(currentCellX -1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX -1, currentCellY +2) &&
+				grid.getIsExplored(currentCellX -1, currentCellY) && 
+				grid.getIsExplored(currentCellX -1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX -1, currentCellY +2)) {
+			neighbors.add(cells[currentCellX -1][currentCellY]);
+		}
+		
+		//Case 14 & 20
+		if(!grid.isOutOfArena(currentCellX, currentCellY +3) && 
+				!grid.isOutOfArena(currentCellX, currentCellY +1) &&
+				!grid.isOutOfArena(currentCellX, currentCellY +2) &&
+				!grid.getIsObstacle(currentCellX, currentCellY +3) && 
+				!grid.getIsObstacle(currentCellX, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX, currentCellY +2) &&
+				grid.getIsExplored(currentCellX, currentCellY +3) && 
+				grid.getIsExplored(currentCellX, currentCellY +1) &&
+				grid.getIsExplored(currentCellX, currentCellY +2)) {
+			neighbors.add(cells[currentCellX][currentCellY +1]);
+			neighbors.add(cells[currentCellX][currentCellY +3]);
+		}	
+		
+		//Case 15 & 19
+		if(!grid.isOutOfArena(currentCellX, currentCellY -3) && 
+				!grid.isOutOfArena(currentCellX, currentCellY -1) &&
+				!grid.isOutOfArena(currentCellX, currentCellY -2) &&
+				!grid.getIsObstacle(currentCellX, currentCellY -3) && 
+				!grid.getIsObstacle(currentCellX, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX, currentCellY -2) &&
+				grid.getIsExplored(currentCellX, currentCellY -3) && 
+				grid.getIsExplored(currentCellX, currentCellY -1) &&
+				grid.getIsExplored(currentCellX, currentCellY -2)) {
+			neighbors.add(cells[currentCellX][currentCellY -3]);
+			neighbors.add(cells[currentCellX][currentCellY -1]);
+		}
+		
+		//Case 16
+		if(!grid.isOutOfArena(currentCellX +1, currentCellY -1) && 
+				!grid.isOutOfArena(currentCellX +1, currentCellY) &&
+				!grid.isOutOfArena(currentCellX +1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY -1) && 
+				!grid.getIsObstacle(currentCellX +1, currentCellY) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX +1, currentCellY -1) && 
+				grid.getIsExplored(currentCellX +1, currentCellY) &&
+				grid.getIsExplored(currentCellX+1, currentCellY +1)) {
+			neighbors.add(cells[currentCellX +1][currentCellY +1]);
+		}	
+		
+		//Case 17
+		if(!grid.isOutOfArena(currentCellX +1, currentCellY) && 
+				!grid.isOutOfArena(currentCellX +1, currentCellY -1) &&
+				!grid.isOutOfArena(currentCellX +1, currentCellY -2) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY) && 
+				!grid.getIsObstacle(currentCellX +1, currentCellY -1) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY -2) &&
+				grid.getIsExplored(currentCellX +1, currentCellY) && 
+				grid.getIsExplored(currentCellX +1, currentCellY -1) &&
+				grid.getIsExplored(currentCellX+1, currentCellY -2)) {
+			neighbors.add(cells[currentCellX +1][currentCellY]);
+		}
+		
+		//Case 18
+		if(!grid.isOutOfArena(currentCellX +1, currentCellY) && 
+				!grid.isOutOfArena(currentCellX +1, currentCellY +1) &&
+				!grid.isOutOfArena(currentCellX +1, currentCellY +2) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY) && 
+				!grid.getIsObstacle(currentCellX +1, currentCellY +1) &&
+				!grid.getIsObstacle(currentCellX +1, currentCellY +2) &&
+				grid.getIsExplored(currentCellX +1, currentCellY) && 
+				grid.getIsExplored(currentCellX +1, currentCellY +1) &&
+				grid.getIsExplored(currentCellX+1, currentCellY +2)) {
+			neighbors.add(cells[currentCellX +1][currentCellY +2]);
+		}
+
+        return neighbors;
+	}*/
 }

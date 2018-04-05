@@ -102,7 +102,7 @@ public class SocketMgr {
                 mSocketReader.read(byteData);
                 data += new String(byteData);
             }
-        	System.out.println("Received message: " + data);
+        	//System.out.println("Received message: " + data);
             return data.trim();
         }
         catch (SocketTimeoutException e) {
