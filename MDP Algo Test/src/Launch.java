@@ -23,9 +23,9 @@ public class Launch extends Application {
 		
 		Grid grid = new Grid();
 	
-        Sensor sensor1 = new Sensor(0, 0, 2, MIDDLE, 5); //front left
-        Sensor sensor2 = new Sensor(1, 0, 2, MIDDLE, 4); //front middle
-        Sensor sensor3 = new Sensor(2, 0, 2, MIDDLE, 4); //front right
+        Sensor sensor1 = new Sensor(0, 0, 3, MIDDLE, 5); //front left
+        Sensor sensor2 = new Sensor(1, 0, 3, MIDDLE, 4); //front middle
+        Sensor sensor3 = new Sensor(2, 0, 3, MIDDLE, 4); //front right
         Sensor sensor4 = new Sensor(0, 0, 2, LEFT, 4);//left front
         Sensor sensor5 = new Sensor(0, 2, 2, LEFT, 4); //left back
         Sensor sensor6 = new Sensor(1, 0, 6, RIGHT, 1); //right center

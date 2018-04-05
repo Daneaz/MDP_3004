@@ -75,7 +75,7 @@ public class FastestPathAlgorithm implements Algorithm {
             firstPath.addAll(secondPath);
             String compressedPathForARDUINO = "";
             if (realRun) {	
-                compressedPathForARDUINO = Algorithm.compressPath(firstPath);
+                compressedPathForARDUINO = Algorithm.compressPath(firstPath, true);
                 SocketMgr.getInstance().sendMessage(CALL_ARDUINO, compressedPathForARDUINO);
             }
             System.out.println("Fastest Path Algorithm calculated, printing and executing actions");

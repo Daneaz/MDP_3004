@@ -261,7 +261,7 @@ public interface Algorithm {
 	}
 
 
-	static String compressExplorationPath(List<String> returnPath, Robot proxyRobot) {
+	static String compressExplorationPath(List<String> returnPath, Robot proxyRobot, boolean fastestPath) {
 		
         List<String> actionsIncludeCalibration = new ArrayList<>();
         
@@ -290,7 +290,7 @@ public interface Algorithm {
             }
         }
 
-        return compressPath(actionsIncludeCalibration);
+        return compressPath(actionsIncludeCalibration, fastestPath);
 	}
 
 
@@ -336,11 +336,16 @@ public interface Algorithm {
         return stringBuilder.toString();
 	}*/
 	
-	static String compressPath(List<String> actionWithCalibration) {
+	static String compressPath(List<String> actionWithCalibration, boolean fastestPath) {
         int moveCount = 0;
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("X");
         
+        if(fastestPath) {
+        	stringBuilder.append("X");
+        } else {
+        	stringBuilder.append("Z");
+        }
+
         for (String action : actionWithCalibration){
             if ( action.equals("R") || action.equals("L") || action.equals("U") || action.equals("C")){
                 if (moveCount != 0) {
