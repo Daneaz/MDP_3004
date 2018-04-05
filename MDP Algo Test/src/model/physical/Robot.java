@@ -1,5 +1,6 @@
 package model.physical;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
@@ -12,6 +13,7 @@ import static constant.CommunicationConstant.*;
 
 
 public class Robot extends Observable {
+	private boolean getDataFromList = false;
 	private boolean rightObstWithinFrontRange = false, turnBackToOriginal = false, detectNextMove = false, rightSensor = false, fastestPathCalibration = false;
 	private int frontRight = 2, frontLeft = 2, frontCenter = 2, leftFront = 2, leftBack = 2;
 	private int positionX = STARTING_X_POSITION;
@@ -19,6 +21,8 @@ public class Robot extends Observable {
 	private int direction = NORTH;
 	private List<Sensor> sensor;
 	private Grid grid;
+	private List<String> dataList;
+	private int dataListCount;
 	
 	public int getFrontRight() {
 		return frontRight;
@@ -46,6 +50,197 @@ public class Robot extends Observable {
 		for(int i = 0; i < sensor.size(); i++){
 			sensor.get(i).setSensorOnRobot(this);
 		}
+		
+		dataListCount = 0;
+		
+		dataList = new ArrayList();
+		
+		//SensorData for front range 2
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("3,3,3,1,1,5");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("2,2,2,1,1,7");
+		dataList.add("1,1,1,1,1,2");
+		dataList.add("1,3,3,1,1,7");
+		dataList.add("3,3,3,3,1,2");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("3,3,3,2,2,7");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,1,3,7");
+		dataList.add("3,3,3,3,3,4");
+		dataList.add("3,3,3,1,3,7");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("3,3,3,3,1,3");
+		dataList.add("3,3,3,3,3,3");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,1,3,3");
+		dataList.add("2,2,3,3,3,5");
+		dataList.add("3,3,3,1,3,3");
+		dataList.add("2,2,2,1,1,3");
+		dataList.add("1,1,1,1,1,3");
+		dataList.add("2,2,2,1,1,7");
+		dataList.add("1,1,1,1,1,7");
+		dataList.add("3,3,3,1,1,3");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("3,3,3,3,3,3");
+		dataList.add("3,3,3,1,3,7");
+		dataList.add("3,3,2,3,3,7");
+		dataList.add("3,3,3,1,3,7");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("2,2,2,3,1,7");
+		dataList.add("1,1,1,3,3,2");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("3,3,3,2,3,2");
+		dataList.add("2,2,2,2,1,2");
+		dataList.add("1,1,1,2,2,2");
+		dataList.add("2,2,2,3,3,2");
+		dataList.add("3,3,3,1,1,3");
+		dataList.add("1,3,3,1,1,7");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("3,3,3,2,2,7");
+		dataList.add("3,3,3,2,2,7");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("1,1,1,1,3,7");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("1,1,1,1,1,4");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("1,1,3,1,1,7");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("1,1,3,3,3,7");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("3,3,3,3,1,2");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("1,1,1,1,3,5");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("2,3,3,1,1,7");
+		dataList.add("1,3,3,1,1,7");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,1,3,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("3,3,3,1,3,7");
+		dataList.add("3,3,3,1,1,3");
+		dataList.add("3,3,3,2,1,3");
+		dataList.add("3,3,3,2,1,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("1,1,1,1,3,7");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("1,1,1,1,1,5");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("2,3,3,1,1,7");
+		dataList.add("1,3,3,1,1,3");
+		dataList.add("2,3,3,3,1,7");
+		dataList.add("1,3,3,3,3,7");
+		dataList.add("3,3,3,3,3,2");
+		dataList.add("3,3,3,1,2,3");
+		dataList.add("2,2,1,3,3,7");
+		dataList.add("3,3,3,1,2,3");
+		dataList.add("3,3,3,1,1,3");
+		dataList.add("3,3,3,2,1,7");
+		dataList.add("3,3,3,2,1,7");
+		dataList.add("3,3,3,2,2,7");
+		dataList.add("OK");
+		
+		/* SensorData for front 3
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("4,4,4,1,1,5");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("3,3,3,1,1,7");
+		dataList.add("2,2,2,1,1,7");
+		dataList.add("1,1,1,1,1,2");
+		dataList.add("1,4,4,1,1,7");
+		dataList.add("4,4,4,3,1,2");
+		dataList.add("4,4,4,3,3,2");
+		dataList.add("4,4,4,2,2,7");
+		dataList.add("4,4,4,3,3,2");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,3,5");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,1,3");
+		dataList.add("4,4,4,3,3,3");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("2,2,2,1,1,3");
+		dataList.add("2,2,2,2,2,6");
+		dataList.add("2,2,2,1,1,3");
+		dataList.add("1,1,1,1,1,3");
+		dataList.add("2,2,2,1,1,7");
+		dataList.add("1,1,1,1,1,7");
+		dataList.add("4,4,4,1,1,3");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("4,4,4,3,3,3");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("3,3,3,3,1,7");
+		dataList.add("2,2,2,3,1,7");
+		dataList.add("1,1,1,3,3,2");
+		dataList.add("4,4,4,3,3,2");
+		dataList.add("2,2,2,2,1,2");
+		dataList.add("1,1,1,2,2,2");
+		dataList.add("2,2,2,3,3,2");
+		dataList.add("4,4,4,1,1,3");
+		dataList.add("1,4,4,1,1,7");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,3,2");
+		dataList.add("4,4,4,2,2,7");
+		dataList.add("4,4,4,2,1,3");
+		dataList.add("4,4,4,2,2,7");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("1,1,1,1,3,7");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("1,1,1,1,1,4");
+		dataList.add("3,3,4,1,1,7");
+		dataList.add("1,1,4,1,1,7");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("4,4,4,3,1,2");
+		dataList.add("1,1,1,3,3,7");
+		dataList.add("4,4,4,3,1,2");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("3,3,3,3,3,7");
+		dataList.add("1,1,1,1,3,5");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("1,4,4,1,1,7");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("4,4,4,2,2,7");
+		dataList.add("4,4,4,1,1,3");
+		dataList.add("2,4,4,3,3,7");
+		dataList.add("4,4,4,1,1,3");
+		dataList.add("4,4,4,2,1,3");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,3,7");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("1,1,1,1,3,7");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("1,1,1,1,1,5");
+		dataList.add("4,4,4,1,1,7");
+		dataList.add("1,4,4,1,1,3");
+		dataList.add("2,4,4,3,1,7");
+		dataList.add("1,4,4,3,3,7");
+		dataList.add("4,4,4,3,3,2");
+		dataList.add("4,4,4,1,1,3");
+		dataList.add("2,2,2,3,3,7");
+		dataList.add("4,4,4,1,1,3");
+		dataList.add("4,4,4,2,1,7");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("4,4,4,3,1,7");
+		dataList.add("OK");*/
+		
 	}
 	
 	public void setFastestPathCalibration(boolean fastestPathCalibration) {
@@ -105,12 +300,24 @@ public class Robot extends Observable {
         		SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "D");
         	}
         	
-        		int[] sensorReadings;
-        		String sensorData = SocketMgr.getInstance().receiveMessage(true);
-                while ((sensorReadings = MessageMgr.parseSensorData(sensorData, sensor.size())) == null) {
-                	sensorData = SocketMgr.getInstance().receiveMessage(false);
-                }
-                
+        		int[] sensorReadings = null;
+        		
+        		if(getDataFromList) {
+        			try {
+						Thread.sleep(1000);
+						sensorReadings = MessageMgr.parseSensorData(dataList.get(dataListCount), sensor.size());
+						dataListCount++;
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+        		} else {
+        			String sensorData = SocketMgr.getInstance().receiveMessage(true);
+                    while ((sensorReadings = MessageMgr.parseSensorData(sensorData, sensor.size())) == null) {
+                    	sensorData = SocketMgr.getInstance().receiveMessage(false);
+                    }
+        		}
+        		
                 // only update the map if it is not the fastest path calibration 
                 // at the start point at the end of the exploration
                 if(!fastestPathCalibration) {
@@ -406,6 +613,32 @@ public class Robot extends Observable {
         return false;
     }
     
+    public boolean isExploredObstacleInfront() { // DIRECTLY IN FRONT OF ROBOT
+        for (int i = 0; i < SIZE_OF_ROBOT; i++) {
+            if (this.direction == NORTH) {
+                if (this.grid.getIsExplored(this.positionX + i, this.positionY - 1) && this.grid.getIsObstacle(this.positionX + i, this.positionY - 1)) {
+                    return true;
+                }
+            }
+            else if (this.direction == SOUTH) {
+                if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 3)) {
+                    return true;
+                }
+            }
+            else if (this.direction == EAST) {
+                if (this.grid.getIsObstacle(this.positionX + 3, this.positionY + i)) {
+                    return true;
+                }
+            }
+            else if (this.direction == WEST) {
+                if (this.grid.getIsObstacle(this.positionX - 1, this.positionY + i)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public boolean isObstacleOnLeftSide() { // DIRECTLY BESIDE OF ROBOT
         for (int i = 0; i < SIZE_OF_ROBOT; i++) {
             if (this.direction == NORTH) {
@@ -508,11 +741,23 @@ public class Robot extends Observable {
         		SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "D");
         	}
         	
-        		int[] sensorReadings;
-        		String sensorData = SocketMgr.getInstance().receiveMessage(true);
+        	int[] sensorReadings = null;
+    		
+    		if(getDataFromList) {
+    			try {
+					Thread.sleep(1000);
+					sensorReadings = MessageMgr.parseSensorData(dataList.get(dataListCount), sensor.size());
+					dataListCount++;
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		} else {
+    			String sensorData = SocketMgr.getInstance().receiveMessage(true);
                 while ((sensorReadings = MessageMgr.parseSensorData(sensorData, sensor.size())) == null) {
                 	sensorData = SocketMgr.getInstance().receiveMessage(false);
                 }
+    		}
                 
                 // only update the map if it is not the fastest path calibration 
                 // at the start point at the end of the exploration
