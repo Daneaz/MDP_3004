@@ -22,7 +22,6 @@ import constant.RobotConstant;
 public class ExplorationAlgorithm implements Algorithm {
 
 	private boolean trustExplored = true;
-	private boolean justTurned = false;
 	private boolean uTurn = false;
 	private int minutes = 5;
 	private int seconds = 20;
@@ -153,7 +152,7 @@ public class ExplorationAlgorithm implements Algorithm {
 		            	// Store the sensor readings at the same time
 		            	robot.sense(realRun, true);
 		            //}
-				} 
+				}
 				// Sense for simulator
 				else {
 					robot.sense(realRun);
@@ -790,139 +789,192 @@ public class ExplorationAlgorithm implements Algorithm {
 	}
 
 	private boolean leftHugging(boolean realRun, Robot robot, Grid grid) {
-		if(robot.isObstacleInfront()) {
-			if(robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()) {
-				/*System.out.println("---------------------Making a U-Turn--------------------");*/
-				if (realRun) {
-//SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-					
-					if(leftSideNotFullyExplored(grid, robot) && rightSideNotFullyExplored(grid, robot)) {
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-						robotMovementString+="L";
-						robot.turn(LEFT);
-						robot.sense(realRun);
-						
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-						robotMovementString+="U";
-						robot.turn(RIGHT);
-						robot.turn(RIGHT);
-						robot.sense(realRun);
-						
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-						robotMovementString+="R";
-						robot.turn(RIGHT);
-						
-						justTurned = true;
-					} else if(rightSideNotFullyExplored(grid, robot)) {
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-						robotMovementString+="R";
-						robot.turn(RIGHT);
-						robot.sense(realRun);
-						
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-						robotMovementString+="R";
-						robot.turn(RIGHT);
-						
-						justTurned = true;
-					} else if(leftSideNotFullyExplored(grid, robot)){
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-						robotMovementString+="L";
-						robot.turn(LEFT);
-						robot.sense(realRun);
-						
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-						robotMovementString+="L";
-						robot.turn(LEFT);
-						
-						justTurned = true;
-					} else {
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-						robotMovementString+="U";
-						robot.turn(RIGHT);
-						robot.turn(RIGHT);
-						
-						justTurned = true;
-					}
-					
-					if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide2() && robot.isObstacleOnRightSide2())
-					{
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-						robot.turn(RIGHT);
-						robot.turn(RIGHT);
-						robot.sense(realRun, true);
-						
-					}
-					
-					/*if(!robot.isObstacleInfront()) {
-						uTurnHalt = true;
-						System.out.println("---------------------U-Turn Halted, Only Made a Right Turn--------------------");
-						System.out.println(robotMovementString);
-						return true;
-					} else {
-						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-						justTurned = true;
-						robotMovementString+="R";
-						robot.turn(RIGHT);
-					}*/
+		if(trustExplored) {
+			// Checks if need to do U-Turn in front
+			if(checkUTurnAhead(grid, robot)) {
+				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+				robotMovementString+="U";
+				robot.turn(RIGHT);
+				robot.turn(RIGHT);
+				
+				return true;
+			} else if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide2() && robot.isObstacleOnRightSide2()) {
+				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+				robotMovementString+="U";
+				robot.turn(RIGHT);
+				robot.turn(RIGHT);
+				
+				return true;
+			} else if(robot.isObstacleInfront()) {
+				if(robot.isObstacleOnLeftSide()) {
+					/*System.out.println("---------------------Making a Right Turn-------------------");
+	                */if (realRun) {
+	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+	                }
+	                robotMovementString+="R";
+	                robot.turn(RIGHT);
+	                // Only give delay for simulator
+	                if(!realRun) {
+	                	stepTaken();
+	                }
+	                
+	                return true;
 				} else {
-					robotMovementString+="RR";
-					robot.turn(RIGHT);
-					robot.turn(RIGHT);
-					// Only give delay for simulator
-					stepTaken();
+//					System.out.println("---------------------Making a Left Turn--------------------");
+	                if (realRun) {
+	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+	                }
+	                robotMovementString+="L";
+	                robot.turn(LEFT);
+
+	                // Only give delay for simulator 
+	                if(!realRun) {
+	                	stepTaken();
+	                }
+	                
+	                return true;
 				}
-			} else if(robot.isObstacleOnLeftSide()) {
-				/*System.out.println("---------------------Making a Right Turn-------------------");
-                */if (realRun) {
-                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-                	justTurned = true;
-                }
-                robotMovementString+="R";
-                robot.turn(RIGHT);
-                // Only give delay for simulator
-                if(!realRun) {
-                	stepTaken();
-                }
-			} else {
-//				System.out.println("---------------------Making a Left Turn--------------------");
-                if (realRun) {
-                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-                	justTurned = true;
-                }
-                robotMovementString+="L";
-                robot.turn(LEFT);
-
-                // Only give delay for simulator 
-                if(!realRun) {
-                	stepTaken();
-                }
-
+			} else if(!robot.isObstacleOnLeftSide()) {
+//				System.out.println("-------------------------Making a Left Turn--------------------");
+	            if (realRun) {
+	            	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+	            }
+	            robotMovementString+="L";
+	            robot.turn(LEFT);
+	            // Only give delay for simulator 
+	            if(!realRun) {
+	            	stepTaken();
+	            }
+	            
+	            // Update Android that there is a turn
+	            /*sendAndroid(grid, robot, realRun);
+	            
+	            System.out.println(robotMovementString);*/
+	            return true;
 			}
-			
-			// Update Android that there is a turn
-//			sendAndroid(grid, robot, realRun);
-			
-//			System.out.println(robotMovementString);
-			return true;
-		}
-		else if(!robot.isObstacleOnLeftSide()) {
-//			System.out.println("-------------------------Making a Left Turn--------------------");
-            if (realRun) {
-            	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-            	justTurned = true;
-            }
-            robotMovementString+="L";
-            robot.turn(LEFT);
-            // Only give delay for simulator 
-            if(!realRun) {
-            	stepTaken();
-            }
-            
-            // Update Android that there is a turn
-            /*sendAndroid(grid, robot, realRun);
-            
-            System.out.println(robotMovementString);*/
-            return true;
+		} else {
+			if(robot.isObstacleInfront()) {
+				if(robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()) {
+					/*System.out.println("---------------------Making a U-Turn--------------------");*/
+					if (realRun) {
+						//SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+						
+						if(leftSideNotFullyExplored(grid, robot) && rightSideNotFullyExplored(grid, robot)) {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+							robotMovementString+="L";
+							robot.turn(LEFT);
+							robot.sense(realRun);
+							
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+							robotMovementString+="U";
+							robot.turn(RIGHT);
+							robot.turn(RIGHT);
+							robot.sense(realRun);
+							
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+							robotMovementString+="R";
+							robot.turn(RIGHT);
+						} else if(rightSideNotFullyExplored(grid, robot)) {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+							robotMovementString+="R";
+							robot.turn(RIGHT);
+							robot.sense(realRun);
+							
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+							robotMovementString+="R";
+							robot.turn(RIGHT);
+						} else if(leftSideNotFullyExplored(grid, robot)){
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+							robotMovementString+="L";
+							robot.turn(LEFT);
+							robot.sense(realRun);
+							
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+							robotMovementString+="L";
+							robot.turn(LEFT);
+						} else {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+							robotMovementString+="U";
+							robot.turn(RIGHT);
+							robot.turn(RIGHT);
+						}
+						
+						if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide2() && robot.isObstacleOnRightSide2())
+						{
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+							robot.turn(RIGHT);
+							robot.turn(RIGHT);
+							robot.sense(realRun, true);
+						}
+						
+						/*if(!robot.isObstacleInfront()) {
+							uTurnHalt = true;
+							System.out.println("---------------------U-Turn Halted, Only Made a Right Turn--------------------");
+							System.out.println(robotMovementString);
+							return true;
+						} else {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+							justTurned = true;
+							robotMovementString+="R";
+							robot.turn(RIGHT);
+						}*/
+					} else {
+						robotMovementString+="RR";
+						robot.turn(RIGHT);
+						robot.turn(RIGHT);
+						// Only give delay for simulator
+						stepTaken();
+					}
+				} else if(robot.isObstacleOnLeftSide()) {
+					/*System.out.println("---------------------Making a Right Turn-------------------");
+	                */if (realRun) {
+	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+	                }
+	                robotMovementString+="R";
+	                robot.turn(RIGHT);
+	                // Only give delay for simulator
+	                if(!realRun) {
+	                	stepTaken();
+	                }
+				} else {
+//					System.out.println("---------------------Making a Left Turn--------------------");
+	                if (realRun) {
+	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+	                }
+	                robotMovementString+="L";
+	                robot.turn(LEFT);
+
+	                // Only give delay for simulator 
+	                if(!realRun) {
+	                	stepTaken();
+	                }
+
+				}
+				
+				// Update Android that there is a turn
+//				sendAndroid(grid, robot, realRun);
+				
+//				System.out.println(robotMovementString);
+				return true;
+			}
+			else if(!robot.isObstacleOnLeftSide()) {
+//				System.out.println("-------------------------Making a Left Turn--------------------");
+	            if (realRun) {
+	            	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+	            }
+	            robotMovementString+="L";
+	            robot.turn(LEFT);
+	            // Only give delay for simulator 
+	            if(!realRun) {
+	            	stepTaken();
+	            }
+	            
+	            // Update Android that there is a turn
+	            /*sendAndroid(grid, robot, realRun);
+	            
+	            System.out.println(robotMovementString);*/
+	            return true;
+			}
 		}
 		
 		return false;
@@ -1958,9 +2010,8 @@ public class ExplorationAlgorithm implements Algorithm {
         
         int moveCount = 0;
         
-        while(!checkObstacleInfront(grid, robotCurrentX, robotCurrentY, direction) && (!checkAbleToTurn(grid, robotCurrentX, robotCurrentY, direction) || justTurned)) {
+        while(!checkObstacleInfront(grid, robotCurrentX, robotCurrentY, direction) && (!checkAbleToTurn(grid, robotCurrentX, robotCurrentY, direction))) {
         	moveCount++;
-        	justTurned = false;
         	if(direction == NORTH) {
         		// Update the new robot Y position after move forward by 1
         		if(robotCurrentY == 1) {
@@ -2378,22 +2429,19 @@ public class ExplorationAlgorithm implements Algorithm {
 			}*/ 
 			// No need to do U-Turn in front, go ahead and move forward
 			//else {
-				if(justTurned) {
+//				if(justTurned) {
 					int numberOfSteps = checkFrontExplored(grid, robot);
 					// numberOfSteps: 0
 					if(numberOfSteps == 0) {
-						justTurned = false;
 						System.out.println("Cannot move forward. Obstacles in front");
 					} 
 					// numberOfSteps: 1-9
 					else if(numberOfSteps < 10) {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZM0" + String.valueOf(numberOfSteps));
-						justTurned = false;
 					}
 					// numberOfSteps: 10-17
 					else {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZM" + String.valueOf(numberOfSteps));
-						justTurned = false;
 					}
 					
 					// Update the simulator
@@ -2411,7 +2459,7 @@ public class ExplorationAlgorithm implements Algorithm {
 					sendAndroid(grid, robot, realRun);
 					
 					// Checks if need to do U-Turn in front
-					if(checkUTurnAhead(grid, robot)) {
+					/*if(checkUTurnAhead(grid, robot)) {
 						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
 						robot.turn(RIGHT);
 						robot.turn(RIGHT);
@@ -2421,18 +2469,15 @@ public class ExplorationAlgorithm implements Algorithm {
 						numberOfSteps = checkFrontExplored(grid, robot);
 						// numberOfSteps: 0
 						if(numberOfSteps == 0) {
-							justTurned = false;
 							System.out.println("Cannot move forward. Obstacles in front");
 						} 
 						// numberOfSteps: 1-9
 						else if(numberOfSteps < 10) {
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZM0" + String.valueOf(numberOfSteps));
-							justTurned = false;
 						}
 						// numberOfSteps: 10-17
 						else {
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZM" + String.valueOf(numberOfSteps));
-							justTurned = false;
 						}
 						
 						// Update the simulator
@@ -2459,7 +2504,7 @@ public class ExplorationAlgorithm implements Algorithm {
 //							robot.turn(RIGHT);
 //							robot.sense(realRun, true);
 //						}
-					}
+					}*/
 
 					
 //					if(numberOfSteps > 1) {
@@ -2492,13 +2537,13 @@ public class ExplorationAlgorithm implements Algorithm {
 //							}
 //						}
 //					}
-				} else {
+				/*} else {
 					// Sensor readings show there is obstacles in front of robot; DO NOT MOVE FORWARD
 					if(robot.getFrontCenter() < 2 || robot.getFrontLeft() < 2 || robot.getFrontRight() < 2) {
 						// Simulator shows there is no obstacle in front
 						if(!robot.isObstacleInfront()) {
-							/*System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
-							System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());*/
+							System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
+							System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());
 							// Sense again
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
 							robot.turn(RIGHT);
@@ -2512,8 +2557,8 @@ public class ExplorationAlgorithm implements Algorithm {
 					else {
 						// Simulator shows there is obstacle(s) in front
 						if(robot.isObstacleInfront()) {
-							/*System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
-							System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());*/
+							System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
+							System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());
 							
 							// Sense again to correct the front using the left sensors
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
@@ -2529,8 +2574,8 @@ public class ExplorationAlgorithm implements Algorithm {
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
 							//robot.setDetectNextMove(false);
 							robotMovementString+="M";
-							/*System.out.println("----------------------Moving Forward----------------------");
-							System.out.println(robotMovementString);*/
+							System.out.println("----------------------Moving Forward----------------------");
+							System.out.println(robotMovementString);
 							
 							// show the robot move forward on the simulator
 							robot.move();
@@ -2546,7 +2591,7 @@ public class ExplorationAlgorithm implements Algorithm {
 							
 						}
 					}
-				}
+				}*/
 			//}
 		} 
 		// I do not trust the area I have already explored. Only move 1 step at a time
@@ -2660,7 +2705,6 @@ public class ExplorationAlgorithm implements Algorithm {
         
         while(!checkObstacleInfront(grid, robotCurrentX, robotCurrentY, direction) && (!checkAbleToTurn(grid, robotCurrentX, robotCurrentY, direction))) {
         	moveCount++;
-        	justTurned = false;
         	if(direction == NORTH) {
         		// Update the new robot Y position after move forward by 1
         		if(robotCurrentY == 1) {
