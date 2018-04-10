@@ -26,7 +26,7 @@ public class SocketMgr {
     private static final String ADDRESS = "192.168.13.1";
     //private static final String ADDRESS = "127.0.0.1";
 
-    private SocketMgr() { }
+//    private SocketMgr() { }
 
     public static SocketMgr getInstance() {
         if (mInstance == null)

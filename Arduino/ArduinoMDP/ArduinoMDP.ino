@@ -16,12 +16,12 @@ SharpIR sensorLB(GP2Y0A21YK0F, A4);
 DualVNH5019MotorShield md(4, 2, 6, A0, 7, 8, 12, A1);
 
 //Median variables
-static RunningMedian FrontR = RunningMedian(50);
-static RunningMedian FrontL = RunningMedian(50);
-static RunningMedian FrontC = RunningMedian(50);
-static RunningMedian Right = RunningMedian(100);
-static RunningMedian LeftF = RunningMedian(50);
-static RunningMedian LeftB = RunningMedian(50);
+static RunningMedian FrontR = RunningMedian(25);
+static RunningMedian FrontL = RunningMedian(25);
+static RunningMedian FrontC = RunningMedian(25);
+static RunningMedian Right = RunningMedian(50);
+static RunningMedian LeftF = RunningMedian(25);
+static RunningMedian LeftB = RunningMedian(25);
 
 
 volatile int mLTicks = 0;
@@ -307,7 +307,7 @@ void runCMD(char cmd, int target)
 
       break;
     case '-':
-      test();
+      adjustDistanceFR();
       break;
     default:
       break;
@@ -324,7 +324,7 @@ int pidControl(int LeftPosition, int RightPosition) {
   double integral, derivative, output;
   double Kp = 3;                  //prefix Kp Ki, Kd dont changed if want to changed pls re declared
   double Kd = 0;
-  double Ki = 1;
+  double Ki = 0;
 
   error = LeftPosition - RightPosition;
   integral += error;
@@ -386,7 +386,7 @@ void fastForward(int dis)
   //  int count = 0;
   //  double avg, total = 0;
 
-  int pwm1 = 380, pwm2 = 380;
+  int pwm1 = 375, pwm2 = 380;
 
   if (dis <= 1)
   {
@@ -562,7 +562,7 @@ void turnLeft(int degree) {
   int pwm1 = -344, pwm2 = 316;
   //    int pwm1 = -355, pwm2 = 326;        //Battery 2
 
-  dTotalTicks = 361;    //Battery 1
+  dTotalTicks = 359;    //Battery 1
   //    dTotalTicks = 360;      //Battery 2
 
   while (mLTicks < dTotalTicks)
@@ -596,7 +596,7 @@ void turnRightFast(int degree) {
   //  double avg, total = 0;
 
   int pwm1 = 344, pwm2 = -316;
-  dTotalTicks = 350;
+  dTotalTicks = 349;
 
   while (mLTicks < dTotalTicks)
   {
@@ -867,20 +867,12 @@ double readSensor(SharpIR sensor, double offset)
 void getRMedian()
 {
   //sample 50 times for short range sensors
-  for (int sCount = 0; sCount < 50 ; sCount++)
+  for (int sCount = 0; sCount < 25 ; sCount++)
   {
     //Calculate the distance in centimeters and store the value in a variable
     disFL = readSensor(sensorFL, -5);
     disFC = readSensor(sensorFC, -4);
-    disFR = readSensor(sensorFR, -7);
-    if (disFR >= 35 && disFR < 42)
-    {
-      disFR = disFR - 3;
-    }
-    else if (disFR >= 42 && disFR <= 45)
-    {
-      disFR = disFR - 6;
-    }
+    disFR = readSensor(sensorFR, -5);
 
     disLF = readSensor(sensorLF, -7);
     disLB = readSensor(sensorLB, -7);
@@ -893,7 +885,7 @@ void getRMedian()
     LeftB.add(disLB);
   }
   //sample 100 times for short range sensors
-  for (int sCount = 0; sCount < 100 ; sCount++)
+  for (int sCount = 0; sCount < 50 ; sCount++)
   {
     disR = readLongRange(sensorR, 0);
 
@@ -949,6 +941,16 @@ void getRMedianDistanceAdjust()
     disFL = readSensor(sensorFL, 0);
     //add the variables into arrays as samples
     FrontL.add(disFL);
+
+  }
+}
+void getRMedianDistanceAdjustFR()
+{
+  for (int sCount = 0; sCount < 11 ; sCount++)
+  {
+    disFR = readSensor(sensorFR, 0);
+    //add the variables into arrays as samples
+    FrontR.add(disFR);
 
   }
 }
@@ -1013,18 +1015,23 @@ void getSensorsData(char cmd) {
   FR = FrontR.getMedian() / 10 + 1;
   R = Right.getMedian() / 10 + 1;
 
-  LF = LeftF.getMedian();
-  intLF = LF;
-  LF = LF / 10 + 1;
-
-  LB = LeftB.getMedian();
-  intLB = LB;
-  LB = LB / 10 + 1;
+  LF = LeftF.getMedian() / 10 + 1;;
+  LB = LeftB.getMedian() / 10 + 1;;
   clearRMedian();
 
-  checkForCalibration(intLF, intLB);
+  checkForCalibration(cmd);
   //  delay(100);
   // Message to PC
+
+  getRMedian();
+  FL = FrontL.getMedian() / 10 + 1;
+  FC = FrontC.getMedian() / 10 + 1;
+  FR = FrontR.getMedian() / 10 + 1;
+  R = Right.getMedian() / 10 + 1;
+
+  LF = LeftF.getMedian() / 10 + 1;;
+  LB = LeftB.getMedian() / 10 + 1;;
+  clearRMedian();
   Serial.print('P');
   Serial.print(FL);
   Serial.print(",");
@@ -1044,11 +1051,11 @@ void getSensorsDataFront() {
 
   getRMedianFront();
   Serial.print('P');
-  Serial.print(FrontL.getMedian());
+  Serial.print(FrontL.getAverage());
   Serial.print(",");
-  Serial.print(FrontC.getMedian());
+  Serial.print(FrontC.getAverage());
   Serial.print(",");
-  Serial.println(FrontR.getMedian());
+  Serial.println(FrontR.getAverage());
   clearRMedian();
 }
 
@@ -1057,9 +1064,9 @@ void getSensorsDataLeft() {
 
   getRMedianLeft();
   Serial.print('P');
-  Serial.print(LeftF.getMedian());
+  Serial.print(LeftF.getAverage());
   Serial.print(",");
-  Serial.println(LeftB.getMedian());
+  Serial.println(LeftB.getAverage());
   clearRMedian();
 }
 
@@ -1087,12 +1094,12 @@ void getSensorsDataStairs() {
 
 
 int countFAndLWall = 0;
-void checkForCalibration(int intLF, int intLB)
+void checkForCalibration(char cmd)
 {
 
   if ((FL  <= 1 && FC  <= 1) || (FL  <= 1 && FR  <= 1) || (FC  <= 1 && FR  <= 1) )
   {
-    if (LF  <= 1 && LB  <= 1 && countFAndLWall >= 6 )
+    if (LF  <= 1 && LB  <= 1 && countFAndLWall >= 9 )
     {
       FrontAndLeftWall();
       adjustFailCount = 0;
@@ -1109,7 +1116,7 @@ void checkForCalibration(int intLF, int intLB)
       //      Serial.println("Front Wall");
     }
   }
-  else if (((LF  <= 1 && LB  <= 1) || previousLF  <= 1) && adjustFailCount >= 0 )
+  else if (((LF  <= 2 && LB  <= 2)) && adjustFailCount >= 0 )
   {
     LeftWall();
     adjustFrontFailCount++;
@@ -1118,39 +1125,84 @@ void checkForCalibration(int intLF, int intLB)
   }
   else
   {
-    adjustDistance();
+    //    adjustDistance();
     adjustFrontFailCount++;
     adjustFailCount++;
     countFAndLWall++;
   }
-  if (intLF >= 14 && intLF <= 16 && LF <=1)
+
+  getRMedianLeft();
+  disLF = LeftF.getAverage();
+  disLB = LeftB.getAverage();
+  clearRMedian();
+
+  if (disLF >= 14 && disLF <= 16 && LF <= 1)
+  {
+    turnLeft(90);
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((FL  <= 1 && FR  <= 1))
+    {
+      FrontWall();
+    }
+    else
+      adjustDistanceFR();
+    delay(20);
+    turnRight(90);
+  }
+  else if (disLB >= 14 && disLB <= 16 && LB <= 1)
+  {
+    turnLeft(90);
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((FL  <= 1 && FR  <= 1))
+    {
+      FrontWall();
+    }
+    else
+      adjustDistance();
+    delay(20);
+    turnRight(90);
+  }
+  else if (disLF <= 11 && LF <= 1)
   {
     turnLeft(90);
     adjustDistanceFR();
-    turnRight(90);
-  }
-  else if (intLB >= 14 && intLF <= 16 && LF <1)
-  {
-    turnLeft(90);
-    adjustDistance();
-    turnRight(90);
-  }
-  else if (intLF <= 3 && LF <= 1)
-  {
-    turnLeft(90);
-    for (int i = 0; i < 10; i++)
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((FL  <= 1 && FR  <= 1))
     {
+      FrontWall();
+    }
+    else
       adjustDistanceFR();
-    }
+    delay(20);
     turnRight(90);
   }
-  else if (intLB <= 3 && LB <= 1)
+  else if (disLB <= 11 && LB <= 1)
   {
     turnLeft(90);
-    for (int i = 0; i < 10; i++)
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((FL  <= 1 && FR  <= 1))
     {
-      adjustDistance();
+      FrontWall();
     }
+    else
+      adjustDistance();
+    delay(20);
     turnRight(90);
   }
 
@@ -1217,10 +1269,10 @@ void FrontWall()
 
 void LeftWall()
 {
-  for (int i = 0; i < 10; i++)
-  {
-    adjustAngleLeft();
-  }
+  //  for (int i = 0; i < 10; i++)
+  //  {
+  adjustAngleLeft();
+  //  }
   movementCount = 0;
 }
 
@@ -1275,9 +1327,9 @@ void adjustAngleFront()
     }
 
     getRMedianFront();
-    disFL = FrontL.getMedian();
-    disFC = FrontC.getMedian();
-    disFR = FrontR.getMedian();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
     clearRMedian();
 
     dErrorFront =  disFC - calibrateFront;
@@ -1376,8 +1428,8 @@ void adjustAngleLeft()
       break;
     }
     getRMedianLeft();
-    disLF = LeftF.getMedian();
-    disLB = LeftB.getMedian();
+    disLF = LeftF.getAverage();
+    disLB = LeftB.getAverage();
     clearRMedian();
 
     dErrorLeftFront =  disLF - calibrateLeftFront;
@@ -1387,7 +1439,7 @@ void adjustAngleLeft()
     if ((disLF > 1 && disLF < 18) && (disLB > 1 && disLB < 18))
     {
 
-      if (abs(dErrorDiff) < 0.5)
+      if (abs(dErrorDiff) < 0.3)
       {
         break;
       }
@@ -1519,8 +1571,6 @@ void adjustDistance()
     }
     getRMedianDistanceAdjust();
     disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
     clearRMedian();
 
     //Use Front Left Sensor adjust distance
@@ -1553,9 +1603,7 @@ void adjustDistanceFR()
     {
       break;
     }
-    getRMedianDistanceAdjust();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
+    getRMedianDistanceAdjustFR();
     disFR = FrontR.getAverage();
     clearRMedian();
 
