@@ -120,11 +120,11 @@ void fastExplore(String str)
         //        Serial.println(dis);
         break;
       case 'R':
-        turnRight(90);
+        turnRightFast(90);
         //        Serial.println("Fast R");
         break;
       case 'L':
-        turnLeft(90);
+        turnLeftFast(90);
         //        Serial.println("Fast L");
         break;
       case 'U':
@@ -595,7 +595,9 @@ void turnRightFast(int degree) {
   //  int count = 0;
   //  double avg, total = 0;
 
-  int pwm1 = 344, pwm2 = -316;
+  //  int pwm1 = 344, pwm2 = -316;
+  int pwm1 = 375, pwm2 = -380;
+  //  dTotalTicks = 349;
   dTotalTicks = 349;
 
   while (mLTicks < dTotalTicks)
@@ -626,8 +628,11 @@ void turnLeftFast(int degree) {
   //  int count = 0;
   //  double avg, total = 0;
 
-  int pwm1 = -344, pwm2 = 316;
-  dTotalTicks = 348;      //Battery 2
+  //  int pwm1 = -344, pwm2 = 316;
+  int pwm1 = -375, pwm2 = 380;
+
+  //  dTotalTicks = 348;      //Battery 2
+  dTotalTicks = 348;
   while (mLTicks < dTotalTicks)
   {
     output = pidControl(mLTicks, mRTicks);
@@ -655,8 +660,9 @@ void uTurn() {
   //  int count = 0;
   //  double avg, total = 0;
 
-  int pwm1 = -344, pwm2 = 316;
-  dTotalTicks = 759;
+    int pwm1 = -344, pwm2 = 316;
+//  int pwm1 = -375, pwm2 = 380;
+  dTotalTicks = 750;
 
   while (mLTicks < dTotalTicks)
   {
@@ -1139,11 +1145,11 @@ void checkForCalibration(char cmd)
   if (disLF >= 14 && disLF <= 16 && LF <= 1)
   {
     turnLeft(90);
-//    getRMedianFront();
-//    disFL = FrontL.getAverage();
-//    disFC = FrontC.getAverage();
-//    disFR = FrontR.getAverage();
-//    clearRMedian();
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
     if ((disFL  <= 1 && disFR  <= 1))
     {
       FrontWallFR();
@@ -1156,12 +1162,12 @@ void checkForCalibration(char cmd)
   else if (disLB >= 14 && disLB <= 16 && LB <= 1)
   {
     turnLeft(90);
-//    getRMedianFront();
-//    disFL = FrontL.getAverage();
-//    disFC = FrontC.getAverage();
-//    disFR = FrontR.getAverage();
-//    clearRMedian();
-    if ((FL  <= 1 && FR  <= 1))
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((disFL  <= 1 && disFR  <= 1))
     {
       FrontWall();
     }
@@ -1173,12 +1179,12 @@ void checkForCalibration(char cmd)
   else if (disLF <= 11 && LF <= 1)
   {
     turnLeft(90);
-//    getRMedianFront();
-//    disFL = FrontL.getAverage();
-//    disFC = FrontC.getAverage();
-//    disFR = FrontR.getAverage();
-//    clearRMedian();
-    if ((FL  <= 1 && FR  <= 1))
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((disFL  <= 1 && disFR  <= 1))
     {
       FrontWallFR();
     }
@@ -1190,12 +1196,12 @@ void checkForCalibration(char cmd)
   else if (disLB <= 11 && LB <= 1)
   {
     turnLeft(90);
-//    getRMedianFront();
-//    disFL = FrontL.getAverage();
-//    disFC = FrontC.getAverage();
-//    disFR = FrontR.getAverage();
-//    clearRMedian();
-    if ((FL  <= 1 && FR  <= 1))
+    getRMedianFront();
+    disFL = FrontL.getAverage();
+    disFC = FrontC.getAverage();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+    if ((disFL  <= 1 && disFR  <= 1))
     {
       FrontWall();
     }
@@ -1368,7 +1374,7 @@ void adjustAngleFront()
           //          delay(50);
         }
       }
-      else if ((disFC > 3 && disFC < 15) && (disFL > 3 && disFL < 15))
+      else if ((disFC > 3 && disFC < 13) && (disFL > 3 && disFL < 13))
       {
         if (abs(dErrorDiff_2) < 0.3)
         {
@@ -1385,7 +1391,7 @@ void adjustAngleFront()
           //          delay(50);
         }
       }
-      else if ((disFC > 3 && disFC < 15) && (disFR > 3 && disFR < 15))
+      else if ((disFC > 3 && disFC < 13) && (disFR > 3 && disFR < 13))
       {
         if (abs(dErrorDiff_3) < 0.3)
         {

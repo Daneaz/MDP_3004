@@ -21,7 +21,7 @@ import constant.RobotConstant;
 
 public class ExplorationAlgorithm implements Algorithm {
 
-	private boolean trustExplored = true;
+	private boolean trustExplored = false;
 	private boolean uTurn = false;
 	private int minutes = 5;
 	private int seconds = 20;
