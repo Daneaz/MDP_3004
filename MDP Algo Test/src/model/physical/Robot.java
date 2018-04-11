@@ -518,28 +518,48 @@ public class Robot extends Observable {
     public boolean isObstacleOnLeftSide2() { // DIRECTLY BESIDE OF ROBOT
         for (int i = 0; i < SIZE_OF_ROBOT; i++) {
             if (this.direction == NORTH) {
-            	if(isOutOfArenaForUturn(this.positionX - 2, this.positionY + i))
+            	if(isOutOfArenaForUturn(this.positionX - 1, this.positionY + i)) {
+            		return false;
+            	}
+            	else if (this.grid.getIsObstacle(this.positionX - 1, this.positionY + i)) {
+                    return true;
+                } else if(isOutOfArenaForUturn(this.positionX - 2, this.positionY + i))
             		return false;
             	else if (this.grid.getIsObstacle(this.positionX - 2, this.positionY + i)) {
                     return true;
                 }
             }
             else if (this.direction == SOUTH) {
-            	if(isOutOfArenaForUturn(this.positionX + 4, this.positionY + i))
+            	if(isOutOfArenaForUturn(this.positionX + 3, this.positionY + i)) {
             		return false;
+            	}
+            	else if (this.grid.getIsObstacle(this.positionX + 3, this.positionY + i)) {
+                    return true;
+                }
+            	else if(isOutOfArenaForUturn(this.positionX + 4, this.positionY + i)) {
+            		return false;
+            	}
             	else if (this.grid.getIsObstacle(this.positionX + 4, this.positionY + i)) {
                     return true;
                 }
             }
             else if (this.direction == EAST) {
-            	if(isOutOfArenaForUturn(this.positionX + i, this.positionY - 2))
+            	if(isOutOfArenaForUturn(this.positionX + i, this.positionY - 1))
+            		return false;
+            	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 1)) {
+                    return true;
+                } else if(isOutOfArenaForUturn(this.positionX + i, this.positionY - 2))
             		return false;
             	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 2)) {
                     return true;
                 }
             }
             else if (this.direction == WEST) {
-            	if(isOutOfArenaForUturn(this.positionX + i, this.positionY + 4))
+            	if(isOutOfArenaForUturn(this.positionX + i, this.positionY + 3))
+            		return false;
+            	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 3)) {
+                    return true;
+                } else if(isOutOfArenaForUturn(this.positionX + i, this.positionY + 4))
             		return false;
             	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 4)) {
                     return true;
@@ -583,22 +603,34 @@ public class Robot extends Observable {
     public boolean isObstacleOnRightSide2() { // DIRECTLY BESIDE OF ROBOT
         for (int i = 0; i < SIZE_OF_ROBOT; i++) {
             if (this.direction == NORTH) {
-                if (this.grid.getIsObstacle(this.positionX + 4, this.positionY + i)) {
+            	if (this.grid.getIsObstacle(this.positionX + 3, this.positionY + i)) {
+                    return true;
+                }
+            	else if (this.grid.getIsObstacle(this.positionX + 4, this.positionY + i)) {
                     return true;
                 }
             }
             else if (this.direction == SOUTH) {
-                if (this.grid.getIsObstacle(this.positionX - 2, this.positionY + i)) {
+            	if (this.grid.getIsObstacle(this.positionX - 1, this.positionY + i)) {
+                    return true;
+                }
+            	else if (this.grid.getIsObstacle(this.positionX - 2, this.positionY + i)) {
                     return true;
                 }
             }
             else if (this.direction == EAST) {
-                if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 4)) {
+            	if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 3)) {
+                    return true;
+                }
+            	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 4)) {
                     return true;
                 }
             }
             else if (this.direction == WEST) {
-                if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 2)) {
+            	if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 1)) {
+                    return true;
+                }
+            	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 2)) {
                     return true;
                 }
             }
