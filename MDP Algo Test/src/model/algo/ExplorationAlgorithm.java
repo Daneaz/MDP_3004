@@ -790,8 +790,36 @@ public class ExplorationAlgorithm implements Algorithm {
 
 	private boolean leftHugging(boolean realRun, Robot robot, Grid grid) {
 		if(trustExplored) {
+			if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide() && !robot.isObstacleOnRightSide()) {
+				// Create a proxyRobot for the calculation so that it will not affect the original robot
+		    	Robot proxyRobot = new Robot(grid, new ArrayList<>());
+		        
+		    	// Initialize the proxyRobot with the current conditions of the original robot
+		    	proxyRobot.setDirection(robot.getDirection());
+		        proxyRobot.setPositionX(robot.getPositionX());
+		        proxyRobot.setPositionY(robot.getPositionY());
+		        
+		        proxyRobot.turn(RIGHT);
+				if(check1StepUturn(grid, proxyRobot)) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";
+					robot.turn(RIGHT);
+					robot.turn(RIGHT);
+				} else {
+					if (realRun) {
+	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+	                }
+	                robotMovementString+="R";
+	                robot.turn(RIGHT);
+	                // Only give delay for simulator
+	                if(!realRun) {
+	                	stepTaken();
+	                }
+				}
+                return true;
+			}
 			// Checks if need to do U-Turn in front
-			if(checkUTurnAhead(grid, robot)) {
+			else if(checkUTurnAhead(grid, robot)) {
 				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
 				robotMovementString+="U";
 				robot.turn(RIGHT);
@@ -861,71 +889,57 @@ public class ExplorationAlgorithm implements Algorithm {
 	            return true;
 			}
 		} else {
-			if(robot.isObstacleInfront()) {
+			if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide() && !robot.isObstacleOnRightSide()) {
+				// Create a proxyRobot for the calculation so that it will not affect the original robot
+		    	Robot proxyRobot = new Robot(grid, new ArrayList<>());
+		        
+		    	// Initialize the proxyRobot with the current conditions of the original robot
+		    	proxyRobot.setDirection(robot.getDirection());
+		        proxyRobot.setPositionX(robot.getPositionX());
+		        proxyRobot.setPositionY(robot.getPositionY());
+		        
+		        proxyRobot.turn(RIGHT);
+				if(check1StepUturn(grid, proxyRobot)) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";
+					robot.turn(RIGHT);
+					robot.turn(RIGHT);
+				} else {
+					if (realRun) {
+	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+	                }
+	                robotMovementString+="R";
+	                robot.turn(RIGHT);
+	                // Only give delay for simulator
+	                if(!realRun) {
+	                	stepTaken();
+	                }
+				}
+                return true;
+			}
+			// Checks if need to do U-Turn in front
+			else if(checkUTurnAhead(grid, robot)) {
+				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+				robotMovementString+="U";
+				robot.turn(RIGHT);
+				robot.turn(RIGHT);
+				
+				return true;
+			} else if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide2() && robot.isObstacleOnRightSide2()) {
+				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+				robotMovementString+="U";
+				robot.turn(RIGHT);
+				robot.turn(RIGHT);
+				
+				return true;
+			} else if(robot.isObstacleInfront()) {
 				if(robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()) {
 					/*System.out.println("---------------------Making a U-Turn--------------------");*/
 					if (realRun) {
-						//SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-						
-						if(leftSideNotFullyExplored(grid, robot) && rightSideNotFullyExplored(grid, robot)) {
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-							robotMovementString+="L";
-							robot.turn(LEFT);
-							robot.sense(realRun);
-							
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-							robotMovementString+="U";
-							robot.turn(RIGHT);
-							robot.turn(RIGHT);
-							robot.sense(realRun);
-							
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-							robotMovementString+="R";
-							robot.turn(RIGHT);
-						} else if(rightSideNotFullyExplored(grid, robot)) {
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-							robotMovementString+="R";
-							robot.turn(RIGHT);
-							robot.sense(realRun);
-							
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-							robotMovementString+="R";
-							robot.turn(RIGHT);
-						} else if(leftSideNotFullyExplored(grid, robot)){
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-							robotMovementString+="L";
-							robot.turn(LEFT);
-							robot.sense(realRun);
-							
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-							robotMovementString+="L";
-							robot.turn(LEFT);
-						} else {
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-							robotMovementString+="U";
-							robot.turn(RIGHT);
-							robot.turn(RIGHT);
-						}
-						
-						if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide2() && robot.isObstacleOnRightSide2())
-						{
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
 							robot.turn(RIGHT);
 							robot.turn(RIGHT);
-							robot.sense(realRun, true);
-						}
-						
-						/*if(!robot.isObstacleInfront()) {
-							uTurnHalt = true;
-							System.out.println("---------------------U-Turn Halted, Only Made a Right Turn--------------------");
-							System.out.println(robotMovementString);
-							return true;
-						} else {
-							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-							justTurned = true;
-							robotMovementString+="R";
-							robot.turn(RIGHT);
-						}*/
+							
 					} else {
 						robotMovementString+="RR";
 						robot.turn(RIGHT);
@@ -2304,7 +2318,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 proxyRobot.setPositionY(currentYPos);
                 proxyRobot.setDirection(robot.getDirection());
                 
-                if(checkRightRangeExplored(grid, robot) && checkLeftRangeExplored(grid, robot)) {
+                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
                 	if(proxyRobot.isObstacleInfront()) {
             			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
             				// Able to make U-Turn
@@ -2335,7 +2349,7 @@ public class ExplorationAlgorithm implements Algorithm {
                                 proxyRobot.setPositionY(currentYPos);
                                 proxyRobot.setDirection(robot.getDirection());
                                 
-                                if(checkRightRangeExplored(grid, robot) && checkLeftRangeExplored(grid, robot)) {
+                                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
                                 	if(proxyRobot.isObstacleInfront()) {
                             			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
                             				// Able to make U-Turn
@@ -2357,7 +2371,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 proxyRobot.setPositionY(currentYPos);
                 proxyRobot.setDirection(robot.getDirection());
                 
-                if(checkRightRangeExplored(grid, robot) && checkLeftRangeExplored(grid, robot)) {
+                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
                 	if(proxyRobot.isObstacleInfront()) {
             			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
             				// Able to make U-Turn
@@ -2388,7 +2402,7 @@ public class ExplorationAlgorithm implements Algorithm {
                                 proxyRobot.setPositionY(currentYPos);
                                 proxyRobot.setDirection(robot.getDirection());
                                 
-                                if(checkRightRangeExplored(grid, robot) && checkLeftRangeExplored(grid, robot)) {
+                                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
                                 	if(proxyRobot.isObstacleInfront()) {
                             			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
                             				// Able to make U-Turn
@@ -2971,6 +2985,16 @@ public class ExplorationAlgorithm implements Algorithm {
 			}
 		}
 		
+		return false;
+	}
+	
+	// return true if it needs a U turn after 1 step
+	private boolean check1StepUturn(Grid grid, Robot robot) {
+		robot.move();
+		
+		if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()) {
+			return true;
+		}
 		return false;
 	}
 }
