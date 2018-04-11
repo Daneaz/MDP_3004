@@ -518,27 +518,39 @@ public class Robot extends Observable {
     public boolean isObstacleOnLeftSide2() { // DIRECTLY BESIDE OF ROBOT
         for (int i = 0; i < SIZE_OF_ROBOT; i++) {
             if (this.direction == NORTH) {
-                if (this.grid.getIsObstacle(this.positionX - 2, this.positionY + i)) {
+            	if(isOutOfArenaForUturn(this.positionX - 2, this.positionY + i))
+            		return false;
+            	else if (this.grid.getIsObstacle(this.positionX - 2, this.positionY + i)) {
                     return true;
                 }
             }
             else if (this.direction == SOUTH) {
-                if (this.grid.getIsObstacle(this.positionX + 4, this.positionY + i)) {
+            	if(isOutOfArenaForUturn(this.positionX + 4, this.positionY + i))
+            		return false;
+            	else if (this.grid.getIsObstacle(this.positionX + 4, this.positionY + i)) {
                     return true;
                 }
             }
             else if (this.direction == EAST) {
-                if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 2)) {
+            	if(isOutOfArenaForUturn(this.positionX + i, this.positionY - 2))
+            		return false;
+            	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY - 2)) {
                     return true;
                 }
             }
             else if (this.direction == WEST) {
-                if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 4)) {
+            	if(isOutOfArenaForUturn(this.positionX + i, this.positionY + 4))
+            		return false;
+            	else if (this.grid.getIsObstacle(this.positionX + i, this.positionY + 4)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+    
+	public boolean isOutOfArenaForUturn(int x, int y) {
+        return x < 0 || y < 0 || x >= 13 || y >= 18;
     }
     
     public boolean isObstacleOnRightSide() { // DIRECTLY BESIDE OF ROBOT

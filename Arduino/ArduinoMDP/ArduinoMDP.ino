@@ -1116,7 +1116,7 @@ void checkForCalibration(char cmd)
       //      Serial.println("Front Wall");
     }
   }
-  else if (((LF  <= 2 && LB  <= 2)) && adjustFailCount >= 0 )
+  else if (((LF  <= 2 && LB  <= 2)) && adjustFailCount >= 2 )
   {
     LeftWall();
     adjustFrontFailCount++;
@@ -1139,14 +1139,14 @@ void checkForCalibration(char cmd)
   if (disLF >= 14 && disLF <= 16 && LF <= 1)
   {
     turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
-    if ((FL  <= 1 && FR  <= 1))
+//    getRMedianFront();
+//    disFL = FrontL.getAverage();
+//    disFC = FrontC.getAverage();
+//    disFR = FrontR.getAverage();
+//    clearRMedian();
+    if ((disFL  <= 1 && disFR  <= 1))
     {
-      FrontWall();
+      FrontWallFR();
     }
     else
       adjustDistanceFR();
@@ -1156,11 +1156,11 @@ void checkForCalibration(char cmd)
   else if (disLB >= 14 && disLB <= 16 && LB <= 1)
   {
     turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
+//    getRMedianFront();
+//    disFL = FrontL.getAverage();
+//    disFC = FrontC.getAverage();
+//    disFR = FrontR.getAverage();
+//    clearRMedian();
     if ((FL  <= 1 && FR  <= 1))
     {
       FrontWall();
@@ -1173,15 +1173,14 @@ void checkForCalibration(char cmd)
   else if (disLF <= 11 && LF <= 1)
   {
     turnLeft(90);
-    adjustDistanceFR();
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
+//    getRMedianFront();
+//    disFL = FrontL.getAverage();
+//    disFC = FrontC.getAverage();
+//    disFR = FrontR.getAverage();
+//    clearRMedian();
     if ((FL  <= 1 && FR  <= 1))
     {
-      FrontWall();
+      FrontWallFR();
     }
     else
       adjustDistanceFR();
@@ -1191,11 +1190,11 @@ void checkForCalibration(char cmd)
   else if (disLB <= 11 && LB <= 1)
   {
     turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
+//    getRMedianFront();
+//    disFL = FrontL.getAverage();
+//    disFC = FrontC.getAverage();
+//    disFR = FrontR.getAverage();
+//    clearRMedian();
     if ((FL  <= 1 && FR  <= 1))
     {
       FrontWall();
@@ -1262,6 +1261,16 @@ void FrontWall()
   for (int i = 0; i < 10; i++)
   {
     adjustDistance();
+    adjustAngleFront();
+  }
+  movementCount = 0;
+}
+
+void FrontWallFR()
+{
+  for (int i = 0; i < 10; i++)
+  {
+    adjustDistanceFR();
     adjustAngleFront();
   }
   movementCount = 0;
