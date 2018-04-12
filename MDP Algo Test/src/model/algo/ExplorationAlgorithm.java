@@ -2488,20 +2488,25 @@ public class ExplorationAlgorithm implements Algorithm {
         int currentXPos = robot.getPositionX();
         int currentYPos = robot.getPositionY();
         
-        // Simulate that the robot has moved 1 step forward, check if a U Turn is possible
-        if(robot.getDirection() == NORTH) {
-    		// Update the new robot Y position after move forward by 1
-    		currentYPos--;
-    	} else if(robot.getDirection() == SOUTH) {
-    		// Update the new robot Y position after move forward by 1
-    		currentYPos++;
-    	} else if(robot.getDirection() == EAST) {
-    		// Update the new robot X position after move forward by 1
-    		currentXPos++;
-    	} else if(robot.getDirection() == WEST) {
-    		// Update the new robot X position after move forward by 1
-    		currentXPos--;
-    	}
+        if(robot.isObstacleInfront()) {
+        	return false;
+        } else {
+        	// Simulate that the robot has moved 1 step forward, check if a U Turn is possible
+            if(robot.getDirection() == NORTH) {
+        		// Update the new robot Y position after move forward by 1
+        		currentYPos--;
+        	} else if(robot.getDirection() == SOUTH) {
+        		// Update the new robot Y position after move forward by 1
+        		currentYPos++;
+        	} else if(robot.getDirection() == EAST) {
+        		// Update the new robot X position after move forward by 1
+        		currentXPos++;
+        	} else if(robot.getDirection() == WEST) {
+        		// Update the new robot X position after move forward by 1
+        		currentXPos--;
+        	}
+        }
+        
         
         // If after moving forward and robot is not out of Arena then we check if it is able to U-Turn
         if(robot.getDirection() == EAST || robot.getDirection() == SOUTH)
@@ -2519,14 +2524,18 @@ public class ExplorationAlgorithm implements Algorithm {
             				return true;
             			}
                     } else {
-                    	// Simulate that the robot has moved 1 step forward, check if a U Turn is possible
-                    	if(robot.getDirection() == SOUTH) {
-                    		// Update the new robot Y position after move forward by 1
-                    		currentYPos++;
-                    	} else if(robot.getDirection() == EAST) {
-                    		// Update the new robot X position after move forward by 1
-                    		currentXPos++;
-                    	}
+                    	if(robot.isObstacleInfront()) {
+                        	return false;
+                        } else {
+                        	// Simulate that the robot has moved 1 step forward, check if a U Turn is possible
+                        	if(robot.getDirection() == SOUTH) {
+                        		// Update the new robot Y position after move forward by 1
+                        		currentYPos++;
+                        	} else if(robot.getDirection() == EAST) {
+                        		// Update the new robot X position after move forward by 1
+                        		currentXPos++;
+                        	}
+                        }
                         
                         // If after moving forward and robot is not out of Arena then we check if it is able to U-Turn
                     	if(!isOutOfArena(currentXPos, currentYPos)) {
@@ -2563,14 +2572,19 @@ public class ExplorationAlgorithm implements Algorithm {
             				return true;
             			}
                     } else {
-                    	// Simulate that the robot has moved 1 step forward, check if a U Turn is possible
-                        if(robot.getDirection() == NORTH) {
-                    		// Update the new robot Y position after move forward by 1
-                    		currentYPos--;
-                    	} else if(robot.getDirection() == WEST) {
-                    		// Update the new robot X position after move forward by 1
-                    		currentXPos--;
-                    	}
+                    	
+                    	if(robot.isObstacleInfront()) {
+                        	return false;
+                        } else {
+                        	// Simulate that the robot has moved 1 step forward, check if a U Turn is possible
+                            if(robot.getDirection() == NORTH) {
+                        		// Update the new robot Y position after move forward by 1
+                        		currentYPos--;
+                        	} else if(robot.getDirection() == WEST) {
+                        		// Update the new robot X position after move forward by 1
+                        		currentXPos--;
+                        	}
+                        }
                         
                         // If after moving forward and robot is not out of Arena then we check if it is able to U-Turn
                         if(!grid.isOutOfArena(currentXPos, currentYPos)) {
