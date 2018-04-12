@@ -24,7 +24,7 @@ public class ExplorationAlgorithm implements Algorithm {
 	private boolean trustExplored = false;
 	private boolean uTurnFlagForNoTrustExplored = false;
 	private boolean uTurn = false;
-	private int minutes = 50;
+	private int minutes = 5;
 	private int seconds = 20;
 	private int timeLimit = ((minutes *60) + seconds)*1000;
 	// A variable to store the start time
@@ -54,6 +54,14 @@ public class ExplorationAlgorithm implements Algorithm {
         if (realRun) {
         	robot.setPositionX(robotStartPosAndWaypoints.get(0));
             robot.setPositionY(robotStartPosAndWaypoints.get(1));
+            
+            if(!grid.isInStartingZone(robot.getPositionX(), robot.getPositionY())) {
+            	for(int y=0; y<3; y++) {
+            		for(int x=0; x<3; x++) {
+            			grid.setIsExplored(robot.getPositionX()+x, robot.getPositionY()+y, true);
+                	}
+            	}
+            }
             switch(robotStartPosAndWaypoints.get(2)) {
             	case 0: robot.setDirection(RobotConstant.NORTH);
             		break;
