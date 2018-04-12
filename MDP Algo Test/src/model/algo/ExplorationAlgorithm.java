@@ -1020,7 +1020,7 @@ public class ExplorationAlgorithm implements Algorithm {
 	public boolean checkForCycle() {
 		int patternCount = 0;
 		//int pattern1Count = 0;
-		String pattern = "LMLM";
+		String pattern = "LMLMLMLM";
 		//String pattern1 = "RMRMRMRM";
 		
 		// Only checks the pattern if the movement string is longer or same length as the pattern

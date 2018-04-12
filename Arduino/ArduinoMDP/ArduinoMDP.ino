@@ -32,7 +32,6 @@ boolean flag = false;         //for starting alligment
 String inString = "";         //for cmd
 int previousLF;               //to record the previous value of Left sensor for calibration
 int previousR;                //to record the previous value of Right sensor for calibration
-int movementCount = 0;        //for forward adjustment
 int adjustFrontFailCount = 0; //for check fail to adjust front
 int adjustFailCount = 0;      //for check fail to adjust
 double disFL, disFC, disFR, disLF, disLB, disR;   //for sensor calibration
@@ -134,6 +133,7 @@ void fastExplore(String str)
     }
     cdis = "";
     dis = 0;
+    checkForCalibration(cmd);
     delay(20);
   }
   getSensorsData(cmd);
@@ -216,28 +216,28 @@ void runCMD(char cmd, int target)
       getSensorsData(cmd);
       break;
     case 'A':
-      turnLeft(90);
+      turnLeftFast(90);
       autoCalibrate();
       delay(20);
-      turnRight(90);
+      turnRightFast(90);
       autoCalibrate();
       delay(20);
       //      getSensorsData();
       Serial.println("POK");
       break;
     case 'Q':
-      turnLeft(90);
+      turnLeftFast(90);
       autoCalibrate();
       delay(20);
-      turnRight(90);
+      turnRightFast(90);
       //      getSensorsData();
       Serial.println("POK");
       break;
     case 'E':
-      turnRight(90);
+      turnRightFast(90);
       autoCalibrate();
       delay(20);
-      turnLeft(90);
+      turnLeftFast(90);
       //      getSensorsData();
       Serial.println("POK");
       break;
@@ -255,26 +255,14 @@ void runCMD(char cmd, int target)
       fastPath(inString);
       break;
     case 'D':
-      //      if (flag == false)
-      //      {
-      //        turnLeft(90);
-      //        turnLeft(90);
-      //        autoCalibrate();
-      //        delay(20);
-      //        turnRight(90);
-      //        autoCalibrate();
-      //        delay(20);
-      //        turnRight(90);
-      //        flag = true;
-      //      }
       getSensorsData(cmd);
       break;
-
     case 'P':
+      //for exploration completed calibration
       autoCalibrate();
-      turnRight(90);
+      turnRightFast(90);
       autoCalibrate();
-      turnRight(90);
+      turnRightFast(90);
       for (int i = 0; i < 10; i++)
       {
         autoCalibrate();
@@ -302,13 +290,6 @@ void runCMD(char cmd, int target)
     case 'K':
       getSensorsDataStairs();
       break;
-    case '+':
-      LeftWall();
-
-      break;
-    case '-':
-      adjustDistanceFR();
-      break;
     default:
       break;
   }
@@ -322,7 +303,7 @@ int pidControl(int LeftPosition, int RightPosition) {
   int error;
   int prev_error;
   double integral, derivative, output;
-  double Kp = 3;                  //prefix Kp Ki, Kd dont changed if want to changed pls re declared
+  double Kp = 3;
   double Kd = 0;
   double Ki = 0;
 
@@ -345,7 +326,7 @@ void moveSpeedup(int dis)
   //      double avg, total = 0;
 
   //  int pwm1 = 282, pwm2 = 330;   Week 8
-  int pwm1 = 375, pwm2 = 358;   //Battery 1
+  int pwm1 = 375, pwm2 = 354;   //Battery 1
   //  int pwm1 = 360, pwm2 = 380; //Battery 2
 
   dTotalTicks = 261;
@@ -518,73 +499,73 @@ void brakeabit() {
 }
 
 //*tr
-void turnRight(int degree) {
-
-  double dTotalTicks = 0;
-  double output;
-  //  int count = 0;
-  //  double avg, total = 0;
-  //  int pwm1 = 355, pwm2 = -330;        //Battery 1
-  int pwm1 = 344, pwm2 = -316;
-
-  dTotalTicks = 359;     //Battery 1
-  //    dTotalTicks = 357;        //Battery 2
-  while (mLTicks < dTotalTicks)
-  {
-
-    //    output = pidControl(mLTicks, mRTicks);
-
-    //    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
-    md.setSpeeds(pwm1 , pwm2);
-    //    count++;
-    //    total += abs(mLTicks - mRTicks);
-    //    Serial.println(mLTicks - mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.print(mRTicks);
-    //    Serial.print("/");
-    //    Serial.println(dTotalTicks);
-  }
-  //  avg = total / count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
-
-  brake();
-}
-
-
-void turnLeft(int degree) {
-  double dTotalTicks = 0;
-  double output;
-  //  int count = 0;
-  //  double avg, total = 0;
-  //  int pwm1 = -355, pwm2 = 316;    //Battery 1
-  int pwm1 = -344, pwm2 = 316;
-  //    int pwm1 = -355, pwm2 = 326;        //Battery 2
-
-  dTotalTicks = 359;    //Battery 1
-  //    dTotalTicks = 360;      //Battery 2
-
-  while (mLTicks < dTotalTicks)
-  {
-    //    output = pidControl(mLTicks, mRTicks);
-    //    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
-    md.setSpeeds(pwm1, pwm2);
-    //    count++;
-    //    total += abs(mLTicks - mRTicks);
-    //    Serial.println(mLTicks - mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.print(mRTicks);
-    //    Serial.print("/");
-    //    Serial.println(dTotalTicks);
-  }
-  //  avg = total / count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
-
-  brake();
-}
+//void turnRight(int degree) {
+//
+//  double dTotalTicks = 0;
+//  double output;
+//  //  int count = 0;
+//  //  double avg, total = 0;
+//  //  int pwm1 = 355, pwm2 = -330;        //Battery 1
+//  int pwm1 = 344, pwm2 = -316;
+//
+//  dTotalTicks = 359;     //Battery 1
+//  //    dTotalTicks = 357;        //Battery 2
+//  while (mLTicks < dTotalTicks)
+//  {
+//
+//    //    output = pidControl(mLTicks, mRTicks);
+//
+//    //    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+//    md.setSpeeds(pwm1 , pwm2);
+//    //    count++;
+//    //    total += abs(mLTicks - mRTicks);
+//    //    Serial.println(mLTicks - mRTicks);
+//    //    Serial.print(mLTicks);
+//    //    Serial.print("/");
+//    //    Serial.print(mRTicks);
+//    //    Serial.print("/");
+//    //    Serial.println(dTotalTicks);
+//  }
+//  //  avg = total / count;
+//  //  Serial.print("Avg:");
+//  //  Serial.println(avg);
+//
+//  brake();
+//}
+//
+//
+//void turnLeft(int degree) {
+//  double dTotalTicks = 0;
+//  double output;
+//  //  int count = 0;
+//  //  double avg, total = 0;
+//  //  int pwm1 = -355, pwm2 = 316;    //Battery 1
+//  int pwm1 = -344, pwm2 = 316;
+//  //    int pwm1 = -355, pwm2 = 326;        //Battery 2
+//
+//  dTotalTicks = 359;    //Battery 1
+//  //    dTotalTicks = 360;      //Battery 2
+//
+//  while (mLTicks < dTotalTicks)
+//  {
+//    //    output = pidControl(mLTicks, mRTicks);
+//    //    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
+//    md.setSpeeds(pwm1, pwm2);
+//    //    count++;
+//    //    total += abs(mLTicks - mRTicks);
+//    //    Serial.println(mLTicks - mRTicks);
+//    //    Serial.print(mLTicks);
+//    //    Serial.print("/");
+//    //    Serial.print(mRTicks);
+//    //    Serial.print("/");
+//    //    Serial.println(dTotalTicks);
+//  }
+//  //  avg = total / count;
+//  //  Serial.print("Avg:");
+//  //  Serial.println(avg);
+//
+//  brake();
+//}
 
 
 //*tr
@@ -592,31 +573,30 @@ void turnRightFast(int degree) {
 
   double dTotalTicks = 0;
   double output;
-  //  int count = 0;
-  //  double avg, total = 0;
+  //    int count = 0;
+  //    double avg, total = 0;
 
   //  int pwm1 = 344, pwm2 = -316;
-  int pwm1 = 375, pwm2 = -380;
+  int pwm1 = 380, pwm2 = -360;
   //  dTotalTicks = 349;
-  dTotalTicks = 349;
+  dTotalTicks = 348;
 
   while (mLTicks < dTotalTicks)
   {
     output = pidControl(mLTicks, mRTicks);
     md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
-    //    md.setSpeeds(pwm1 , pwm2);
-    //    count++;
-    //    total += abs(mLTicks - mRTicks);
-    //    Serial.println(mLTicks - mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.print(mRTicks);
-    //    Serial.print("/");
-    //    Serial.println(dTotalTicks);
+    //        count++;
+    //        total += abs(mLTicks - mRTicks);
+    //        Serial.println(mLTicks - mRTicks);
+    //        Serial.print(mLTicks);
+    //        Serial.print("/");
+    //        Serial.print(mRTicks);
+    //        Serial.print("/");
+    //        Serial.println(dTotalTicks);
   }
-  //  avg = total / count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
+  //    avg = total / count;
+  //    Serial.print("Avg:");
+  //    Serial.println(avg);
 
   brake();
 }
@@ -625,31 +605,31 @@ void turnRightFast(int degree) {
 void turnLeftFast(int degree) {
   double dTotalTicks = 0;
   double output;
-  //  int count = 0;
-  //  double avg, total = 0;
+  //    int count = 0;
+  //    double avg, total = 0;
 
   //  int pwm1 = -344, pwm2 = 316;
-  int pwm1 = -375, pwm2 = 380;
+  int pwm1 = -380, pwm2 = 360;
 
   //  dTotalTicks = 348;      //Battery 2
-  dTotalTicks = 348;
+  dTotalTicks = 343;
   while (mLTicks < dTotalTicks)
   {
     output = pidControl(mLTicks, mRTicks);
     md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
-    //    md.setSpeeds(pwm1, pwm2);
-    //    count++;
-    //    total += abs(mLTicks - mRTicks);
-    //    Serial.println(mLTicks - mRTicks);
-    //    Serial.print(mLTicks);
-    //    Serial.print("/");
-    //    Serial.print(mRTicks);
-    //    Serial.print("/");
-    //    Serial.println(dTotalTicks);
+
+    //        count++;
+    //        total += abs(mLTicks - mRTicks);
+    //        Serial.println(mLTicks - mRTicks);
+    //        Serial.print(mLTicks);
+    //        Serial.print("/");
+    //        Serial.print(mRTicks);
+    //        Serial.print("/");
+    //        Serial.println(dTotalTicks);
   }
-  //  avg = total / count;
-  //  Serial.print("Avg:");
-  //  Serial.println(avg);
+  //    avg = total / count;
+  //    Serial.print("Avg:");
+  //    Serial.println(avg);
 
   brake();
 }
@@ -660,8 +640,8 @@ void uTurn() {
   //  int count = 0;
   //  double avg, total = 0;
 
-    int pwm1 = -344, pwm2 = 316;
-//  int pwm1 = -375, pwm2 = 380;
+  int pwm1 = -344, pwm2 = 316;
+  //  int pwm1 = 380, pwm2 = -380;
   dTotalTicks = 750;
 
   while (mLTicks < dTotalTicks)
@@ -695,8 +675,9 @@ void turnRightabit(int degree) {
   dTotalTicks = 1; // 45 degree
   while (mLTicks < dTotalTicks)
   {
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+    //    output = pidControl(mLTicks, mRTicks);
+    //    md.setSpeeds(pwm1 + output * 3, pwm2 - output * 3);
+    md.setSpeeds(pwm1 , pwm2 );
   }
   brakeabit();
 }
@@ -711,8 +692,9 @@ void turnLeftabit(int degree) {
 
   while (mLTicks < dTotalTicks)
   {
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
+    //    output = pidControl(mLTicks, mRTicks);
+    //    md.setSpeeds(pwm1 - output * 3, pwm2 + output * 3);
+    md.setSpeeds(pwm1 , pwm2 );
   }
   brakeabit();
 }
@@ -782,8 +764,9 @@ void moveAdjustF()
 
   while (mLTicks < dTotalTicks)
   {
-    output = pidControl(mLTicks, mRTicks);
-    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
+    //    output = pidControl(mLTicks, mRTicks);+
+    //    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
+    md.setSpeeds(pwm1 , pwm2 );
   }
   brakeabit();
 }
@@ -799,7 +782,7 @@ void moveAdjustB()
 
   while (mLTicks < dTotalTicks)
   {
-    output = pidControl(mLTicks, mRTicks);
+    //    output = pidControl(mLTicks, mRTicks);
     md.setSpeeds(pwm1 , pwm2 );
 
   }
@@ -901,6 +884,25 @@ void getRMedian()
 
 }
 
+void getRMedianAutoCalibrate()
+{
+  for (int sCount = 0; sCount < 11 ; sCount++)
+  {
+    disFL = readSensor(sensorFL, 0);
+    disFC = readSensor(sensorFC, 1);
+    disFR = readSensor(sensorFR, 0);
+    disLF = readSensor(sensorLF, 0);
+    disLB = readSensor(sensorLB, 0);
+
+    //add the variables into arrays as samples
+    FrontR.add(disFR);
+    FrontL.add(disFL);
+    FrontC.add(disFC);
+    LeftF.add(disLF);
+    LeftB.add(disLB);
+  }
+}
+
 //seperate from the main function to save time
 //get front sensor data only
 //offset to increase the acurracy for short distance
@@ -908,9 +910,6 @@ void getRMedianFront()
 {
   for (int sCount = 0; sCount < 11 ; sCount++)
   {
-    //    disFL = readSensor(sensorFL, -5.8);
-    //    disFC = readSensor(sensorFC, -4.8);
-    //    disFR = readSensor(sensorFR, -5.8);
     disFL = readSensor(sensorFL, 0);
     disFC = readSensor(sensorFC, 1);
     disFR = readSensor(sensorFR, 0);
@@ -957,7 +956,6 @@ void getRMedianDistanceAdjustFR()
     disFR = readSensor(sensorFR, 0);
     //add the variables into arrays as samples
     FrontR.add(disFR);
-
   }
 }
 
@@ -1014,16 +1012,6 @@ void getSensorsDataActual() {
 
 //*gsd
 void getSensorsData(char cmd) {
-  int intLF, intLB;
-  getRMedian();
-  FL = FrontL.getMedian() / 10 + 1;
-  FC = FrontC.getMedian() / 10 + 1;
-  FR = FrontR.getMedian() / 10 + 1;
-  R = Right.getMedian() / 10 + 1;
-
-  LF = LeftF.getMedian() / 10 + 1;;
-  LB = LeftB.getMedian() / 10 + 1;;
-  clearRMedian();
 
   checkForCalibration(cmd);
   //  delay(100);
@@ -1102,113 +1090,63 @@ void getSensorsDataStairs() {
 int countFAndLWall = 0;
 void checkForCalibration(char cmd)
 {
+  getRMedianAutoCalibrate();
+  disFL = FrontL.getAverage();
+  disFC = FrontC.getAverage();
+  disFR = FrontR.getAverage();
+  disLF = LeftF.getAverage();
+  disLB = LeftB.getAverage();
+  clearRMedian();
 
-  if ((FL  <= 1 && FC  <= 1) || (FL  <= 1 && FR  <= 1) || (FC  <= 1 && FR  <= 1) )
+  if ((disFL  <= 13 && disFC  <= 13) || (disFL  <= 13 && disFR  <= 13) || (disFC  <= 13 && disFR  <= 13) )
   {
-    if (LF  <= 1 && LB  <= 1 && countFAndLWall >= 9 )
-    {
-      FrontAndLeftWall();
-      adjustFailCount = 0;
-      adjustFrontFailCount = 0;
-      countFAndLWall = 0;
-      //      Serial.println("Left and Front Wall");
-    }
-    else
-    {
+//    if (disLF  <= 1 && disLB  <= 1 && countFAndLWall >= 9 )
+//    {
+//      FrontAndLeftWall();
+//      adjustFailCount = 0;
+//      adjustFrontFailCount = 0;
+//      countFAndLWall = 0;
+//      //      Serial.println("Left and Front Wall");
+//    }
+//    else
+//    {
       FrontWall();
-      adjustFrontFailCount = 0;
+//      adjustFrontFailCount = 0;
       adjustFailCount = 0;
-      countFAndLWall++;
+//      countFAndLWall++;
       //      Serial.println("Front Wall");
-    }
+//    }
   }
-  else if (((LF  <= 2 && LB  <= 2)) && adjustFailCount >= 2 )
+  else if (((disLF  <= 18 && disLB  <= 18)) && adjustFailCount >= 2 )
   {
     LeftWall();
-    adjustFrontFailCount++;
-    countFAndLWall++;
+//    adjustFrontFailCount++;
+//    countFAndLWall++;
     //    Serial.println("Left Wall");
   }
   else
   {
     //    adjustDistance();
-    adjustFrontFailCount++;
+//    adjustFrontFailCount++;
     adjustFailCount++;
-    countFAndLWall++;
+//    countFAndLWall++;
   }
-
-  getRMedianLeft();
-  disLF = LeftF.getAverage();
-  disLB = LeftB.getAverage();
-  clearRMedian();
 
   if (disLF >= 14 && disLF <= 16 && LF <= 1)
   {
-    turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
-    if ((disFL  <= 1 && disFR  <= 1))
-    {
-      FrontWallFR();
-    }
-    else
-      adjustDistanceFR();
-    delay(20);
-    turnRight(90);
+    leftFrontLimit();
   }
   else if (disLB >= 14 && disLB <= 16 && LB <= 1)
   {
-    turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
-    if ((disFL  <= 1 && disFR  <= 1))
-    {
-      FrontWall();
-    }
-    else
-      adjustDistance();
-    delay(20);
-    turnRight(90);
+    leftBackLimit();
   }
   else if (disLF <= 11 && LF <= 1)
   {
-    turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
-    if ((disFL  <= 1 && disFR  <= 1))
-    {
-      FrontWallFR();
-    }
-    else
-      adjustDistanceFR();
-    delay(20);
-    turnRight(90);
+    leftFrontLimit();
   }
   else if (disLB <= 11 && LB <= 1)
   {
-    turnLeft(90);
-    getRMedianFront();
-    disFL = FrontL.getAverage();
-    disFC = FrontC.getAverage();
-    disFR = FrontR.getAverage();
-    clearRMedian();
-    if ((disFL  <= 1 && disFR  <= 1))
-    {
-      FrontWall();
-    }
-    else
-      adjustDistance();
-    delay(20);
-    turnRight(90);
+    leftBackLimit();
   }
 
   //  if ((adjustFrontFailCount >= 12 || adjustFailCount >= 10) && LF  <= 1 && LB <= 1 )
@@ -1252,54 +1190,68 @@ void checkForCalibration(char cmd)
 
 }
 
-void test()
+void leftFrontLimit()
 {
-  turnLeft(90);
-  for (int i = 0; i < 10; i++)
+  turnLeftFast(90);
+  getRMedianFront();
+  disFL = FrontL.getAverage();
+  disFC = FrontC.getAverage();
+  disFR = FrontR.getAverage();
+  clearRMedian();
+  if ((disFC > 3 && disFC < 13) || (disFL > 3 && disFL < 13) || (disFR > 3 && disFR < 13))
   {
-    adjustDistanceFR();
+    FrontWallFR();
   }
-  turnRight(90);
+  else
+    adjustDistanceFR();
+  delay(20);
+  turnRightFast(90);
+}
+
+void leftBackLimit()
+{
+  turnLeftFast(90);
+  getRMedianFront();
+  disFL = FrontL.getAverage();
+  disFC = FrontC.getAverage();
+  disFR = FrontR.getAverage();
+  clearRMedian();
+  if ((disFC > 3 && disFC < 13) || (disFL > 3 && disFL < 13) || (disFR > 3 && disFR < 13))
+  {
+    FrontWall();
+  }
+  else
+    adjustDistance();
+  delay(20);
+  turnRightFast(90);
 }
 
 void FrontWall()
 {
-  for (int i = 0; i < 10; i++)
-  {
-    adjustDistance();
-    adjustAngleFront();
-  }
-  movementCount = 0;
+
+  adjustDistance();
+  adjustAngleFront();
+
 }
 
 void FrontWallFR()
 {
-  for (int i = 0; i < 10; i++)
-  {
-    adjustDistanceFR();
-    adjustAngleFront();
-  }
-  movementCount = 0;
+  adjustDistanceFR();
+  adjustAngleFront();
+
 }
 
 void LeftWall()
 {
-  //  for (int i = 0; i < 10; i++)
-  //  {
   adjustAngleLeft();
-  //  }
-  movementCount = 0;
 }
 
 void FrontAndLeftWall()
 {
-  turnLeft(90);
+  turnLeftFast(90);
   autoCalibrate();
-  //  delay(300);
-  turnRight(90);
+  turnRightFast(90);
   autoCalibrate();
-  //  delay(300);
-  movementCount = 0;
 }
 
 //auto calibration
@@ -1479,6 +1431,75 @@ void adjustAngleLeft()
 
 }
 
+//*ad
+void adjustDistance()
+{
+  unsigned long preTime = millis();
+  unsigned long curTime = 0;
+
+  while (1)
+  {
+    curTime = millis();
+    if (curTime - preTime > 3000)
+    {
+      break;
+    }
+    getRMedianDistanceAdjust();
+    disFL = FrontL.getAverage();
+    clearRMedian();
+
+    //Use Front Left Sensor adjust distance
+    if (disFL >= 7.2 && disFL < 9.5)
+    {
+      moveAdjustB();
+      //      delay(50);      //original is delay(100) reduce to speedup
+    }
+    else if (disFL > 10.5 && disFL <= 15)
+    {
+      moveAdjustF();
+      //      delay(50);
+    }
+    else
+    {
+      break;
+    }
+  }
+}
+
+void adjustDistanceFR()
+{
+  unsigned long preTime = millis();
+  unsigned long curTime = 0;
+
+  while (1)
+  {
+    curTime = millis();
+    if (curTime - preTime > 3000)
+    {
+      break;
+    }
+    getRMedianDistanceAdjustFR();
+    disFR = FrontR.getAverage();
+    clearRMedian();
+
+    //Use Front Left Sensor adjust distance
+    if (disFR >= 7.2 && disFR < 9.5)
+    {
+      moveAdjustB();
+      //      delay(50);      //original is delay(100) reduce to speedup
+    }
+    else if (disFR > 10.5 && disFR <= 16)
+    {
+      moveAdjustF();
+      //      delay(50);
+    }
+    else
+    {
+      break;
+    }
+  }
+}
+
 void adjustAngleStaircase()
 {
   //error variables
@@ -1570,76 +1591,6 @@ void adjustAngleStaircase()
 }
 
 
-
-//*ad
-void adjustDistance()
-{
-  unsigned long preTime = millis();
-  unsigned long curTime = 0;
-
-  while (1)
-  {
-    curTime = millis();
-    if (curTime - preTime > 3000)
-    {
-      break;
-    }
-    getRMedianDistanceAdjust();
-    disFL = FrontL.getAverage();
-    clearRMedian();
-
-    //Use Front Left Sensor adjust distance
-    if (disFL >= 7.2 && disFL < 9.5)
-    {
-      moveAdjustB();
-      //      delay(50);      //original is delay(100) reduce to speedup
-    }
-    else if (disFL > 10.5 && disFL <= 15)
-    {
-      moveAdjustF();
-      //      delay(50);
-    }
-    else
-    {
-      break;
-    }
-  }
-}
-
-void adjustDistanceFR()
-{
-  unsigned long preTime = millis();
-  unsigned long curTime = 0;
-
-  while (1)
-  {
-    curTime = millis();
-    if (curTime - preTime > 3000)
-    {
-      break;
-    }
-    getRMedianDistanceAdjustFR();
-    disFR = FrontR.getAverage();
-    clearRMedian();
-
-    //Use Front Left Sensor adjust distance
-    if (disFR >= 7.2 && disFR < 9.5)
-    {
-      moveAdjustB();
-      //      delay(50);      //original is delay(100) reduce to speedup
-    }
-    else if (disFR > 10.5 && disFR <= 16)
-    {
-      moveAdjustF();
-      //      delay(50);
-    }
-    else
-    {
-      break;
-    }
-  }
-}
-
 void stairCaseTest()
 {
   adjustAngleStaircase();
@@ -1656,222 +1607,6 @@ void compute_mR_ticks()
   mRTicks++;
 }
 
-
-//*md
-//void moveDigonal()
-//{
-//  double dTotalTicks = 0;
-//  double output;
-//  double disFL, disFC, disFR, disLF, disLB, disR;
-//
-//  int pwm1 = 331, pwm2 = 322;
-//
-//  dTotalTicks = 310 / 10 * 100;  // *10 = 10cm
-//
-//  while (mLTicks < dTotalTicks)
-//  {
-//    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
-//    disFR = readSensor(sensorFR, 0);
-//    disFC = readSensor(sensorFC, 0);
-//    disR = readLongRange(sensorR, 0);
-//    disLF = readSensor(sensorLF, 0);
-//    disLB = readSensor(sensorLB, 0);
-//
-//    //add the variables into arrays as samples
-//    FrontR.add(disFR);
-//    FrontL.add(disFL);
-//    FrontC.add(disFC);
-//    Right.add(disR);
-//    LeftF.add(disLF);
-//    LeftB.add(disLB);
-//
-//    if ((FrontC.getMedian()) < 20 || (FrontR.getMedian()) < 20 || (FrontL.getMedian()) < 20)
-//    {
-//      break;
-//    }
-//
-//    output = pidControl(mLTicks, mRTicks);
-//    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
-//  }
-//
-//  brake();
-//
-//  delay(200);
-//
-//  while (1)
-//  {
-//    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
-//    disFR = readSensor(sensorFR, 0);
-//    disFC = readSensor(sensorFC, 0);
-//    disR = readLongRange(sensorR, 0);
-//    disLF = readSensor(sensorLF, 0);
-//    disLB = readSensor(sensorLB, 0);
-//
-//    //add the variables into arrays as samples
-//    FrontR.add(disFR);
-//    FrontL.add(disFL);
-//    FrontC.add(disFC);
-//    Right.add(disR);
-//    LeftF.add(disLF);
-//    LeftB.add(disLB);
-//
-//
-//    if ((FrontC.getMedian()) < 13 || (FrontR.getMedian()) < 13 || (FrontL.getMedian()) < 13)
-//    {
-//      moveAdjustB();
-//      delay(10);
-//    }
-//    else
-//    {
-//      brake();
-//      break;
-//    }
-//  }
-//  delay(200);
-//
-//  if ((LeftF.getMedian() > 30 || LeftB.getMedian() > 30) && FrontR.getMedian() < 20 )
-//  {
-//    digonalLeft();
-//
-//  }
-//  else if ((Right.getMedian()) > 30 && (FrontL.getMedian()) < 20 )
-//  {
-//    digonalRight();
-//  }
-//  else if (FrontC.getMedian() < 20)
-//  {
-//    digonalLeft();
-//  }
-//  else {
-//    brake();
-//  }
-//
-//}
-
-//*a
-//void avoid()
-//{
-//  double dTotalTicks = 0;
-//  double output;
-//  double disFL, disFC, disFR, disLF, disLB, disR;
-//
-//  int pwm1 = 331, pwm2 = 322;
-//
-//  dTotalTicks = 310 / 10 * 100;  // *10 = 10cm
-//
-//  while (mLTicks < dTotalTicks)
-//  {
-//    disFL = readSensor(sensorFL, 0); //Calculate the distance in centimeters and store the value in a variable
-//    disFR = readSensor(sensorFR, 0);
-//    disFC = readSensor(sensorFC, 0);
-//    disR = readLongRange(sensorR, 0);
-//    disLF = readSensor(sensorLF, 0);
-//    disLB = readSensor(sensorLB, 0);
-//
-//    //add the variables into arrays as samples
-//    FrontR.add(disFR);
-//    FrontL.add(disFL);
-//    FrontC.add(disFC);
-//    Right.add(disR);
-//    LeftF.add(disLF);
-//    LeftB.add(disLB);
-//
-//    if ((FrontC.getMedian()) < 20 || (FrontR.getMedian()) < 20 || (FrontL.getMedian()) < 20)
-//    {
-//      break;
-//    }
-//
-//    output = pidControl(mLTicks, mRTicks);
-//    md.setSpeeds(pwm1 - output * 5, pwm2 + output * 5);
-//  }
-//
-//  brake();
-//  delay(200);
-//
-//  if (LeftF.getMedian() > 30 || LeftB.getMedian() > 30)
-//  {
-//    turnLeft(90);
-//    delay(200);
-//    moveSpeedup(2);
-//    delay(200);
-//    turnRight(90);
-//    delay(200);
-//    moveSpeedup(5);
-//    delay(200);
-//    turnRight(90);
-//    delay(200);
-//    moveSpeedup(2);
-//    delay(200);
-//    turnLeft(90);
-//    delay(200);
-//    moveSpeedup(2);
-//    delay(200);
-//  }
-//  else if (Right.getMedian() > 30)
-//  {
-//    turnRight(90);
-//    delay(200);
-//    moveSpeedup(2);
-//    delay(200);
-//    turnLeft(90);
-//    delay(200);
-//    moveSpeedup(5);
-//    delay(200);
-//    turnLeft(90);
-//    delay(200);
-//    moveSpeedup(2);
-//    delay(200);
-//    turnRight(90);
-//    delay(200);
-//    moveSpeedup(2);
-//    delay(200);
-//  }
-//  else
-//  {
-//    brake();
-//  }
-//}
-
-
-//*dr
-//void digonalRight()
-//{
-//  turnRight(45);
-//  delay(250);
-//  moveSpeedup(4);
-//  delay(250);
-//  turnLeft(45);
-//  delay(250);
-//  moveSpeedup(2);
-//  delay(250);
-//  turnLeft(90);
-//  delay(250);
-//  moveSpeedup(3);
-//  delay(250);
-//  turnRight(90);
-//  delay(250);
-//  moveSpeedup(2);
-//}
-
-//*dl
-//void digonalLeft()
-//{
-//  turnLeft(45);
-//  delay(250);
-//  moveSpeedup(4);
-//  delay(250);
-//  turnRight(45);
-//  delay(250);
-//  moveSpeedup(2);
-//   (250);
-//  turnRight(90);
-//  delay(250);
-//  moveSpeedup(3);
-//  delay(250);
-//  turnLeft(90);
-//  delay(250);
-//  moveSpeedup(2);
-//}
 
 //*debug
 //void debug(String str)

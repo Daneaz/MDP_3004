@@ -23,8 +23,8 @@ public class SocketMgr {
     //private BufferedReader mSocketReader;
     private BufferedInputStream mSocketReader;
     private static final int PORT = 5182;
-    //private static final String ADDRESS = "192.168.13.1";
-    private static final String ADDRESS = "127.0.0.1";
+    private static final String ADDRESS = "192.168.13.1";
+//    private static final String ADDRESS = "127.0.0.1";
 
 //    private SocketMgr() { }
 
