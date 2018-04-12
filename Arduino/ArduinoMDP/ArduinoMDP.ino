@@ -581,7 +581,7 @@ void turnRightFast(int degree) {
   int pwm1 = 344, pwm2 = -316;
   //  int pwm1 = 380, pwm2 = -360;
   //  dTotalTicks = 349;
-  dTotalTicks = 351;
+  dTotalTicks = 350;
 
   while (mLTicks < dTotalTicks || mRTicks < dTotalTicks)
   {
@@ -617,7 +617,7 @@ void turnLeftFast(int degree) {
   //  int pwm1 = -380, pwm2 = 360;
 
   //  dTotalTicks =XM02 348;      //Battery 2
-  dTotalTicks = 346;
+  dTotalTicks = 345;
   while (mLTicks < dTotalTicks || mRTicks < dTotalTicks)
   {
     output = pidControl(mLTicks, mRTicks);
@@ -648,9 +648,9 @@ void uTurn() {
   //  int count = 0;
   //  double avg, total = 0;
 
-  //  int pwm1 = -344, pwm2 = 316;
-  int pwm1 = 380, pwm2 = -380;
-  dTotalTicks = 700;
+    int pwm1 = -344, pwm2 = 316;
+//  int pwm1 = 380, pwm2 = -380;
+  dTotalTicks = 740;
 
   while (mLTicks < dTotalTicks || mRTicks < dTotalTicks)
   {
@@ -1140,7 +1140,7 @@ void checkForCalibration(char cmd)
       //      Serial.println("Front Wall");
     }
   }
-  else if (((disLF  <= 15.5 && disLB  <= 15.5)) && adjustFailCount >= 2 )
+  else if (((disLF  <= 15.5 && disLB  <= 15.5)) && adjustFailCount >= 0 )
   {
     LeftWall();
     //    adjustFrontFailCount++;
