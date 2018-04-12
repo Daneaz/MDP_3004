@@ -22,6 +22,7 @@ import constant.RobotConstant;
 public class ExplorationAlgorithm implements Algorithm {
 
 	private boolean trustExplored = false;
+	private boolean uTurnFlagForNoTrustExplored = false;
 	private boolean uTurn = false;
 	private int minutes = 50;
 	private int seconds = 20;
@@ -900,10 +901,44 @@ public class ExplorationAlgorithm implements Algorithm {
 		        
 		        proxyRobot.turn(RIGHT);
 				if(check1StepUturn(grid, proxyRobot)) {
-					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-					robotMovementString+="U";
+					/*SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";*/
+					
+					// U-Turn the robot for the simulator first
 					robot.turn(RIGHT);
 					robot.turn(RIGHT);
+					
+					// After U-Turn calculate the number of steps to move forward and move
+					uTurnFlagForNoTrustExplored = true;
+
+					int numberOfSteps = checkFrontExplored2(grid, robot);
+					// numberOfSteps: 0
+					if(numberOfSteps == 0) {
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+						robotMovementString+="U";
+						System.out.println("Cannot move forward. Obstacles in front");
+					} else if(numberOfSteps == 1) {
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+						robotMovementString+="U";
+					}
+					// numberOfSteps: 2-9
+					else if(numberOfSteps > 1 && numberOfSteps < 10) {
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM0" + String.valueOf(numberOfSteps));
+						robotMovementString+="U";
+					}
+					// numberOfSteps: 10-17
+					else {
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM" + String.valueOf(numberOfSteps));
+						robotMovementString+="U";
+					}
+					
+					// Update the simulator
+					if(numberOfSteps > 1) {
+						for(int i=0; i<numberOfSteps; i++) {
+							robotMovementString+="M";
+							robot.move();
+						}
+					}
 				} else {
 					if (realRun) {
 	                	SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
@@ -919,26 +954,129 @@ public class ExplorationAlgorithm implements Algorithm {
 			}
 			// Checks if need to do U-Turn in front
 			else if(checkUTurnAhead(grid, robot)) {
-				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-				robotMovementString+="U";
+				/*SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+				robotMovementString+="U";*/
+				
+				// U-Turn the robot for the simulator first
 				robot.turn(RIGHT);
 				robot.turn(RIGHT);
 				
+				// After U-Turn calculate the number of steps to move forward and move
+				uTurnFlagForNoTrustExplored = true;
+
+				int numberOfSteps = checkFrontExplored2(grid, robot);
+				// numberOfSteps: 0
+				if(numberOfSteps == 0) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";
+					System.out.println("Cannot move forward. Obstacles in front");
+				} else if(numberOfSteps == 1) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";
+				}
+				// numberOfSteps: 2-9
+				else if(numberOfSteps > 1 && numberOfSteps < 10) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM0" + String.valueOf(numberOfSteps));
+					robotMovementString+="U";
+				}
+				// numberOfSteps: 10-17
+				else {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM" + String.valueOf(numberOfSteps));
+					robotMovementString+="U";
+				}
+				
+				// Update the simulator
+				if(numberOfSteps > 1) {
+					for(int i=0; i<numberOfSteps; i++) {
+						robotMovementString+="M";
+						robot.move();
+					}
+				}
+				
 				return true;
 			} else if(robot.isObstacleInfront() && robot.isObstacleOnLeftSide2() && robot.isObstacleOnRightSide2()) {
-				SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-				robotMovementString+="U";
+				/*SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+				robotMovementString+="U";*/
+				
+				// U-Turn the robot for the simulator first
 				robot.turn(RIGHT);
 				robot.turn(RIGHT);
+				
+				// After U-Turn calculate the number of steps to move forward and move
+				uTurnFlagForNoTrustExplored = true;
+
+				int numberOfSteps = checkFrontExplored2(grid, robot);
+				// numberOfSteps: 0
+				if(numberOfSteps == 0) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";
+					System.out.println("Cannot move forward. Obstacles in front");
+				} else if(numberOfSteps == 1) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+					robotMovementString+="U";
+				}
+				// numberOfSteps: 2-9
+				else if(numberOfSteps > 1 && numberOfSteps < 10) {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM0" + String.valueOf(numberOfSteps));
+					robotMovementString+="U";
+				}
+				// numberOfSteps: 10-17
+				else {
+					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM" + String.valueOf(numberOfSteps));
+					robotMovementString+="U";
+				}
+				
+				// Update the simulator
+				if(numberOfSteps > 1) {
+					for(int i=0; i<numberOfSteps; i++) {
+						robotMovementString+="M";
+						robot.move();
+					}
+				}
 				
 				return true;
 			} else if(robot.isObstacleInfront()) {
 				if(robot.isObstacleOnLeftSide() && robot.isObstacleOnRightSide()) {
 					/*System.out.println("---------------------Making a U-Turn--------------------");*/
 					if (realRun) {
+						/*SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+						robotMovementString+="U";*/
+						
+						// U-Turn the robot for the simulator first
+						robot.turn(RIGHT);
+						robot.turn(RIGHT);
+						
+						// After U-Turn calculate the number of steps to move forward and move
+						uTurnFlagForNoTrustExplored = true;
+
+						int numberOfSteps = checkFrontExplored2(grid, robot);
+						// numberOfSteps: 0
+						if(numberOfSteps == 0) {
 							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
-							robot.turn(RIGHT);
-							robot.turn(RIGHT);
+							robotMovementString+="U";
+							System.out.println("Cannot move forward. Obstacles in front");
+						} else if(numberOfSteps == 1) {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "U");
+							robotMovementString+="U";
+						}
+						// numberOfSteps: 2-9
+						else if(numberOfSteps > 1 && numberOfSteps < 10) {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM0" + String.valueOf(numberOfSteps));
+							robotMovementString+="U";
+						}
+						// numberOfSteps: 10-17
+						else {
+							SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "ZUM" + String.valueOf(numberOfSteps));
+							robotMovementString+="U";
+						}
+						
+						// Update the simulator
+						if(numberOfSteps > 1) {
+							for(int i=0; i<numberOfSteps; i++) {
+								robotMovementString+="M";
+								robot.move();
+							}
+						}
 							
 					} else {
 						robotMovementString+="RR";
@@ -2159,7 +2297,8 @@ public class ExplorationAlgorithm implements Algorithm {
             	} else if (grid.getIsExplored(positionX + i, positionY - 1)) {
         			if(grid.getIsObstacle(positionX + i, positionY - 1))
         			{
-        				break;
+//        				break;
+        				return false;
         			}
                 }
         		else {
@@ -2187,7 +2326,8 @@ public class ExplorationAlgorithm implements Algorithm {
             	} else if (grid.getIsExplored(positionX + i, positionY + 3)) {
         			if(grid.getIsObstacle(positionX + i, positionY + 3))
         			{
-        				break;
+//        				break;
+        				return false;
         			}
                 }
         		else {
@@ -2216,7 +2356,8 @@ public class ExplorationAlgorithm implements Algorithm {
             	} else if (grid.getIsExplored(positionX + 3, positionY + i)) {
         			if(grid.getIsObstacle(positionX + 3, positionY + i))
         			{
-        				break;
+//        				break;
+        				return false;
         			}
                 }
         		else {
@@ -2244,7 +2385,8 @@ public class ExplorationAlgorithm implements Algorithm {
             	} else if (grid.getIsExplored(positionX - 1, positionY + i)) {
         			if(grid.getIsObstacle(positionX - 1, positionY + i))
         			{
-        				break;
+//        				break;
+        				return false;
         			}
                 }
         		else {
@@ -2255,6 +2397,58 @@ public class ExplorationAlgorithm implements Algorithm {
     
         return false;
     }
+	
+	// returns true if there is an obstacle in front of the robot
+		public boolean checkObstacleInfront2(Grid grid, int positionX, int positionY, int direction) { // DIRECTLY IN FRONT OF ROBOT
+	        for (int i = 0; i < SIZE_OF_ROBOT; i++) {
+	            if (direction == NORTH) {
+	            	if(grid.isOutOfArena(positionX + i, positionY - 1)) {
+	            		return true;
+	            	} else if(grid.getIsExplored(positionX + i, positionY - 1)) {
+	            		if (grid.getIsObstacle(positionX + i, positionY - 1)) {
+	                        return true;
+	                    }
+	            	} else {
+	            		return true;
+	            	}
+	            }
+	            else if (direction == SOUTH) {
+	            	if(grid.isOutOfArena(positionX + i, positionY + 3)) {
+	            		return true;
+	            	} else if(grid.getIsExplored(positionX + i, positionY + 3)) {
+	            		if (grid.getIsObstacle(positionX + i, positionY + 3)) {
+	                        return true;
+	                    }
+	            	} else {
+	            		return true;
+	            	}
+	            }
+	            else if (direction == EAST) {
+	            	if(grid.isOutOfArena(positionX + 3, positionY + i)) {
+	            		return true;
+	            	} else if(grid.getIsExplored(positionX + 3, positionY + i)) {
+	            		if (grid.getIsObstacle(positionX + 3, positionY + i)) {
+	                        return true;
+	                    }
+	            	} else {
+	            		return true;
+	            	}            
+	            }
+	            else if (direction == WEST) {
+	            	if(grid.isOutOfArena(positionX - 1, positionY + i)) {
+	            		return true;
+	            	} else if(grid.getIsExplored(positionX - 1, positionY + i)) {
+	            		if (grid.getIsObstacle(positionX - 1, positionY + i)) {
+	                        return true;
+	                    }
+	            	} else {
+	            		return true;
+	            	}
+	            }
+	        }
+	        
+	        return false;
+	    }
 	
 	// return true if it is able to turn
 	private boolean checkAbleToTurn(Grid grid, int robotCurrentX, int robotCurrentY, int direction) {
@@ -2318,7 +2512,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 proxyRobot.setPositionY(currentYPos);
                 proxyRobot.setDirection(robot.getDirection());
                 
-                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
+                if(checkRightRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection()) && checkLeftRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection())) {
                 	if(proxyRobot.isObstacleInfront()) {
             			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
             				// Able to make U-Turn
@@ -2326,39 +2520,30 @@ public class ExplorationAlgorithm implements Algorithm {
             			}
                     } else {
                     	// Simulate that the robot has moved 1 step forward, check if a U Turn is possible
-                        if(robot.getDirection() == NORTH) {
-                    		// Update the new robot Y position after move forward by 1
-                    		currentYPos--;
-                    	} else if(robot.getDirection() == SOUTH) {
+                    	if(robot.getDirection() == SOUTH) {
                     		// Update the new robot Y position after move forward by 1
                     		currentYPos++;
                     	} else if(robot.getDirection() == EAST) {
                     		// Update the new robot X position after move forward by 1
                     		currentXPos++;
-                    	} else if(robot.getDirection() == WEST) {
-                    		// Update the new robot X position after move forward by 1
-                    		currentXPos--;
                     	}
                         
                         // If after moving forward and robot is not out of Arena then we check if it is able to U-Turn
-                        if(robot.getDirection() == EAST || robot.getDirection() == SOUTH)
-                        {
-                        	if(!isOutOfArena(currentXPos, currentYPos)) {
-                            	// Initialize the proxyRobot with the conditions whereby it has moved 1 step forward
-                                proxyRobot.setPositionX(currentXPos);
-                                proxyRobot.setPositionY(currentYPos);
-                                proxyRobot.setDirection(robot.getDirection());
-                                
-                                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
-                                	if(proxyRobot.isObstacleInfront()) {
-                            			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
-                            				// Able to make U-Turn
-                            				return true;
-                            			}
-                                    }
+                    	if(!isOutOfArena(currentXPos, currentYPos)) {
+                        	// Initialize the proxyRobot with the conditions whereby it has moved 1 step forward
+                            proxyRobot.setPositionX(currentXPos);
+                            proxyRobot.setPositionY(currentYPos);
+                            proxyRobot.setDirection(robot.getDirection());
+                            
+                            if(checkRightRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection()) && checkLeftRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection())) {
+                            	if(proxyRobot.isObstacleInfront()) {
+                        			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
+                        				// Able to make U-Turn
+                        				return true;
+                        			}
                                 }
-                        	}
-                        }
+                            }
+                    	}	
                     }
                 }
             }
@@ -2371,7 +2556,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 proxyRobot.setPositionY(currentYPos);
                 proxyRobot.setDirection(robot.getDirection());
                 
-                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
+                if(checkRightRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection()) && checkLeftRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection())) {
                 	if(proxyRobot.isObstacleInfront()) {
             			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
             				// Able to make U-Turn
@@ -2382,36 +2567,27 @@ public class ExplorationAlgorithm implements Algorithm {
                         if(robot.getDirection() == NORTH) {
                     		// Update the new robot Y position after move forward by 1
                     		currentYPos--;
-                    	} else if(robot.getDirection() == SOUTH) {
-                    		// Update the new robot Y position after move forward by 1
-                    		currentYPos++;
-                    	} else if(robot.getDirection() == EAST) {
-                    		// Update the new robot X position after move forward by 1
-                    		currentXPos++;
                     	} else if(robot.getDirection() == WEST) {
                     		// Update the new robot X position after move forward by 1
                     		currentXPos--;
                     	}
                         
                         // If after moving forward and robot is not out of Arena then we check if it is able to U-Turn
-                        if(robot.getDirection() == EAST || robot.getDirection() == SOUTH)
-                        {
-                        	if(!grid.isOutOfArena(currentXPos, currentYPos)) {
-                            	// Initialize the proxyRobot with the conditions whereby it has moved 1 step forward
-                                proxyRobot.setPositionX(currentXPos);
-                                proxyRobot.setPositionY(currentYPos);
-                                proxyRobot.setDirection(robot.getDirection());
-                                
-                                if(checkRightRangeExplored(grid, proxyRobot) && checkLeftRangeExplored(grid, proxyRobot)) {
-                                	if(proxyRobot.isObstacleInfront()) {
-                            			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
-                            				// Able to make U-Turn
-                            				return true;
-                            			}
-                                    }
+                        if(!grid.isOutOfArena(currentXPos, currentYPos)) {
+                        	// Initialize the proxyRobot with the conditions whereby it has moved 1 step forward
+                            proxyRobot.setPositionX(currentXPos);
+                            proxyRobot.setPositionY(currentYPos);
+                            proxyRobot.setDirection(robot.getDirection());
+                            
+                            if(checkRightRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection()) && checkLeftRangeExplored(grid, proxyRobot.getPositionX(), proxyRobot.getPositionY(), proxyRobot.getDirection())) {
+                            	if(proxyRobot.isObstacleInfront()) {
+                        			if(proxyRobot.isObstacleOnLeftSide() && proxyRobot.isObstacleOnRightSide()) {
+                        				// Able to make U-Turn
+                        				return true;
+                        			}
                                 }
-                        	}
-                        }
+                            }
+                    	}	
                     }
                 }
             }
@@ -2715,55 +2891,59 @@ public class ExplorationAlgorithm implements Algorithm {
 		} 
 		// I do not trust the area I have already explored. Only move 1 step at a time
 		else {
-			// Sensor readings show there is obstacles in front of robot; DO NOT MOVE FORWARD
-			if(robot.getFrontCenter() < 2 || robot.getFrontLeft() < 2 || robot.getFrontRight() < 2) {
-				// Simulator shows there is no obstacle in front
-				if(!robot.isObstacleInfront()) {
-					/*System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
-					System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());*/
-					// Sense again
-					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-					robot.turn(RIGHT);
-					robot.sense(realRun);
-					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-					robot.turn(LEFT);
-					robot.sense(realRun, true);
+			if(uTurnFlagForNoTrustExplored) {
+				uTurnFlagForNoTrustExplored = false;
+			} else {
+				// Sensor readings show there is obstacles in front of robot; DO NOT MOVE FORWARD
+				if(robot.getFrontCenter() < 2 || robot.getFrontLeft() < 2 || robot.getFrontRight() < 2) {
+					// Simulator shows there is no obstacle in front
+					if(!robot.isObstacleInfront()) {
+						/*System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
+						System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());*/
+						// Sense again
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+						robot.turn(RIGHT);
+						robot.sense(realRun);
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+						robot.turn(LEFT);
+						robot.sense(realRun, true);
+					}
 				}
-			}
-			// Sensor readings show there is NO obstacles in front of robot
-			else {
-				// Simulator shows there is obstacle(s) in front
-				if(robot.isObstacleInfront()) {
-					/*System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
-					System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());*/
-					
-					// Sense again to correct the front using the left sensors
-					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
-					robot.turn(RIGHT);
-					robot.sense(realRun);
-					// Sense again to correct the front using the front sensors
-					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
-					robot.turn(LEFT);
-					robot.sense(realRun, true);
-				}
-				// No conflict move forward
+				// Sensor readings show there is NO obstacles in front of robot
 				else {
-					SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
-					//robot.setDetectNextMove(false);
-					robotMovementString+="M";
-					/*System.out.println("----------------------Moving Forward----------------------");
-					System.out.println(robotMovementString);*/
-					
-					// show the robot move forward on the simulator
-					robot.move();
-					
-					// Sense the surrounding
-					robot.sense(realRun, true);
-					
-					// Update Android when there is a move forward
-					sendAndroid(grid, robot, realRun);
-					
-					
+					// Simulator shows there is obstacle(s) in front
+					if(robot.isObstacleInfront()) {
+						/*System.out.println("Sensor readings conflict with simulator. Robot is prevented from moving forward.");
+						System.out.println("Sensor readings: FL: " + robot.getFrontLeft() + ", FC: " + robot.getFrontCenter() + ", FR: " + robot.getFrontRight());*/
+						
+						// Sense again to correct the front using the left sensors
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "R");
+						robot.turn(RIGHT);
+						robot.sense(realRun);
+						// Sense again to correct the front using the front sensors
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "L");
+						robot.turn(LEFT);
+						robot.sense(realRun, true);
+					}
+					// No conflict move forward
+					else {
+						SocketMgr.getInstance().sendMessage(CALL_ARDUINO, "M1");
+						//robot.setDetectNextMove(false);
+						robotMovementString+="M";
+						/*System.out.println("----------------------Moving Forward----------------------");
+						System.out.println(robotMovementString);*/
+						
+						// show the robot move forward on the simulator
+						robot.move();
+						
+						// Sense the surrounding
+						robot.sense(realRun, true);
+						
+						// Update Android when there is a move forward
+						sendAndroid(grid, robot, realRun);
+						
+						
+					}
 				}
 			}
 		}		
@@ -2822,7 +3002,7 @@ public class ExplorationAlgorithm implements Algorithm {
     		}
     	}
         
-        while(!checkObstacleInfront(grid, robotCurrentX, robotCurrentY, direction) && (!checkAbleToTurn(grid, robotCurrentX, robotCurrentY, direction)) && checkLeftRangeExplored(grid, robot) && checkRightRangeExplored(grid, robot)) {
+        while(!checkObstacleInfront(grid, robotCurrentX, robotCurrentY, direction) && (!checkAbleToTurn(grid, robotCurrentX, robotCurrentY, direction)) && checkLeftRangeExplored(grid, robotCurrentX, robotCurrentY, direction) && checkRightRangeExplored(grid, robotCurrentX, robotCurrentY, direction)) {
         	
         	moveCount++;
         	if(direction == NORTH) {
@@ -2880,103 +3060,160 @@ public class ExplorationAlgorithm implements Algorithm {
 		return moveCount;
 	}
 	
-	private boolean checkLeftRangeExplored(Grid grid, Robot robot) {
-		if(robot.getDirection() == NORTH) {
-			for(int x=-1; x>-3; x--) {
-				if(!grid.isOutOfArena(x, robot.getPositionY())) {
-					if(!grid.getIsExplored(x, robot.getPositionY())) {
-						return false;
-					} else if(grid.getIsObstacle(x, robot.getPositionY())) {
-						return true;
-					}
-				} else {
-					return true;
-				}
-			}
-		} else if(robot.getDirection() == SOUTH) {
-			for(int x=3; x<5; x++) {
-				if(!grid.isOutOfArena(x, robot.getPositionY()+2)) {
-					if(!grid.getIsExplored(x, robot.getPositionY()+2)) {
-						return false;
-					} else if(grid.getIsObstacle(x, robot.getPositionY()+2)) {
-						return true;
-					}
-				} else {
-					return true;
-				}
-			}
-		} else if(robot.getDirection() == EAST) {
-			for(int y=-1; y>-3; y--) {
-				if(!grid.isOutOfArena(robot.getPositionX()+2, y)) {
-					if(!grid.getIsExplored(robot.getPositionX()+2, y)) {
-						return false;
-					} else if(grid.getIsObstacle(robot.getPositionX()+2, y)) {
-						return true;
-					}
-				} else {
-					return true;
-				}
-			}
-		} else if(robot.getDirection() == WEST) {
-			for(int y=3; y<5; y++) {
-				if(!grid.isOutOfArena(robot.getPositionX(), y)) {
-					if(!grid.getIsExplored(robot.getPositionX(), y)) {
-						return false;
-					} else if(grid.getIsObstacle(robot.getPositionX(), y)) {
-						return true;
-					}
-				} else {
-					return true;
-				}
-			}
-		}
-		
-		return false;
+	public int checkFrontExplored2(Grid grid, Robot robot) {
+		int direction = robot.getDirection();
+        int robotCurrentX = robot.getPositionX();
+        int robotCurrentY = robot.getPositionY();
+        
+        int moveCount = 1;
+        
+        if(direction == NORTH) {
+    		// Update the new robot Y position after move forward by 1
+    		if(robotCurrentY == 1) {
+    			return moveCount;
+    		} else {
+    			robotCurrentY--;
+//    			if(isInEndingZone(robotCurrentX, robotCurrentY)) {
+//            		moveCount = moveCount +2;
+//            		return moveCount;
+//            	}
+    		}
+    	} else if(direction == SOUTH) {
+    		// Update the new robot Y position after move forward by 1
+    		if(robotCurrentY == 18) {
+    			return moveCount;
+    		} else {
+    			robotCurrentY++;
+//    			if(isInEndingZone(robotCurrentX, robotCurrentY+2)) {
+//            		moveCount = moveCount +2;
+//            		return moveCount;
+//            	}
+    		}
+    	} else if(direction == EAST) {
+    		// Update the new robot X position after move forward by 1
+    		if(robotCurrentX == 13) {
+    			return moveCount;
+    		} else {
+    			robotCurrentX++;
+//    			if(isInEndingZone(robotCurrentX+2, robotCurrentY)) {
+//            		moveCount = moveCount +2;
+//            		return moveCount;
+//            	}
+    		}
+    	} else if(direction == WEST) {
+    		// Update the new robot X position after move forward by 1
+    		if(robotCurrentX == 1) {
+    			return moveCount;
+    		} else {
+    			robotCurrentX--;
+//    			if(isInEndingZone(robotCurrentX, robotCurrentY)) {
+//            		moveCount = moveCount +2;
+//            		return moveCount;
+//            	}
+    		}
+    	}
+        
+        while(!checkObstacleInfront2(grid, robotCurrentX, robotCurrentY, direction) && (!checkAbleToTurn(grid, robotCurrentX, robotCurrentY, direction)) && checkLeftRangeExplored(grid, robotCurrentX, robotCurrentY, direction) && checkRightRangeExplored(grid, robotCurrentX, robotCurrentY, direction)) {
+        	
+        	moveCount++;
+        	if(direction == NORTH) {
+        		// Update the new robot Y position after move forward by 1
+        		if(robotCurrentY == 1) {
+        			break;
+        		} else {
+        			robotCurrentY--;
+        			if(isInEndingZone(robotCurrentX, robotCurrentY)) {
+                		moveCount = moveCount +2;
+                		break;
+                	}
+        		}
+        	} else if(direction == SOUTH) {
+        		// Update the new robot Y position after move forward by 1
+        		if(robotCurrentY == 18) {
+        			break;
+        		} else {
+        			robotCurrentY++;
+        			if(isInEndingZone(robotCurrentX, robotCurrentY+2)) {
+                		moveCount = moveCount +2;
+                		break;
+                	}
+        		}
+        	} else if(direction == EAST) {
+        		// Update the new robot X position after move forward by 1
+        		if(robotCurrentX == 13) {
+        			break;
+        		} else {
+        			robotCurrentX++;
+        			if(isInEndingZone(robotCurrentX+2, robotCurrentY)) {
+                		moveCount = moveCount +2;
+                		break;
+                	}
+        		}
+        	} else if(direction == WEST) {
+        		// Update the new robot X position after move forward by 1
+        		if(robotCurrentX == 1) {
+        			break;
+        		} else {
+        			robotCurrentX--;
+        			if(isInEndingZone(robotCurrentX, robotCurrentY)) {
+                		moveCount = moveCount +2;
+                		break;
+                	}
+        		}
+        	}
+        }
+        
+//        if(uTurn) {
+//        	uTurn = false;
+//        	moveCount--;
+//        }
+        
+		return moveCount;
 	}
 	
-	private boolean checkRightRangeExplored(Grid grid, Robot robot) {
-		if(robot.getDirection() == NORTH) {
-			for(int x=3; x<8; x++) {
-				if(!grid.isOutOfArena(x, robot.getPositionY())) {
-					if(!grid.getIsExplored(x, robot.getPositionY())) {
+	private boolean checkLeftRangeExplored(Grid grid, int robotXPos, int robotYPos, int direction) {
+		if(direction == NORTH) {
+			for(int x=-1; x>-3; x--) {
+				if(!grid.isOutOfArena(robotXPos+x, robotYPos)) {
+					if(!grid.getIsExplored(robotXPos+x, robotYPos)) {
 						return false;
-					} else if(grid.getIsObstacle(x, robot.getPositionY())) {
+					} else if(grid.getIsObstacle(robotXPos+x, robotYPos)) {
 						return true;
 					}
 				} else {
 					return true;
 				}
 			}
-		} else if(robot.getDirection() == SOUTH) {
-			for(int x=-1; x>-6; x--) {
-				if(!grid.isOutOfArena(x, robot.getPositionY()+2)) {
-					if(!grid.getIsExplored(x, robot.getPositionY()+2)) {
+		} else if(direction == SOUTH) {
+			for(int x=3; x<5; x++) {
+				if(!grid.isOutOfArena(robotXPos+x, robotYPos+2)) {
+					if(!grid.getIsExplored(robotXPos+x, robotYPos+2)) {
 						return false;
-					} else if(grid.getIsObstacle(x, robot.getPositionY()+2)) {
+					} else if(grid.getIsObstacle(robotXPos+x, robotYPos+2)) {
 						return true;
 					}
 				} else {
 					return true;
 				}
 			}
-		} else if(robot.getDirection() == EAST) {
-			for(int y=3; y<8; y++) {
-				if(!grid.isOutOfArena(robot.getPositionX()+2, y)) {
-					if(!grid.getIsExplored(robot.getPositionX()+2, y)) {
+		} else if(direction == EAST) {
+			for(int y=-1; y>-3; y--) {
+				if(!grid.isOutOfArena(robotXPos+2, robotYPos+y)) {
+					if(!grid.getIsExplored(robotXPos+2, robotYPos+y)) {
 						return false;
-					} else if(grid.getIsObstacle(robot.getPositionX()+2, y)) {
+					} else if(grid.getIsObstacle(robotXPos+2, robotYPos+y)) {
 						return true;
 					}
 				} else {
 					return true;
 				}
 			}
-		} else if(robot.getDirection() == WEST) {
-			for(int y=-1; y>-6; y--) {
-				if(!grid.isOutOfArena(robot.getPositionX(), y)) {
-					if(!grid.getIsExplored(robot.getPositionX(), y)) {
+		} else if(direction == WEST) {
+			for(int y=3; y<5; y++) {
+				if(!grid.isOutOfArena(robotXPos, robotYPos+y)) {
+					if(!grid.getIsExplored(robotXPos, robotYPos+y)) {
 						return false;
-					} else if(grid.getIsObstacle(robot.getPositionX(), y)) {
+					} else if(grid.getIsObstacle(robotXPos, robotYPos+y)) {
 						return true;
 					}
 				} else {
@@ -2985,7 +3222,61 @@ public class ExplorationAlgorithm implements Algorithm {
 			}
 		}
 		
-		return false;
+		return true;
+	}
+	
+	private boolean checkRightRangeExplored(Grid grid, int robotXPos, int robotYPos, int direction) {
+		if(direction == NORTH) {
+			for(int x=3; x<8; x++) {
+				if(!grid.isOutOfArena(robotXPos+x, robotYPos)) {
+					if(!grid.getIsExplored(robotXPos+x, robotYPos)) {
+						return false;
+					} else if(grid.getIsObstacle(robotXPos+x, robotYPos)) {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+		} else if(direction == SOUTH) {
+			for(int x=-1; x>-6; x--) {
+				if(!grid.isOutOfArena(robotXPos+x, robotYPos+2)) {
+					if(!grid.getIsExplored(robotXPos+x, robotYPos+2)) {
+						return false;
+					} else if(grid.getIsObstacle(robotXPos+x, robotYPos+2)) {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+		} else if(direction == EAST) {
+			for(int y=3; y<8; y++) {
+				if(!grid.isOutOfArena(robotXPos+2, robotYPos+y)) {
+					if(!grid.getIsExplored(robotXPos+2, robotYPos+y)) {
+						return false;
+					} else if(grid.getIsObstacle(robotXPos+2, robotYPos+y)) {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+		} else if(direction == WEST) {
+			for(int y=-1; y>-6; y--) {
+				if(!grid.isOutOfArena(robotXPos, robotYPos+y)) {
+					if(!grid.getIsExplored(robotXPos, robotYPos+y)) {
+						return false;
+					} else if(grid.getIsObstacle(robotXPos, robotYPos+y)) {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	// return true if it needs a U turn after 1 step
