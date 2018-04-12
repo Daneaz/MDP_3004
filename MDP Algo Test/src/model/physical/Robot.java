@@ -51,9 +51,9 @@ public class Robot extends Observable {
 			sensor.get(i).setSensorOnRobot(this);
 		}
 		
-		dataListCount = 0;
+		/*dataListCount = 0;
 		
-		dataList = new ArrayList();
+		dataList = new ArrayList();*/
 		
 		//Sensor Data for Week10_2.jpg
 		/*dataList.add("6,9,9,1,1,5");

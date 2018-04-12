@@ -53,9 +53,18 @@ public class Cell implements Comparable<Cell> {
 		this.isObstacle = isObstacle;
 	}
 	
-	void updateCount(int num){
+	int updateCount(int num){
 		count += num;
+		boolean prevIsObstacle = this.isObstacle;
 		isObstacle = count > 0;
+		
+		if(prevIsObstacle && !isObstacle) {
+			return -1;
+		} else if(!prevIsObstacle && isObstacle) {
+			return 1;
+		}
+		
+		return 0;
 	}
 	
 	@Override

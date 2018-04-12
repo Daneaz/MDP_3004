@@ -2,6 +2,7 @@ package model.algo;
 
 
 import model.algo.Algorithm;
+import model.physical.Cell;
 import model.physical.Grid;
 import model.physical.Robot;
 import model.util.MessageMgr;
@@ -23,6 +24,7 @@ public class ExplorationAlgorithm implements Algorithm {
 
 	private boolean trustExplored = false;
 	private boolean uTurnFlagForNoTrustExplored = false;
+	private int targetedObstacleNum = 30;
 	private boolean uTurn = false;
 	private int minutes = 5;
 	private int seconds = 20;
@@ -167,7 +169,6 @@ public class ExplorationAlgorithm implements Algorithm {
 					robot.sense(realRun);
 				}
 			}
-			
 			// Move forward
 			if (realRun) {
 				handleMoveForward(grid, robot, realRun);
@@ -186,7 +187,7 @@ public class ExplorationAlgorithm implements Algorithm {
 				// Sense the surrounding
 				robot.sense(realRun);
 			}
-            
+			
             // checks if robot enters the endZone
             if(Grid.isInEndingZone(robot.getPositionX(), robot.getPositionY())) {
             	// sets the endZone flag to true if robot enters the endZone
@@ -198,7 +199,18 @@ public class ExplorationAlgorithm implements Algorithm {
             	// sets the endZone flag to true if robot enters the endZone
             	inStartZone = true;
             }
-
+            
+            // Uncomment this to activate head back to start zone when obstacle count reaches 30
+            /*if(grid.getObstacleCount() == targetedObstacleNum) {
+            	for (int x = 0; x < MAP_COLUMNS; x++){
+        			for ( int y = 0; y < MAP_ROWS; y++){
+        				if(!grid.getCell()[x][y].getExplored()) {
+        					grid.setIsExplored(x, y, true);
+        				}
+        			}
+        		}
+            }*/
+            
             // if the map has been fully explored and robot is not in the startZone,
             // run the fastest path Algorithm from the current robot position to the startZone
             if(!inStartZone && grid.checkPercentageExplored() == 100) {
@@ -212,7 +224,7 @@ public class ExplorationAlgorithm implements Algorithm {
                 
                 // Run the A* Algorithm to get the list of actions needed to head back to the startZone
                 List<String> returnActions = Algorithm.startAstarSearch(robot.getPositionX(), robot.getPositionY(), START_X_POSITION, START_Y_POSITION, grid, proxyRobot);                
-                
+
                 // If the fastest path can be calculated, process it
                 if (returnActions != null) {
                 	// Initialize the proxyRobot back to the original robot current conditions
@@ -264,6 +276,132 @@ public class ExplorationAlgorithm implements Algorithm {
                 if (Grid.isInStartingZone(robot.getPositionX() + 2, robot.getPositionY()) && inEndZone) {
                     inStartZone = true;
                 }
+                
+            	while(grid.getObstacleCount() > targetedObstacleNum) {
+            		// Checks if a turn is needed
+        			turn = leftHugging(realRun, robot, grid);
+        			
+        			// A turn has been made 
+        			if (turn) {
+        				// Actual Run
+        				if (realRun) {
+        					// uTurnHalt is used to detect that a U turn has been interfered
+        					// No need to sense the surrounding if the U turn has been interfered
+        		            /*if(uTurnHalt) {
+        		            	uTurnHalt = false;
+        		            } else {*/
+        		            	// Sense the surrounding since a turn has been made
+        		            	// Store the sensor readings at the same time
+        		            	robot.sense(realRun, true);
+        		            //}
+        				}
+        				// Sense for simulator
+        				else {
+        					robot.sense(realRun);
+        				}
+        			}
+        			// Move forward
+        			if (realRun) {
+        				handleMoveForward(grid, robot, realRun);
+        			}
+        			// Simulator
+        			else {
+        				robotMovementString+="M";
+        				System.out.println("----------------------Moving Forward----------------------");
+        				System.out.println(robotMovementString);
+        				
+        				// show the robot move forward on the simulator
+        				robot.move();
+        				
+        				stepTaken();
+        				
+        				// Sense the surrounding
+        				robot.sense(realRun);
+        			}
+        			
+                    // checks if robot enters the endZone
+                    if(Grid.isInEndingZone(robot.getPositionX(), robot.getPositionY())) {
+                    	// sets the endZone flag to true if robot enters the endZone
+                    	inEndZone = true;
+                    }
+                    
+                    // checks if robot enters the startZone
+                    if(Grid.isInStartingZone(robot.getPositionX() +2, robot.getPositionY()) && inEndZone) {
+                    	// sets the endZone flag to true if robot enters the endZone
+                    	inStartZone = true;
+                    }
+                    
+                    // Head back to start zone when time limit reached
+                    if(realRun && getElapsedTime(startTime, System.nanoTime()) >= timeLimit) {
+                    	break;
+                    }
+            	}
+            	
+            	if(!grid.isInStartingZone(robot.getPositionX(), robot.getPositionY()) && grid.checkPercentageExplored() == 100) {
+            		// Create a proxyRobot for the calculation so that it will not affect the original robot
+                    proxyRobot = new Robot(grid, new ArrayList<>());
+                    
+                    // Initialize the proxyRobot with the current conditions of the original robot
+                    proxyRobot.setDirection(robot.getDirection());
+                    proxyRobot.setPositionX(robot.getPositionX());
+                    proxyRobot.setPositionY(robot.getPositionY());
+                    
+                    // Run the A* Algorithm to get the list of actions needed to head back to the startZone
+                    returnActions = Algorithm.startAstarSearch(robot.getPositionX(), robot.getPositionY(), START_X_POSITION, START_Y_POSITION, grid, proxyRobot);                
+
+                    // If the fastest path can be calculated, process it
+                    if (returnActions != null) {
+                    	// Initialize the proxyRobot back to the original robot current conditions
+                        proxyRobot.setPositionX(robot.getPositionX());
+                        proxyRobot.setPositionY(robot.getPositionY());
+                        proxyRobot.setDirection(robot.getDirection());
+                        
+                        if (realRun) {
+                        	// Get the actions string to send to Arduino
+                            String compressed = Algorithm.compressExplorationPath(returnActions, proxyRobot, false);
+                        	//String compressed = Algorithm.compressExplorationCalibrationPath(returnActions, proxyRobot);
+                            // Send the actions string to Arduino
+                            SocketMgr.getInstance().sendMessage(CALL_ARDUINO, compressed);
+                        }
+                        
+                        /*System.out.println("Fastest Path Algorithm back to Start Zone Calculated. Executing actions now...");
+                        System.out.println(returnActions.toString());*/
+                        
+                        // Simulate the robot moving back to startZone step by step
+                        for (String action : returnActions) {
+                            if (action.equals("M")) {
+                                robot.move();
+                                robotMovementString += "m";
+                            } else if (action.equals("L")) {
+                                robot.turn(LEFT);
+                                robotMovementString += "l";
+                            } else if (action.equals("R")) {
+                                robot.turn(RIGHT);
+                                robotMovementString += "r";
+                            } else if (action.equals("U")) {
+                                robot.turn(RIGHT);
+                                robotMovementString += "r";
+                                robot.turn(RIGHT);
+                                robotMovementString += "r";
+                            }
+                            
+                            // Only give delay for simulator 
+                            if(!realRun) {
+                            	stepTaken();
+                            }
+                        }
+                    }
+                    else {
+                        System.out.println("FASTEST PATH CANNOT BE FOUND!");
+                    }
+
+                    // Checks if robot is in startZone,
+                    // Set the startZone flag to true only if robot has entered the endZone before
+                    if (Grid.isInStartingZone(robot.getPositionX() + 2, robot.getPositionY()) && inEndZone) {
+                        inStartZone = true;
+                    }
+            	}
+            	
             }  
             // A loop is detected
             else if(checkForCycle()) {

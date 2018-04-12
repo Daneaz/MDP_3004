@@ -14,6 +14,7 @@ import static constant.MapConstant.*;
 
 public class Grid extends Observable {
 
+	private int obstaclesCount;
 	private Cell[][] cells;
 	
 	public Grid(){
@@ -23,9 +24,13 @@ public class Grid extends Observable {
 				cells[x][y] = new Cell();
 			}
 		}
-		
+		this.obstaclesCount = 0;
 		reset();
 		
+	}
+	
+	public int getObstacleCount() {
+		return this.obstaclesCount;
 	}
 	
 	public Cell[][] getCell() {
@@ -72,7 +77,8 @@ public class Grid extends Observable {
 	
 	public void setProbabilityOfObstacle(int x, int y, int num){
 		if(!isOutOfArena(x, y)){
-			cells[x][y].updateCount(num);			
+			int addObstacleCount = cells[x][y].updateCount(num);
+			obstaclesCount += addObstacleCount;
 		}
 		return;
 	}
