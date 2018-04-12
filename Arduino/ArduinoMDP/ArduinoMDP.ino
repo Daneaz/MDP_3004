@@ -30,8 +30,8 @@ volatile int mRTicks = 0;
 //Global var declaration
 boolean flag = false;         //for starting alligment
 String inString = "";         //for cmd
-int previousLF;               //to record the previous value of Left sensor for calibration
-int previousR;                //to record the previous value of Right sensor for calibration
+double previousLF;               //to record the previous value of Left sensor for calibration
+double previousR;                //to record the previous value of Right sensor for calibration
 int adjustFrontFailCount = 0; //for check fail to adjust front
 int adjustFailCount = 0;      //for check fail to adjust
 double disFL, disFC, disFR, disLF, disLB, disR;   //for sensor calibration
@@ -85,7 +85,7 @@ void loop() {
 
   // Clear the string
   inString = "";
-  delay(20);
+  delay(40);
 }
 
 void fastExplore(String str)
@@ -134,7 +134,7 @@ void fastExplore(String str)
     cdis = "";
     dis = 0;
     checkForCalibration(cmd);
-    delay(20);
+    delay(40);
   }
   getSensorsData(cmd);
 }
@@ -184,7 +184,7 @@ void fastPath(String str)
     }
     cdis = "";
     dis = 0;
-    delay(20);
+    delay(40);
   }
 
   Serial.println("BS");
@@ -576,8 +576,8 @@ void turnRightFast(int degree) {
   //    int count = 0;
   //    double avg, total = 0;
 
-  //  int pwm1 = 344, pwm2 = -316;
-  int pwm1 = 380, pwm2 = -360;
+  int pwm1 = 344, pwm2 = -316;
+  //  int pwm1 = 380, pwm2 = -360;
   //  dTotalTicks = 349;
   dTotalTicks = 348;
 
@@ -608,8 +608,8 @@ void turnLeftFast(int degree) {
   //    int count = 0;
   //    double avg, total = 0;
 
-  //  int pwm1 = -344, pwm2 = 316;
-  int pwm1 = -380, pwm2 = 360;
+  int pwm1 = -344, pwm2 = 316;
+  //  int pwm1 = -380, pwm2 = 360;
 
   //  dTotalTicks = 348;      //Battery 2
   dTotalTicks = 343;
@@ -640,9 +640,9 @@ void uTurn() {
   //  int count = 0;
   //  double avg, total = 0;
 
-  int pwm1 = -344, pwm2 = 316;
-  //  int pwm1 = 380, pwm2 = -380;
-  dTotalTicks = 750;
+  //  int pwm1 = -344, pwm2 = 316;
+  int pwm1 = 380, pwm2 = -380;
+  dTotalTicks = 700;
 
   while (mLTicks < dTotalTicks)
   {
@@ -707,7 +707,7 @@ void moveBack(int dis)
   //  int count = 0;
   //  double avg, total = 0;
   //  int pwm1 = -355, pwm2 = -315;
-  int pwm1 = -344, pwm2 = -316;
+  int pwm1 = 375, pwm2 = 354;
   if (dis <= 1)
   {
     dTotalTicks = 285;  // 1 box
@@ -759,7 +759,7 @@ void moveAdjustF()
   double dTotalTicks = 0;
   double output;
   //  int pwm1 = 333, pwm2 = 353;
-  int pwm1 = 344, pwm2 = 316;
+  int pwm1 = 375, pwm2 = 354;
   dTotalTicks = 1;
 
   while (mLTicks < dTotalTicks)
@@ -775,7 +775,7 @@ void moveAdjustB()
 {
   double dTotalTicks = 0;
   double output;
-  int pwm1 = -355, pwm2 = -315;
+  int pwm1 = -375, pwm2 = -354;
   //  int pwm1 = -100, pwm2 = -80;
 
   dTotalTicks = 1;
@@ -1100,51 +1100,51 @@ void checkForCalibration(char cmd)
 
   if ((disFL  <= 13 && disFC  <= 13) || (disFL  <= 13 && disFR  <= 13) || (disFC  <= 13 && disFR  <= 13) )
   {
-//    if (disLF  <= 1 && disLB  <= 1 && countFAndLWall >= 9 )
-//    {
-//      FrontAndLeftWall();
-//      adjustFailCount = 0;
-//      adjustFrontFailCount = 0;
-//      countFAndLWall = 0;
-//      //      Serial.println("Left and Front Wall");
-//    }
-//    else
-//    {
-      FrontWall();
-//      adjustFrontFailCount = 0;
-      adjustFailCount = 0;
-//      countFAndLWall++;
-      //      Serial.println("Front Wall");
-//    }
+    //    if (disLF  <= 1 && disLB  <= 1 && countFAndLWall >= 9 )
+    //    {
+    //      FrontAndLeftWall();
+    //      adjustFailCount = 0;
+    //      adjustFrontFailCount = 0;
+    //      countFAndLWall = 0;
+    //      //      Serial.println("Left and Front Wall");
+    //    }
+    //    else
+    //    {
+    FrontWall();
+    //      adjustFrontFailCount = 0;
+    adjustFailCount = 0;
+    //      countFAndLWall++;
+    //      Serial.println("Front Wall");
+    //    }
   }
   else if (((disLF  <= 18 && disLB  <= 18)) && adjustFailCount >= 2 )
   {
     LeftWall();
-//    adjustFrontFailCount++;
-//    countFAndLWall++;
+    //    adjustFrontFailCount++;
+    //    countFAndLWall++;
     //    Serial.println("Left Wall");
   }
   else
   {
     //    adjustDistance();
-//    adjustFrontFailCount++;
+    //    adjustFrontFailCount++;
     adjustFailCount++;
-//    countFAndLWall++;
+    //    countFAndLWall++;
   }
 
-  if (disLF >= 14 && disLF <= 16 && LF <= 1)
+  if ((disLF >= 13 && disLF <= 16) && (previousLF >= 9 && previousLF <= 15))
   {
     leftFrontLimit();
   }
-  else if (disLB >= 14 && disLB <= 16 && LB <= 1)
+  else if ((disLB >= 13 && disLB <= 16) && (previousLF >= 9 && previousLF <= 15))
   {
     leftBackLimit();
   }
-  else if (disLF <= 11 && LF <= 1)
+  else if (disLF <= 11 && (previousLF >= 9 && previousLF <= 15))
   {
     leftFrontLimit();
   }
-  else if (disLB <= 11 && LB <= 1)
+  else if (disLB <= 11 && (previousLF >= 9 && previousLF <= 15))
   {
     leftBackLimit();
   }
@@ -1186,13 +1186,15 @@ void checkForCalibration(char cmd)
   //  }
 
   previousR = R;
-  previousLF = LF;
+  previousLF = disLF;
 
 }
 
 void leftFrontLimit()
 {
+  Serial.println("LF limit");
   turnLeftFast(90);
+  delay(50);
   getRMedianFront();
   disFL = FrontL.getAverage();
   disFC = FrontC.getAverage();
@@ -1210,7 +1212,9 @@ void leftFrontLimit()
 
 void leftBackLimit()
 {
+  Serial.println("LB limit");
   turnLeftFast(90);
+  delay(50);
   getRMedianFront();
   disFL = FrontL.getAverage();
   disFC = FrontC.getAverage();
@@ -1307,8 +1311,8 @@ void adjustAngleFront()
     dErrorDiff_2 = dErrorFront - dErrorFrontLeft;
     dErrorDiff_3 = dErrorFront - dErrorFrontRight;
 
-    if ((disFC > 3 && disFC < 13) || (disFL > 3 && disFL < 13) || (disFR > 3 && disFR < 13))
-    {
+//    if ((disFC > 3 && disFC < 13) || (disFL > 3 && disFL < 13) || (disFR > 3 && disFR < 13))
+//    {
       if ((disFL > 3 && disFL < 13) && (disFR > 3 && disFR < 13))
       {
         if (abs(dErrorDiff_1) < 0.3)
@@ -1360,7 +1364,7 @@ void adjustAngleFront()
           //          delay(50);
         }
       }
-    }
+//    }
     //break the while loop instead of wait for 5s
     else
     {
