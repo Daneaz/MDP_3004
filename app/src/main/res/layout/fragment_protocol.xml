@@ -1,0 +1,186 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.hanwe.mdp.Fragments.ProtocolFragment"
+    >
+
+    <TextView
+        android:id="@+id/protocolTitle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="15dp"
+        android:text="@string/protocolTitle"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/forwardTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:text="@string/forward"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/forwardET"
+        android:layout_below="@+id/forwardTV"
+        android:layout_centerHorizontal="true"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/rotateLeftTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="60dp"
+        android:layout_below="@id/forwardET"
+        android:text="@string/rotateLeft"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/rotateLeftET"
+        android:layout_below="@+id/rotateLeftTV"
+        android:layout_marginLeft="25dp"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/rotateRightTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="60dp"
+        android:layout_below="@id/forwardET"
+        android:text="@string/rotateRight"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/rotateRightET"
+        android:layout_below="@+id/rotateRightTV"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="25dp"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/reverseTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rotateRightET"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/reverse"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/reverseET"
+        android:layout_below="@+id/reverseTV"
+        android:layout_centerHorizontal="true"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/beginExploreTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="40dp"
+        android:layout_below="@id/reverseET"
+        android:text="@string/beginExplore"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/beginExploreET"
+        android:layout_below="@+id/beginExploreTV"
+        android:layout_marginLeft="25dp"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/stopExploreTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="45dp"
+        android:layout_below="@id/reverseET"
+        android:text="@string/stopExplore"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/stopExploreET"
+        android:layout_below="@+id/stopExploreTV"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="25dp"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/beginFastestTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="35dp"
+        android:layout_below="@id/beginExploreET"
+        android:text="@string/beginFastest"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/beginFastestET"
+        android:layout_below="@+id/beginFastestTV"
+        android:layout_marginLeft="25dp"
+        style="@style/protocolEditText"/>
+
+    <TextView
+        android:id="@+id/stopFastestTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="40dp"
+        android:layout_below="@id/stopExploreET"
+        android:text="@string/stopFastest"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/stopFastestET"
+        android:layout_below="@+id/stopFastestTV"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="25dp"
+        style="@style/protocolEditText"/>
+
+
+
+    <TextView
+        android:id="@+id/sendArenaTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/beginFastestET"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/sendArena"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/sendArenaET"
+        android:layout_below="@+id/sendArenaTV"
+        android:layout_centerHorizontal="true"
+        style="@style/protocolEditText"/>
+
+    <Button
+        android:id="@+id/saveProtocolBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sendArenaET"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Save Protocols"
+        android:background="@color/colorPrimary"
+        android:textColor="#FFFFFF"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingRight="15dp"
+        android:paddingLeft="15dp"/>
+
+
+</RelativeLayout>

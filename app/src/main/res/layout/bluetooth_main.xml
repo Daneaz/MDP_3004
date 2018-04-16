@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/pairedDevicesRL">
+
+        <TextView
+            android:id="@+id/pairedDevicesTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Paired Devices"
+            android:theme="@style/dialogTitleStyle"/>
+
+        <ListView
+            android:id="@+id/pairedBTDevicesLV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/pairedDevicesTV"
+            android:paddingBottom="15dp">
+        </ListView>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pairedDevicesRL"
+        android:id="@+id/availableDevicesRL"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:id="@+id/AvailableDevicesTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Available Devices"
+            android:theme="@style/dialogTitleStyle"/>
+
+        <ListView
+            android:id="@+id/availableDevicesLV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/AvailableDevicesTV"
+            android:paddingBottom="15dp">
+        </ListView>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/availableDevicesRL"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp">
+
+        <Button
+            android:id="@+id/scanBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_centerHorizontal="true"
+            android:background="#098e6f"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingRight="15dp"
+            android:paddingLeft="15dp"
+            android:text="@string/scan_bt"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

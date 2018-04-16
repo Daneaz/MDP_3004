@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog view -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_view"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="380dp"
+    android:background="#ffffffff"
+    >
+
+    <!-- Initial Robot Position Layout-->
+    <LinearLayout
+        android:id="@+id/tvSecInitial"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <!-- Initial Robot Position -->
+        <TextView
+            android:id="@+id/tvIniRobotPos"
+            android:layout_width="fill_parent"
+            android:layout_height="25dp"
+            android:background="#098e6f"
+            android:text="Initial Robot Position:"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:gravity="left|center"
+            android:paddingLeft="10dp"
+            android:textStyle="bold"
+            />
+
+        <!-- Inital X, Y -->
+        <LinearLayout
+            android:id="@+id/lyInitial"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center|top"
+            android:paddingTop="30dp"
+            >
+
+            <TextView
+                android:id = "@+id/tvInitialX"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Initial X:"
+                android:paddingTop="12dp"
+                />
+
+            <Spinner
+                android:id = "@+id/spInitialX"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:entries="@array/x_axis"
+                />
+
+            <TextView
+                android:id = "@+id/tvInitialY"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Initial Y:"
+                />
+
+            <Spinner
+                android:id = "@+id/spInitialY"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/y_axis"
+                />
+
+            <ImageView
+                android:id="@+id/imgRobot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/short_robot"
+                android:layout_marginLeft="30dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Initial Waypoint Position Layout-->
+    <LinearLayout
+        android:id="@+id/tvSecWayPoint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/dialog_margin"
+        android:gravity="center|top"
+        >
+
+        <!-- Initial Waypoint Position -->
+        <CheckBox
+            android:id="@+id/chkIniWayPointPos"
+            android:layout_width="fill_parent"
+            android:layout_height="25dp"
+            android:background="#098e6f"
+            android:text="Initial WayPoint Position:"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:gravity="left|center"
+            android:textStyle="bold"
+            android:buttonTint="@color/dialogTitleText"
+            />
+
+        <!-- Waypoint Inital X, Y -->
+        <LinearLayout
+            android:id="@+id/lyWaypoint"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center|top"
+            android:paddingTop="30dp"
+            >
+
+            <TextView
+                android:id = "@+id/tvwpInitialX"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Initial X:"
+                android:paddingTop="12dp"
+                />
+
+            <Spinner
+                android:id = "@+id/spwpInitialX"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:entries="@array/x_axis"
+                />
+
+            <TextView
+                android:id = "@+id/tvwpInitialY"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Initial Y:"
+                />
+
+            <Spinner
+                android:id = "@+id/spwpInitialY"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/y_axis"
+                />
+
+            <ImageView
+                android:id="@+id/imgWaypoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/short_waypoint"
+                android:layout_marginLeft="30dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Close, Reset and Submit button -->
+    <LinearLayout
+        android:id="@+id/lyControlBtn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center|bottom"
+        android:paddingBottom="45dp"
+        >
+
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:text="Submit"
+            android:background="#098e6f"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            />
+
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:background="#098e6f"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:text="Reset"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            />
+
+        <Button
+            android:id="@+id/btnClose"
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:background="#098e6f"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:text="Close"
+            />
+    </LinearLayout>
+</RelativeLayout>

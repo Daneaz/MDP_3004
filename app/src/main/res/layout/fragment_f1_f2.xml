@@ -1,0 +1,78 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.hanwe.mdp.Fragments.F1F2Fragment"
+    >
+
+    <TextView
+        android:id="@+id/configureTitle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:text="@string/configureTitle"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/f1TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="60dp"
+        android:layout_marginLeft="50dp"
+        android:text="@string/f1"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/f1ET"
+        android:layout_toRightOf="@id/f1TV"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="20dp"
+        android:layout_centerHorizontal="true"
+        style="@style/protocolEditText"/>
+
+    <Button
+        android:id="@+id/saveF1Btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_toRightOf="@+id/f1ET"
+        android:text="@string/f1SaveBtn"
+        android:background="@color/colorPrimary"
+        android:textColor="#FFFFFF"
+        android:padding="4dp"
+        android:layout_marginLeft="10dp"/>
+
+    <TextView
+        android:id="@+id/f2TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="120dp"
+        android:layout_marginLeft="50dp"
+        android:text="@string/f2"
+        style="@style/protocolHeading" />
+
+    <EditText
+        android:id="@+id/f2ET"
+        android:layout_toRightOf="@id/f2TV"
+        android:layout_marginTop="110dp"
+        android:layout_marginLeft="20dp"
+        android:layout_centerHorizontal="true"
+        style="@style/protocolEditText"/>
+
+    <Button
+        android:id="@+id/saveF2Btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_toRightOf="@+id/f2ET"
+        android:text="@string/f2SaveBtn"
+        android:background="@color/colorPrimary"
+        android:textColor="#FFFFFF"
+        android:padding="4dp"
+        android:layout_marginLeft="10dp"/>
+
+</RelativeLayout>

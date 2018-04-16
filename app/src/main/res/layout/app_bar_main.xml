@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.hanwe.mdp.MainActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <include
+            layout="@layout/customtoolbar_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include layout="@layout/content_main" />
+
+    <!-- To hold the view of the bottom menu-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/linearLayout1"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:background="#327765"
+            android:layout_gravity="bottom|center"
+            android:paddingRight="0dp"
+            android:paddingLeft="0dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                >
+                <!-- Step 1 : Set up -->
+                <RelativeLayout
+                    android:id="@+id/btnSetup"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_toLeftOf="@+id/centerPoint"
+                    >
+
+                    <ImageView
+                        android:id="@+id/imgSetup"
+                        android:src ="@drawable/fa_setup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"/>
+
+                    <TextView
+                        android:id="@+id/txtSetup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/imgSetup"
+                        android:layout_centerVertical="true"
+                        android:text="Setup"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="#ffffff"
+                        android:textSize="16dp"
+                        android:layout_marginLeft="0dp"
+                        android:paddingBottom="4dp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_centerInParent="true"/>
+                </RelativeLayout>
+
+                <!-- Right linebar -->
+                <TextView
+                    android:id="@+id/centerPoint"
+                    android:text=" "
+                    android:layout_width="1dip"
+                    android:layout_height="100dip"
+                    android:layout_centerHorizontal="true"
+                    android:background="#ffffff"/>
+
+                <!-- Step 2 : Explore -->
+                <RelativeLayout
+                    android:id="@+id/btnExplore"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_toLeftOf="@+id/centerPoint2">
+
+                    <ImageView
+                        android:id="@+id/imgExplore"
+                        android:text="Right"
+                        android:src ="@drawable/fa_explore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        />
+
+                    <TextView
+                        android:id="@+id/txtExplore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/imgExplore"
+                        android:layout_centerVertical="true"
+                        android:text="Start Explore"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="#ffffff"
+                        android:textSize="16dp"
+                        android:layout_marginLeft="0dp"
+                        android:paddingBottom="4dp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_centerInParent="true"/>
+                </RelativeLayout>
+
+                <!-- Right linebar -->
+                <TextView
+                    android:id="@+id/centerPoint2"
+                    android:text=" "
+                    android:layout_width="1dip"
+                    android:layout_height="100dip"
+                    android:layout_centerHorizontal="true"
+                    android:background="#ffffff"
+                    />
+
+                <!-- Step 3 : Fastest Path -->
+                <RelativeLayout
+                    android:id="@+id/btnFasterPath"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+
+                    <ImageView
+                        android:id="@+id/imgFastestPath"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:text="Right"
+                        android:src ="@drawable/fa_fastest"
+                        />
+                    <TextView
+                        android:id="@+id/txtFastestPath"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/imgFastestPath"
+                        android:layout_centerVertical="true"
+                        android:text="Start Fastest Path"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="#ffffff"
+                        android:textSize="15dp"
+                        android:layout_marginLeft="0dp"
+                        android:paddingBottom="4dp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:layout_centerInParent="true"/>
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>
