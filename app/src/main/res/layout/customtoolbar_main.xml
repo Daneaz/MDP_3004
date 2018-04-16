@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:id="@+id/toolbar">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/app_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            android:paddingLeft="4dp"/>
+
+        <ImageView
+            android:id="@+id/icon_bt"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/disconnected_bluetooth"
+            android:layout_below="@+id/app_title"
+            android:layout_margin="0dp"/>
+
+        <TextView
+            android:id="@+id/status_bt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/app_title"
+            android:layout_toRightOf="@+id/icon_bt"
+            android:text="@string/disconnected_bt"
+            android:theme="@style/bluetoothStatus"
+            android:layout_margin="4dp"
+            />
+
+    </RelativeLayout>
+</android.support.v7.widget.Toolbar>

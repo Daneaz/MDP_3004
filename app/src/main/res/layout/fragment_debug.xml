@@ -1,0 +1,109 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.hanwe.mdp.Fragments.DebugFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/containerRL"
+        >
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/sendTextBtn"
+            android:text="Send"
+            android:layout_alignBaseline="@+id/sendET"
+            android:layout_alignBottom="@+id/sendET"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="5dp"
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
+            android:padding="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/sendTV"
+            android:text="@string/SendTV"
+            android:layout_above="@+id/sendET"
+            android:layout_marginLeft="10dp" />
+
+        <EditText
+            android:id="@+id/sendET"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_above="@+id/receiveTV"
+            android:layout_toLeftOf="@+id/sendTextBtn"
+            android:layout_toStartOf="@+id/sendTextBtn"
+            android:layout_marginLeft="10dp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/receiveTV"
+            android:text="@string/ReceiveTV"
+            android:layout_above="@+id/receiveET"
+            android:layout_marginLeft="10dp" />
+
+        <EditText
+            android:id="@+id/receiveET"
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:ems="10"
+            android:inputType="textMultiLine"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="70dp"
+            android:focusable="false"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp" />
+
+        <Button
+            android:id="@+id/f1Btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="50dp"
+            android:layout_marginRight="45dp"
+            android:text="F1"
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
+            android:padding="4dp"
+            />
+
+        <Button
+            android:id="@+id/f2Btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/f1Btn"
+            android:layout_marginRight="45dp"
+            android:layout_marginTop="10dp"
+            android:text="F2"
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
+            android:padding="4dp"/>
+
+        <Button
+            android:id="@+id/tiltBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/f2Btn"
+            android:layout_marginRight="45dp"
+            android:layout_marginTop="10dp"
+            android:text="On Tilt"
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
+            android:padding="4dp"/>
+
+    </RelativeLayout>
+
+</FrameLayout>

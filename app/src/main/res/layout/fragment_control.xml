@@ -1,0 +1,156 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    tools:context="com.example.hanwe.mdp.Fragments.ControlFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <RelativeLayout
+        android:id="@+id/controlContainerRL"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <RelativeLayout
+            android:id="@+id/rlAutoManual"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="48dp"
+            android:gravity="center_horizontal|right">
+
+            <Button
+                android:id="@+id/btnAuto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Auto"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="45dp"
+                android:background="@color/colorPrimary"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="10dp"
+                android:padding="4dp"
+                />
+
+            <Button
+                android:id="@+id/btnManual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Update"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="45dp"
+                android:background="@color/colorPrimary"
+                android:textColor="#FFFFFF"
+                android:layout_below="@id/btnAuto"
+                android:layout_marginBottom="10dp"
+                android:padding="4dp"
+                />
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/ctrl_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="327dp"
+            android:layout_marginRight="72dp"
+            android:background="@drawable/top"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"/>
+
+        <RelativeLayout
+            android:id="@+id/rlController"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingRight="33dp"
+            android:gravity="right|bottom"
+            android:paddingBottom="294dp"
+            android:layout_alignParentRight="true"
+            >
+
+            <ImageView
+                android:id="@+id/center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/center"
+                android:layout_toRightOf="@id/ctrl_left"
+                />
+
+            <ImageView
+                android:id="@+id/ctrl_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:background="@drawable/left"
+                />
+
+            <ImageView
+                android:id="@+id/ctrl_right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:background="@drawable/right"
+                android:layout_toRightOf="@id/center"
+                />
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/ctrl_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="256dp"
+            android:layout_marginRight="72dp"
+            android:background="@drawable/bottom"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="120dp"
+            android:layout_marginLeft="10dp"
+            android:orientation="horizontal"
+            android:id="@+id/linearLayout">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="left"
+                android:layout_weight="1"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp">
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status: Idling"
+                    android:textSize="13sp"
+                    android:paddingBottom="10dp"/>
+
+                <TextView
+                    android:id="@+id/tvMdfstring1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tvStatus"
+                    android:paddingBottom="10dp"
+                    android:textSize="13sp"
+                    android:text="MDF1: " />
+
+                <TextView
+                    android:id="@+id/tvMdfstring2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tvMdfstring1"
+                    android:textSize="13sp"
+                    android:text="MDF2: " />
+
+
+            </RelativeLayout>
+        </LinearLayout>
+
+    </RelativeLayout>
+</RelativeLayout>
